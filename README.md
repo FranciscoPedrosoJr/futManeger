@@ -1,0 +1,2 @@
+# futManeger
+Gerenciador de futebol
