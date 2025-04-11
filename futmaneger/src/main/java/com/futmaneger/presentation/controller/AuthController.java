@@ -5,6 +5,7 @@ import com.futmaneger.application.usecase.auth.AutenticarTecnicoUseCase;
 import com.futmaneger.application.usecase.tecnico.CadastrarTecnicoUseCase;
 import com.futmaneger.domain.entity.Tecnico;
 import com.futmaneger.presentation.request.CadastrarTecnicoRequest;
+import com.futmaneger.presentation.request.LoginRequest;
 import com.futmaneger.presentation.response.TecnicoResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -36,8 +37,8 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<TecnicoResponse> login(@RequestParam String email, @RequestParam String senha) {
-        return autenticarTecnicoUseCase.autenticar(email, senha)
+    public ResponseEntity<TecnicoResponse> login(@RequestBody LoginRequest request) {
+        return autenticarTecnicoUseCase.autenticar(request.email(), request.senha())
                 .map(TecnicoResponse::new)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.status(401).build());
