@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @SpringBootApplication
 @EnableJpaRepositories(basePackages = "com.futmaneger.infrastructure.persistence.jpa")
-@EntityScan(basePackages = "com.futmaneger.infrastructure.persistence.entity")
+//@EntityScan(basePackages = "com.futmaneger.infrastructure.persistence.entity")
 public class FutmanegerApplication {
 
 	public static void main(String[] args) {
