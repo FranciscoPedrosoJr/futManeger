@@ -1,9 +1,12 @@
 package com.futmaneger.domain.entity;
 
+import com.futmaneger.infrastructure.persistence.entity.TecnicoEntity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -17,6 +20,10 @@ public class Clube {
     private String nome;
 
     private String cidade;
+
+    @ManyToOne
+    @JoinColumn(name = "tecnico_id")
+    private TecnicoEntity tecnico;
 
     public Clube() {}
 
@@ -35,5 +42,9 @@ public class Clube {
 
     public String getCidade() {
         return cidade;
+    }
+
+    public void setTecnico(TecnicoEntity tecnico) {
+        this.tecnico = tecnico;
     }
 }
