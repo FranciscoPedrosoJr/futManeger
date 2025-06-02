@@ -65,6 +65,10 @@ public class Jogador {
         return clube.getId();
     }
 
+    public Clube getClubeNome() {
+        return clube;
+    }
+
     public void setNome(String nome) {
     }
 
