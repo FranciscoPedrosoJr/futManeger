@@ -41,7 +41,7 @@ public class BuscarController {
         return ResponseEntity.ok(buscarTecnicoUseCase.buscarTodos());
     }
 
-    @PostMapping("/jogadores/buscar")
+    @PostMapping("/jogadores")
     public ResponseEntity<List<JogadorResponseDTO>> buscar(@RequestBody JogadorFiltroDTO filtro) {
         List<JogadorResponseDTO> jogadores = buscarJogadoresUseCase.buscar(filtro);
         return ResponseEntity.ok(jogadores);
