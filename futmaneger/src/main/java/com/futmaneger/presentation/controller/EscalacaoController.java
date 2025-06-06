@@ -24,4 +24,10 @@ public class EscalacaoController {
         EscalacaoResponseDTO response = useCase.escalar(request);
         return ResponseEntity.ok(response);
     }
+
+    @PostMapping("/teste")
+    public ResponseEntity<EscalacaoResponseDTO> escalarNovo(@RequestBody EscalacaoRequestDTO request) {
+        EscalacaoResponseDTO response = useCase.escalar(request);
+        return ResponseEntity.ok(response);
+    }
 }
