@@ -15,7 +15,7 @@ public class CadastrarTecnicoUseCase {
     }
 
     public Tecnico executar(TecnicoDto dto) {
-        Tecnico tecnico = new Tecnico(dto.getNome(), dto.getEmail(), dto.getSenha());
+        Tecnico tecnico = new Tecnico(dto.nome(), dto.email(), dto.senha());
         return tecnicoRepository.salvar(tecnico);
     }
 }
