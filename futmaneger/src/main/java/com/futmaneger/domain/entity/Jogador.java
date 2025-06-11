@@ -61,8 +61,12 @@ public class Jogador {
         return identificacaoComClube;
     }
 
-    public Long getClube() {
+    public Long getClubeId() {
         return clube.getId();
+    }
+
+    public Clube getClube() {
+        return clube;
     }
 
     public Clube getClubeNome() {

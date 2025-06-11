@@ -47,4 +47,12 @@ public class Clube {
     public void setTecnico(TecnicoEntity tecnico) {
         this.tecnico = tecnico;
     }
+
+    public TecnicoEntity getTecnico() {
+        return tecnico;
+    }
+
+    public Clube getClube(Clube clube) {
+        return clube;
+    }
 }

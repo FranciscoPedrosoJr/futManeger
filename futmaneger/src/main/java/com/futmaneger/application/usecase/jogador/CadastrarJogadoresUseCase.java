@@ -44,7 +44,7 @@ public class CadastrarJogadoresUseCase {
                         j.getForca(),
                         j.isDiferenciado(),
                         j.isIdentificacaoComClube(),
-                        j.getClube().toString()
+                        j.getClubeId().toString()
                 )).toList();
     }
 }
