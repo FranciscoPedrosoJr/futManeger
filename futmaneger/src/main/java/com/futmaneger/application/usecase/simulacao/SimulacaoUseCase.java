@@ -124,14 +124,6 @@ public class SimulacaoUseCase {
         return escalacaoRepository.save(escalacao);
     }
 
-    private List<Jogador> filtrarPorPosicao(Optional<Jogador> jogadores, String posicao, int limite) {
-        return jogadores.stream()
-                .filter(j -> posicao.equals(j.getPosicao()))
-                .sorted(Comparator.comparingInt(Jogador::getForca).reversed())
-                .limit(limite)
-                .toList();
-    }
-
     private List<Jogador> filtrarPorPosicao(List<Jogador> jogadores, List<String> posicoes, int limite) {
         return jogadores.stream()
                 .filter(j -> posicoes.contains(j.getPosicao()))
