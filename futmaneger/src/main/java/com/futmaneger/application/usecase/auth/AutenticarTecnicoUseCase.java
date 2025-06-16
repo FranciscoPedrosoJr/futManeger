@@ -1,5 +1,6 @@
 package com.futmaneger.application.usecase.auth;
 
+import com.futmaneger.application.exception.AutenticacaoException;
 import com.futmaneger.domain.entity.Tecnico;
 import com.futmaneger.domain.repository.TecnicoRepository;
 import java.util.Optional;
@@ -14,8 +15,9 @@ public class AutenticarTecnicoUseCase {
         this.tecnicoRepository = tecnicoRepository;
     }
 
-    public Optional<Tecnico> autenticar(String email, String senha) {
+    public Tecnico autenticar(String email, String senha) {
         return tecnicoRepository.buscarPorEmail(email)
-                .filter(tecnico -> tecnico.getSenha().equals(senha)); // Aqui seria interessante usar hash em produção
+                .filter(tecnico -> tecnico.getSenha().equals(senha))
+                .orElseThrow(() -> new AutenticacaoException("Email ou senha inválidos"));
     }
 }
