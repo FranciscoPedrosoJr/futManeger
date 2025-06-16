@@ -52,4 +52,11 @@ public class EscalacaoEntity {
     public List<EscalacaoJogadorEntity> getJogadores() {
         return jogadores;
     }
+
+    public Clube getClube() {
+        return this.clube = clube;
+    }
+
+    public String getFormacao() {
+        return this.formacao = formacao;    }
 }

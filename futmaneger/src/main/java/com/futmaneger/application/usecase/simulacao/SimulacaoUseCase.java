@@ -83,12 +83,13 @@ public class SimulacaoUseCase {
         EscalacaoEntity escalacao = new EscalacaoEntity();
         escalacao.setClube(clube);
         escalacao.setDataHora(LocalDateTime.now());
+        escalacao.setFormacao("4-4-2");
         escalacao = escalacaoRepository.save(escalacao);
 
         List<Jogador> jogadores = jogadorRepository.findByClube(clube);
 
         List<Jogador> goleiros = filtrarPorPosicao(jogadores, Collections.singletonList("GOLEIRO"), 1);
-        List<Jogador> defensores = filtrarPorPosicao(jogadores, Collections.singletonList(List.of("ZAGUEIRO", "LATERAL").toString()), 4);
+        List<Jogador> defensores = filtrarPorPosicao(jogadores, List.of("ZAGUEIRO", "LATERAL"), 4);
         List<Jogador> meioCampo = filtrarPorPosicao(jogadores, Collections.singletonList("MEIO_CAMPO"), 4);
         List<Jogador> atacantes = filtrarPorPosicao(jogadores, Collections.singletonList("ATACANTE"), 2);
 
@@ -106,15 +107,21 @@ public class SimulacaoUseCase {
             escalacao.getJogadores().add(ej);
         }
 
-        return escalacaoRepository.save(escalacao);
-    }
-
-    private List<Jogador> filtrarPorPosicao(Optional<Jogador> jogadores, String posicao, int limite) {
-        return jogadores.stream()
-                .filter(j -> posicao.equals(j.getPosicao()))
+        List<Jogador> reservasPossiveis = jogadores.stream()
+                .filter(j -> !titulares.contains(j))
                 .sorted(Comparator.comparingInt(Jogador::getForca).reversed())
-                .limit(limite)
+                .limit(6)
                 .toList();
+
+        for (Jogador jogador : reservasPossiveis) {
+            EscalacaoJogadorEntity ej = new EscalacaoJogadorEntity();
+            ej.setEscalacao(escalacao);
+            ej.setJogador(jogador);
+            ej.setTipo(EscalacaoJogadorEntity.TipoJogador.RESERVA);
+            escalacao.getJogadores().add(ej);
+        }
+
+        return escalacaoRepository.save(escalacao);
     }
 
     private List<Jogador> filtrarPorPosicao(List<Jogador> jogadores, List<String> posicoes, int limite) {

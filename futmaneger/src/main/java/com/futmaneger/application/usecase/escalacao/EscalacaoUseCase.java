@@ -67,6 +67,8 @@ public class EscalacaoUseCase {
             escalacaoJogadorRepository.save(ej);
         }
 
+        String nomeClube = escalacao.getClube().getNome();
+
         List<JogadorEscaladoDTO> titularesDTO = titulares.stream()
                 .map(j -> new JogadorEscaladoDTO(j.getNome(), j.getPosicao()))
                 .toList();
@@ -75,6 +77,6 @@ public class EscalacaoUseCase {
                 .map(j -> new JogadorEscaladoDTO(j.getNome(), j.getPosicao()))
                 .toList();
 
-        return new EscalacaoResponseDTO(request.formacao(), titularesDTO, reservasDTO);
+        return new EscalacaoResponseDTO( nomeClube, request.formacao(), titularesDTO, reservasDTO);
     }
 }
