@@ -83,6 +83,7 @@ public class SimulacaoUseCase {
         EscalacaoEntity escalacao = new EscalacaoEntity();
         escalacao.setClube(clube);
         escalacao.setDataHora(LocalDateTime.now());
+        escalacao.setFormacao("4-4-2");
         escalacao = escalacaoRepository.save(escalacao);
 
         List<Jogador> jogadores = jogadorRepository.findByClube(clube);
