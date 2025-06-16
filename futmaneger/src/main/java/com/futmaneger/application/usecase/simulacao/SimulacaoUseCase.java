@@ -107,6 +107,20 @@ public class SimulacaoUseCase {
             escalacao.getJogadores().add(ej);
         }
 
+        List<Jogador> reservasPossiveis = jogadores.stream()
+                .filter(j -> !titulares.contains(j))
+                .sorted(Comparator.comparingInt(Jogador::getForca).reversed())
+                .limit(6)
+                .toList();
+
+        for (Jogador jogador : reservasPossiveis) {
+            EscalacaoJogadorEntity ej = new EscalacaoJogadorEntity();
+            ej.setEscalacao(escalacao);
+            ej.setJogador(jogador);
+            ej.setTipo(EscalacaoJogadorEntity.TipoJogador.RESERVA);
+            escalacao.getJogadores().add(ej);
+        }
+
         return escalacaoRepository.save(escalacao);
     }
 
