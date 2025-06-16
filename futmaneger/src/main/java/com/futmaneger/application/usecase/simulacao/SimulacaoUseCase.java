@@ -88,7 +88,7 @@ public class SimulacaoUseCase {
         List<Jogador> jogadores = jogadorRepository.findByClube(clube);
 
         List<Jogador> goleiros = filtrarPorPosicao(jogadores, Collections.singletonList("GOLEIRO"), 1);
-        List<Jogador> defensores = filtrarPorPosicao(jogadores, Collections.singletonList(List.of("ZAGUEIRO", "LATERAL").toString()), 4);
+        List<Jogador> defensores = filtrarPorPosicao(jogadores, List.of("ZAGUEIRO", "LATERAL"), 4);
         List<Jogador> meioCampo = filtrarPorPosicao(jogadores, Collections.singletonList("MEIO_CAMPO"), 4);
         List<Jogador> atacantes = filtrarPorPosicao(jogadores, Collections.singletonList("ATACANTE"), 2);
 
