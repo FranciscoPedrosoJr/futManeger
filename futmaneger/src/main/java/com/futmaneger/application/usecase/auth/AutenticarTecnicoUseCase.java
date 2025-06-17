@@ -18,6 +18,6 @@ public class AutenticarTecnicoUseCase {
     public Tecnico autenticar(String email, String senha) {
         return tecnicoRepository.buscarPorEmail(email)
                 .filter(tecnico -> tecnico.getSenha().equals(senha))
-                .orElseThrow(() -> new AutenticacaoException("Email ou senha inválidos"));
+                .orElseThrow(() -> new AutenticacaoException("Não foi possível realizar o login. Tente novamente."));
     }
 }

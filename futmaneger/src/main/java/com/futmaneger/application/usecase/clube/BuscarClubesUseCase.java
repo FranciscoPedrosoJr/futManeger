@@ -1,5 +1,6 @@
 package com.futmaneger.application.usecase.clube;
 
+import com.futmaneger.application.exception.NenhumClubeCadastradoException;
 import com.futmaneger.domain.entity.Clube;
 import com.futmaneger.infrastructure.persistence.jpa.ClubeJpaRepository;
 import java.util.List;
@@ -14,6 +15,12 @@ public class BuscarClubesUseCase {
     }
 
     public List<Clube> buscarTodos() {
-        return clubeJpaRepository.findAll();
+        List<Clube> clubes = clubeJpaRepository.findAll();
+
+        if (clubes.isEmpty()) {
+            throw new NenhumClubeCadastradoException("Nenhum clube cadastrado");
+        }
+
+        return clubes;
     }
 }
