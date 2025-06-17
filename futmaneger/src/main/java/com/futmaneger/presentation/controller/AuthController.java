@@ -40,12 +40,17 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
-        return autenticarTecnicoUseCase.autenticar(request.email(), request.senha())
-                .map(tecnico -> {
-                    String token = JwtService.gerarTokenTecnico(tecnico);
-                    return new LoginResponse(tecnico.getId(), tecnico.getNome(), tecnico.getEmail(), token);
-                })
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.status(401).build());
+        Tecnico tecnico = autenticarTecnicoUseCase.autenticar(request.email(), request.senha());
+
+        String token = JwtService.gerarTokenTecnico(tecnico);
+
+        LoginResponse response = new LoginResponse(
+                tecnico.getId(),
+                tecnico.getNome(),
+                tecnico.getEmail(),
+                token
+        );
+
+        return ResponseEntity.ok(response);
     }
 }

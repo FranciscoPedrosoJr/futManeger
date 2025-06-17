@@ -3,9 +3,8 @@ package com.futmaneger.application.usecase.escalacao;
 import com.futmaneger.application.dto.EscalacaoRequestDTO;
 import com.futmaneger.application.dto.EscalacaoResponseDTO;
 import com.futmaneger.application.dto.JogadorEscaladoDTO;
-import com.futmaneger.domain.entity.Clube;
+import com.futmaneger.application.exception.NenhumClubeCadastradoException;
 import com.futmaneger.domain.entity.Jogador;
-import com.futmaneger.domain.repository.JogadorRepository;
 import com.futmaneger.infrastructure.persistence.entity.EscalacaoEntity;
 import com.futmaneger.infrastructure.persistence.entity.EscalacaoJogadorEntity;
 import com.futmaneger.infrastructure.persistence.jpa.ClubeJpaRepository;
@@ -14,9 +13,7 @@ import com.futmaneger.infrastructure.persistence.jpa.EscalacaoRepository;
 import com.futmaneger.infrastructure.persistence.jpa.JogadorJpaRepository;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class EscalacaoUseCase {
@@ -40,7 +37,7 @@ public class EscalacaoUseCase {
 
     public EscalacaoResponseDTO escalar(EscalacaoRequestDTO request) {
         var clube = clubeRepository.findById(request.clubeId())
-                .orElseThrow(() -> new RuntimeException("Clube não encontrado"));
+                .orElseThrow(() -> new NenhumClubeCadastradoException("Clube não encontrado"));
 
         var escalacao = new EscalacaoEntity();
         escalacao.setClube(clube);
