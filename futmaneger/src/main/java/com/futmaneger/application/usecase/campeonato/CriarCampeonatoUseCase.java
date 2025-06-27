@@ -9,7 +9,9 @@ import com.futmaneger.infrastructure.persistence.jpa.CampeonatoRepository;
 import com.futmaneger.infrastructure.persistence.jpa.ClubeJpaRepository;
 import com.futmaneger.infrastructure.persistence.jpa.ClubeParticipanteRepository;
 import java.util.List;
+import org.springframework.stereotype.Service;
 
+@Service
 public class CriarCampeonatoUseCase {
     private final ClubeJpaRepository clubeRepository;
     private final CampeonatoRepository campeonatoRepository;
@@ -36,6 +38,8 @@ public class CriarCampeonatoUseCase {
 
         CampeonatoEntity campeonato = new CampeonatoEntity();
         campeonato.setNome(request.nome());
+        campeonato.setEstado(request.estado());
+        campeonato.setPais(request.pais());
         campeonato.setTipo(tipo);
         campeonato = campeonatoRepository.save(campeonato);
 
