@@ -1,6 +1,7 @@
 package com.futmaneger.domain.entity;
 
 import com.futmaneger.infrastructure.persistence.entity.TecnicoEntity;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -19,7 +20,9 @@ public class Clube {
 
     private String nome;
 
-    private String cidade;
+    private String estado;
+
+    private String pais;
 
     @ManyToOne
     @JoinColumn(name = "tecnico_id")
@@ -27,9 +30,10 @@ public class Clube {
 
     public Clube() {}
 
-    public Clube(String nome, String cidade) {
+    public Clube(String nome, String estado, String pais) {
         this.nome = nome;
-        this.cidade = cidade;
+        this.estado = estado;
+        this.pais = pais;
     }
 
     public Long getId() {
@@ -40,8 +44,13 @@ public class Clube {
         return nome;
     }
 
-    public String getCidade() {
-        return cidade;
+    public String getEstado() {
+        return estado;
+    }
+
+    @Column(nullable = false)
+    public String getPais() {
+        return pais;
     }
 
     public void setTecnico(TecnicoEntity tecnico) {
