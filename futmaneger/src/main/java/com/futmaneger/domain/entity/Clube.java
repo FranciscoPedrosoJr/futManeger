@@ -1,6 +1,7 @@
 package com.futmaneger.domain.entity;
 
 import com.futmaneger.infrastructure.persistence.entity.TecnicoEntity;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -47,6 +48,7 @@ public class Clube {
         return estado;
     }
 
+    @Column(nullable = false)
     public String getPais() {
         return pais;
     }

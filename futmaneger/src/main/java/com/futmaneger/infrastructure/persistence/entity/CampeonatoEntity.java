@@ -42,8 +42,28 @@ public class CampeonatoEntity {
     @JoinColumn(name = "campeao_id")
     private Clube campeao;
 
+    public void setNome(String nome) {
+        this.nome = nome;
+    }
+
+    public void setTipo(TipoCampeonato tipo) {
+        this.tipo = tipo;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+    public <E extends Enum<E>> Enum<E> getTipo() {
+        return (Enum<E>) tipo;
+    }
+
     public enum TipoCampeonato {
-        PONTOS_CORRIDOS, GRUPOS_MATA_MATA
+        PONTOS_CORRIDOS, MATA_MATA
     }
 
 }
