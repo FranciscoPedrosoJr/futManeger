@@ -12,8 +12,8 @@ public class CadastrarClubeUseCase {
         this.clubeJpaRepository = clubeJpaRepository;
     }
 
-    public Clube executar(String nome, String cidade) {
-        Clube clube = new Clube(nome, cidade);
+    public Clube executar(String nome, String pais, String estado) {
+        Clube clube = new Clube(nome, pais, estado);
         return clubeJpaRepository.save(clube);
     }
 }
