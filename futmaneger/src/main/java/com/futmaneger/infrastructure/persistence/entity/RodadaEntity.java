@@ -24,4 +24,11 @@ public class RodadaEntity {
     @JoinColumn(name = "campeonato_id")
     private CampeonatoEntity campeonato;
 
+    public void setNumero(int i) {
+        this.numero = numero;
+    }
+
+    public void setCampeonato(CampeonatoEntity campeonato) {
+        this.campeonato = campeonato;
+    }
 }

@@ -36,6 +36,18 @@ public class PartidaEntity {
 
     private LocalDateTime dataHora;
 
+    @ManyToOne
+    @JoinColumn(name = "rodada_id")
+    private RodadaEntity rodada;
+
+    public RodadaEntity getRodada() {
+        return rodada;
+    }
+
+    public void setRodada(RodadaEntity rodada) {
+        this.rodada = rodada;
+    }
+
     public Clube setClubeMandante(Clube mandante) {
         return this.clubeMandante = mandante;
     }
@@ -64,5 +76,4 @@ public class PartidaEntity {
         VITORIA_MANDANTE, VITORIA_VISITANTE, EMPATE
     }
 
-    // Getters e setters omitidos para brevidade
 }
