@@ -72,6 +72,18 @@ public class PartidaEntity {
         return this.dataHora = LocalDateTime.now();
     }
 
+    public Resultado getResultado() {
+        return resultado;
+    }
+
+    public Clube getClubeMandante() {
+        return clubeMandante;
+    }
+
+    public Clube getClubeVisitante() {
+        return clubeVisitante;
+    }
+
     public enum Resultado {
         VITORIA_MANDANTE, VITORIA_VISITANTE, EMPATE
     }
