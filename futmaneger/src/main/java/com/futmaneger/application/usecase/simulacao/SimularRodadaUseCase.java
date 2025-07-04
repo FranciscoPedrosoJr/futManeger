@@ -182,13 +182,23 @@ public class SimularRodadaUseCase {
             PartidaEntity.Resultado resultado,
             boolean isMandante
     ) {
-        TabelaCampeonatoEntity tabela = tabelaCampeonato.findByCampeonatoAndClube(campeonato, clube)
-                .orElseGet(() -> {
-                    TabelaCampeonatoEntity nova = new TabelaCampeonatoEntity();
-                    nova.setCampeonato(campeonato);
-                    nova.setClube(clube);
-                    return nova;
-                });
+        TabelaCampeonatoEntity tabela = tabelaCampeonato
+                .findByCampeonatoIdAndClubeId(campeonato.getId(), clube.getId())
+                .orElse(null);
+
+        if (tabela == null) {
+            tabela = new TabelaCampeonatoEntity();
+            tabela.setCampeonato(campeonato);
+            tabela.setClube(clube);
+            tabela.setJogos(0);
+            tabela.setPontos(0);
+            tabela.setVitorias(0);
+            tabela.setEmpates(0);
+            tabela.setDerrotas(0);
+            tabela.setGolsPro(0);
+            tabela.setGolsContra(0);
+            tabela.setSaldoGols(0);
+        }
 
         tabela.setJogos(tabela.getJogos() + 1);
         tabela.setGolsPro(tabela.getGolsPro() + golsPro);

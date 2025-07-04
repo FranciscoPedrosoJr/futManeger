@@ -46,63 +46,67 @@ public class TabelaCampeonatoEntity {
         return jogos;
     }
 
-    public int setJogos(int i) {
-        return this.jogos = jogos;
+    public void setJogos(int jogos) {
+        this.jogos = jogos;
     }
 
     public int getGolsPro() {
         return golsPro;
     }
 
-    public int setGolsPro(int i) {
-        return this.golsPro = golsPro;
+    public void setGolsPro(int golsPro) {
+        this.golsPro = golsPro;
     }
 
     public int getGolsContra() {
         return golsContra;
     }
 
-    public int setGolsContra(int i) {
-        return this.golsContra = golsContra;
+    public void setGolsContra(int golsContra) {
+        this.golsContra = golsContra;
     }
 
     public int getSaldoGols() {
         return saldoGols;
     }
 
-    public int setSaldoGols(int i) {
-        return this.saldoGols = saldoGols;
+    public void setSaldoGols(int saldoGols) {
+        this.saldoGols = saldoGols;
     }
 
     public int getVitorias() {
         return vitorias;
     }
 
-    public int setVitorias(int i) {
-        return this.vitorias = vitorias;
+    public void setVitorias(int vitorias) {
+        this.vitorias = vitorias;
     }
 
     public int getPontos() {
         return pontos;
     }
 
-    public int setPontos(int i) {
-        return this.pontos = pontos;
+    public void setPontos(int pontos) {
+        this.pontos = pontos;
     }
 
     public int getDerrotas() {
         return derrotas;
     }
 
-    public int setDerrotas(int i) {
-        return this.derrotas = derrotas;
+    public void setDerrotas(int derrotas) {
+        this.derrotas = derrotas;
     }
 
     public int getEmpates() {
         return empates;
     }
 
-    public int setEmpates(int i) {
-        return this.empates = empates;
+    public void setEmpates(int empates) {
+        this.empates = empates;
+    }
+
+    public Long getId() {
+        return id;
     }
 }

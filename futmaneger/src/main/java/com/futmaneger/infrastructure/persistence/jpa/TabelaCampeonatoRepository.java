@@ -9,5 +9,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface TabelaCampeonatoRepository extends JpaRepository<TabelaCampeonatoEntity, Long> {
-    Optional<TabelaCampeonatoEntity> findByCampeonatoAndClube(CampeonatoEntity campeonato, Clube clube);
+    Optional<TabelaCampeonatoEntity> findByCampeonatoIdAndClubeId(Long campeonatoId, Long clubeId);
 }
+
