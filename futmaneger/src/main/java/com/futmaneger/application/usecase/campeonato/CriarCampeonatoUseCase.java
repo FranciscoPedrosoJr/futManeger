@@ -41,6 +41,8 @@ public class CriarCampeonatoUseCase {
         campeonato.setEstado(request.estado());
         campeonato.setPais(request.pais());
         campeonato.setTipo(tipo);
+        campeonato.setEmAndamento(true);
+        campeonato.setQuantidadeClubes(clubes.size());
         campeonato = campeonatoRepository.save(campeonato);
 
         for (Clube clube : clubes) {

@@ -83,6 +83,8 @@ public class SimularRodadaUseCase {
                     golsVisitante,
                     resultado.name()
             ));
+
+            rodada.setFinalizada(true);
         }
 
         return resultados;

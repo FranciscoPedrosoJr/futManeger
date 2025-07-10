@@ -32,12 +32,16 @@ public class RodadaEntity {
     @OneToMany(mappedBy = "rodada", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<PartidaEntity> partidas = new ArrayList<>();
 
-    public void setNumero(int i) {
+    public void setNumero(int numero) {
         this.numero = numero;
     }
 
     public void setCampeonato(CampeonatoEntity campeonato) {
         this.campeonato = campeonato;
+    }
+
+    public void setFinalizada(boolean finalizada) {
+        this.finalizada = finalizada;
     }
 
     public List<PartidaEntity> getPartidas() { return partidas; }

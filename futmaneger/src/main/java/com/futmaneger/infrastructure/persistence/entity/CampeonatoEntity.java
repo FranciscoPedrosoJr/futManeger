@@ -69,6 +69,14 @@ public class CampeonatoEntity {
         this.estado = estado;
     }
 
+    public void setEmAndamento(boolean emAndamento) {
+        this.emAndamento = emAndamento;
+    }
+
+    public void setQuantidadeClubes (int quantidadeClubes){
+        this.quantidadeClubes = quantidadeClubes;
+    }
+
     public void setPais(String pais) {
         this.pais = pais;
     }
