@@ -5,6 +5,7 @@ import com.futmaneger.domain.entity.Clube;
 import com.futmaneger.domain.entity.Jogador;
 import com.futmaneger.domain.repository.JogadorRepository;
 import com.futmaneger.infrastructure.persistence.entity.*;
+import com.futmaneger.infrastructure.persistence.jpa.CampeonatoRepository;
 import com.futmaneger.infrastructure.persistence.jpa.EscalacaoRepository;
 import com.futmaneger.infrastructure.persistence.jpa.PartidaRepository;
 import com.futmaneger.infrastructure.persistence.jpa.RodadaRepository;
@@ -23,21 +24,23 @@ public class SimularRodadaUseCase {
     private final PartidaRepository partidaRepository;
     private final EscalacaoRepository escalacaoRepository;
     private final JogadorRepository jogadorRepository;
-
     private final TabelaCampeonatoRepository tabelaCampeonato;
+    private final CampeonatoRepository campeonatoRepository;
 
     public SimularRodadaUseCase(
             RodadaRepository rodadaRepository,
             PartidaRepository partidaRepository,
             EscalacaoRepository escalacaoRepository,
             JogadorRepository jogadorRepository,
-            TabelaCampeonatoRepository tabelaCampeonato
+            TabelaCampeonatoRepository tabelaCampeonato,
+            CampeonatoRepository campeonatoRepository
     ) {
         this.rodadaRepository = rodadaRepository;
         this.partidaRepository = partidaRepository;
         this.escalacaoRepository = escalacaoRepository;
         this.jogadorRepository = jogadorRepository;
         this.tabelaCampeonato = tabelaCampeonato;
+        this.campeonatoRepository = campeonatoRepository;
     }
 
     @Transactional
@@ -73,8 +76,8 @@ public class SimularRodadaUseCase {
 
             CampeonatoEntity campeonato = rodada.getCampeonato();
 
-            atualizarTabela(campeonato, partida.getClubeMandante(), golsMandante, golsVisitante, resultado, true);
-            atualizarTabela(campeonato, partida.getClubeVisitante(), golsVisitante, golsMandante, resultado, false);
+            atualizarTabela(campeonato, partida.getClubeMandante(), golsMandante, golsVisitante, resultado, true, rodada);
+            atualizarTabela(campeonato, partida.getClubeVisitante(), golsVisitante, golsMandante, resultado, false, rodada);
 
             resultados.add(new SimulacaoResponseDTO(
                     partida.getClubeMandante().getNome(),
@@ -182,7 +185,8 @@ public class SimularRodadaUseCase {
             int golsPro,
             int golsContra,
             PartidaEntity.Resultado resultado,
-            boolean isMandante
+            boolean isMandante,
+            RodadaEntity rodada
     ) {
         TabelaCampeonatoEntity tabela = tabelaCampeonato
                 .findByCampeonatoIdAndClubeId(campeonato.getId(), clube.getId())
@@ -230,6 +234,25 @@ public class SimularRodadaUseCase {
                 tabela.setPontos(tabela.getPontos() + 1);
             }
         }
+
+        int totalRodadas = campeonato.getRodadas().size();
+        boolean ultimaRodada = rodada.getNumero() == totalRodadas;
+
+        if (ultimaRodada == true){
+            definirCampeao(campeonato);
+        }
+
         tabelaCampeonato.save(tabela);
+    }
+
+    private void definirCampeao(CampeonatoEntity campeonato) {
+        List<TabelaCampeonatoEntity> classificacao = tabelaCampeonato
+                .findByCampeonatoOrderByPontosDescSaldoGolsDescGolsProDesc(campeonato);
+
+        if (!classificacao.isEmpty()) {
+            Clube campeao = classificacao.get(0).getClube();
+            campeonato.setCampeao(campeao);
+            campeonatoRepository.save(campeonato);
+        }
     }
 }

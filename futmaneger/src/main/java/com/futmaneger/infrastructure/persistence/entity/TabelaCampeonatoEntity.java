@@ -109,4 +109,8 @@ public class TabelaCampeonatoEntity {
     public Long getId() {
         return id;
     }
+
+    public Clube getClube() {
+        return clube;
+    }
 }

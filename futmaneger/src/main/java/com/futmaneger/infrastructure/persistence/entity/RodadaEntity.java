@@ -49,4 +49,6 @@ public class RodadaEntity {
     public CampeonatoEntity getCampeonato() {
         return campeonato;
     }
+
+    public int getNumero() { return numero;}
 }

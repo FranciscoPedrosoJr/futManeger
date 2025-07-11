@@ -93,6 +93,10 @@ public class CampeonatoEntity {
         return (Enum<E>) tipo;
     }
 
+    public void setCampeao(Clube campeao) {
+        this.campeao = campeao;
+    }
+
     public enum TipoCampeonato {
         PONTOS_CORRIDOS, MATA_MATA
     }
