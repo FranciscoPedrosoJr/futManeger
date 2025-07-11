@@ -48,6 +48,8 @@ public class SimularRodadaUseCase {
         RodadaEntity rodada = rodadaRepository.findById(rodadaId)
                 .orElseThrow(() -> new IllegalArgumentException("Rodada não encontrada com id: " + rodadaId));
 
+        CampeonatoEntity campeonato = rodada.getCampeonato();
+
         List<PartidaEntity> partidas = rodada.getPartidas();
         if (partidas.isEmpty()) {
             throw new IllegalArgumentException("Nenhuma partida cadastrada para a rodada");
@@ -74,10 +76,8 @@ public class SimularRodadaUseCase {
             partida.setDataHora(LocalDateTime.now());
             partidaRepository.save(partida);
 
-            CampeonatoEntity campeonato = rodada.getCampeonato();
-
-            atualizarTabela(campeonato, partida.getClubeMandante(), golsMandante, golsVisitante, resultado, true, rodada);
-            atualizarTabela(campeonato, partida.getClubeVisitante(), golsVisitante, golsMandante, resultado, false, rodada);
+            atualizarTabela(campeonato, partida.getClubeMandante(), golsMandante, golsVisitante, resultado, true);
+            atualizarTabela(campeonato, partida.getClubeVisitante(), golsVisitante, golsMandante, resultado, false);
 
             resultados.add(new SimulacaoResponseDTO(
                     partida.getClubeMandante().getNome(),
@@ -87,7 +87,13 @@ public class SimularRodadaUseCase {
                     resultado.name()
             ));
 
-            rodada.setFinalizada(true);
+
+        }
+
+        rodada.setFinalizada(true);
+
+        if (isUltimaRodada(rodada, campeonato)) {
+            definirCampeao(campeonato);
         }
 
         return resultados;
@@ -185,8 +191,7 @@ public class SimularRodadaUseCase {
             int golsPro,
             int golsContra,
             PartidaEntity.Resultado resultado,
-            boolean isMandante,
-            RodadaEntity rodada
+            boolean isMandante
     ) {
         TabelaCampeonatoEntity tabela = tabelaCampeonato
                 .findByCampeonatoIdAndClubeId(campeonato.getId(), clube.getId())
@@ -235,13 +240,6 @@ public class SimularRodadaUseCase {
             }
         }
 
-        int totalRodadas = campeonato.getRodadas().size();
-        boolean ultimaRodada = rodada.getNumero() == totalRodadas;
-
-        if (ultimaRodada == true){
-            definirCampeao(campeonato);
-        }
-
         tabelaCampeonato.save(tabela);
     }
 
@@ -254,5 +252,10 @@ public class SimularRodadaUseCase {
             campeonato.setCampeao(campeao);
             campeonatoRepository.save(campeonato);
         }
+    }
+
+    private boolean isUltimaRodada(RodadaEntity rodada, CampeonatoEntity campeonato) {
+        int totalRodadas = campeonato.getRodadas().size();
+        return rodada.getNumero() == totalRodadas;
     }
 }
