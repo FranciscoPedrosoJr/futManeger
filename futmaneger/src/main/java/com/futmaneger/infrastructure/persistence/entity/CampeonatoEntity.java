@@ -69,6 +69,14 @@ public class CampeonatoEntity {
         this.estado = estado;
     }
 
+    public void setEmAndamento(boolean emAndamento) {
+        this.emAndamento = emAndamento;
+    }
+
+    public void setQuantidadeClubes (int quantidadeClubes){
+        this.quantidadeClubes = quantidadeClubes;
+    }
+
     public void setPais(String pais) {
         this.pais = pais;
     }
@@ -83,6 +91,10 @@ public class CampeonatoEntity {
 
     public <E extends Enum<E>> Enum<E> getTipo() {
         return (Enum<E>) tipo;
+    }
+
+    public void setCampeao(Clube campeao) {
+        this.campeao = campeao;
     }
 
     public enum TipoCampeonato {
