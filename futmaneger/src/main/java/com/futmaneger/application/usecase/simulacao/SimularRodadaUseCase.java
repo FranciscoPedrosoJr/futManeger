@@ -1,6 +1,7 @@
 package com.futmaneger.application.usecase.simulacao;
 
 import com.futmaneger.application.dto.SimulacaoResponseDTO;
+import com.futmaneger.application.exception.NaoEncontradoException;
 import com.futmaneger.domain.entity.Clube;
 import com.futmaneger.domain.entity.Jogador;
 import com.futmaneger.domain.repository.JogadorRepository;
@@ -94,6 +95,7 @@ public class SimularRodadaUseCase {
 
         if (isUltimaRodada(rodada, campeonato)) {
             definirCampeao(campeonato);
+            campeonato.setEmAndamento(false);
         }
 
         return resultados;
@@ -102,7 +104,7 @@ public class SimularRodadaUseCase {
     private EscalacaoEntity buscarOuGerarEscalacao(Clube clube) {
         if (clube.getTecnico() != null) {
             return escalacaoRepository.findTopByClubeOrderByDataHoraDesc(clube)
-                    .orElseThrow(() -> new RuntimeException("Escalação não encontrada para clube com técnico: " + clube.getNome()));
+                    .orElseThrow(() -> new NaoEncontradoException("Escalação não encontrada para clube: " + clube.getNome() + ", cadastre uma escação para seguir"));
         }
         return gerarEscalacaoAutomatica(clube);
     }
@@ -112,7 +114,6 @@ public class SimularRodadaUseCase {
         escalacao.setClube(clube);
         escalacao.setDataHora(LocalDateTime.now());
         escalacao.setFormacao("4-4-2");
-        //escalacao = escalacaoRepository.save(escalacao);
 
         List<Jogador> jogadores = jogadorRepository.findByClube(clube);
 

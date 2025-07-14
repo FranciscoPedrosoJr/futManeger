@@ -2,6 +2,7 @@ package com.futmaneger.application.usecase.rodadas;
 
 import com.futmaneger.application.dto.GerarRodadasRequestDTO;
 import com.futmaneger.application.dto.GerarRodadasResponseDTO;
+import com.futmaneger.application.exception.NaoEncontradoException;
 import com.futmaneger.domain.entity.Clube;
 import com.futmaneger.infrastructure.persistence.entity.CampeonatoEntity;
 import com.futmaneger.infrastructure.persistence.entity.ClubeParticipanteEntity;
@@ -39,7 +40,7 @@ public class GerarRodadasUseCase {
     @Transactional
     public GerarRodadasResponseDTO executar(GerarRodadasRequestDTO request) {
         CampeonatoEntity campeonato = campeonatoRepository.findById(request.campeonatoId())
-                .orElseThrow(() -> new IllegalArgumentException("Campeonato não encontrado"));
+                .orElseThrow(() -> new NaoEncontradoException("Campeonato não encontrado"));
 
         if (!campeonato.getRodadas().isEmpty()) {
             throw new IllegalStateException("Rodadas já foram geradas para este campeonato");
