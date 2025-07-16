@@ -1,6 +1,7 @@
 package com.futmaneger.infrastructure.handler;
 
 import com.futmaneger.application.exception.AutenticacaoException;
+import com.futmaneger.application.exception.NaoEncontradoException;
 import com.futmaneger.application.exception.NenhumClubeCadastradoException;
 import java.net.URI;
 import java.time.OffsetDateTime;
@@ -24,6 +25,17 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(NenhumClubeCadastradoException.class)
     public ProblemDetail handleNenhumClubeCadastradoException(NenhumClubeCadastradoException ex, jakarta.servlet.http.HttpServletRequest request) {
+        ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
+        problemDetail.setTitle("Não encontrado");
+        problemDetail.setDetail(ex.getMessage());
+        problemDetail.setInstance(URI.create(request.getRequestURI()));
+        problemDetail.setProperty("timestamp", OffsetDateTime.now());
+
+        return problemDetail;
+    }
+
+    @ExceptionHandler(NaoEncontradoException.class)
+    public ProblemDetail handleNaoEncontradoException(NaoEncontradoException ex, jakarta.servlet.http.HttpServletRequest request) {
         ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
         problemDetail.setTitle("Não encontrado");
         problemDetail.setDetail(ex.getMessage());
