@@ -4,7 +4,6 @@ import com.futmaneger.infrastructure.persistence.entity.CampeonatoClubeEntity;
 import com.futmaneger.infrastructure.persistence.entity.CampeonatoEntity;
 import com.futmaneger.infrastructure.persistence.entity.PartidaEntity;
 import com.futmaneger.infrastructure.persistence.jpa.CampeonatoClubeRepository;
-import com.futmaneger.infrastructure.persistence.jpa.CampeonatoRepository;
 import com.futmaneger.infrastructure.persistence.jpa.PartidaRepository;
 import java.util.ArrayList;
 import java.util.List;
