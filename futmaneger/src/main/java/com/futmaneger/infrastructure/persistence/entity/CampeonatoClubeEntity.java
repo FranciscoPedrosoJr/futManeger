@@ -25,5 +25,8 @@ public class CampeonatoClubeEntity {
     @JoinColumn(name = "clube_id")
     private Clube clube;
 
+    public Clube getClube() {
+        return clube = clube;
+    }
 }
 

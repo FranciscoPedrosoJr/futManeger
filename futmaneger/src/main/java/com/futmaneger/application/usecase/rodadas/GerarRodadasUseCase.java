@@ -24,17 +24,20 @@ public class GerarRodadasUseCase {
     private final ClubeParticipanteRepository participanteRepository;
     private final RodadaRepository rodadaRepository;
     private final PartidaRepository partidaRepository;
+    private final GerarRodadasMataMataUseCase gerarRodadasMataMataUseCase;
 
     public GerarRodadasUseCase(
             CampeonatoRepository campeonatoRepository,
             ClubeParticipanteRepository participanteRepository,
             RodadaRepository rodadaRepository,
-            PartidaRepository partidaRepository
+            PartidaRepository partidaRepository,
+            GerarRodadasMataMataUseCase gerarRodadasMataMataUseCase
     ) {
         this.campeonatoRepository = campeonatoRepository;
         this.participanteRepository = participanteRepository;
         this.rodadaRepository = rodadaRepository;
         this.partidaRepository = partidaRepository;
+        this.gerarRodadasMataMataUseCase = gerarRodadasMataMataUseCase;
     }
 
     @Transactional
@@ -47,6 +50,7 @@ public class GerarRodadasUseCase {
         }
 
         if (campeonato.getTipo() == CampeonatoEntity.TipoCampeonato.MATA_MATA) {
+            gerarRodadasMataMataUseCase.gerar(campeonato);
             throw new UnsupportedOperationException("Geração de rodadas para mata-mata não implementada ainda");
         }
 
