@@ -84,6 +84,10 @@ public class PartidaEntity {
         return clubeVisitante;
     }
 
+    public Clube getMandante() {
+        return clubeMandante;
+    }
+
     public enum Resultado {
         VITORIA_MANDANTE, VITORIA_VISITANTE, EMPATE
     }

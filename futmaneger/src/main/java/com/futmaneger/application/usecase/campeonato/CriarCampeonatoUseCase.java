@@ -34,7 +34,10 @@ public class CriarCampeonatoUseCase {
             throw new IllegalArgumentException("Número insuficiente de clubes para criar um campeonato");
         }
 
-        CampeonatoEntity.TipoCampeonato tipo = clubes.size() > 20 ? CampeonatoEntity.TipoCampeonato.MATA_MATA : CampeonatoEntity.TipoCampeonato.PONTOS_CORRIDOS;
+        CampeonatoEntity.TipoCampeonato tipo =
+                isPotenciaDeDois(clubes.size())
+                        ? CampeonatoEntity.TipoCampeonato.MATA_MATA
+                        : CampeonatoEntity.TipoCampeonato.PONTOS_CORRIDOS;
 
         CampeonatoEntity campeonato = new CampeonatoEntity();
         campeonato.setNome(request.nome());
@@ -71,5 +74,9 @@ public class CriarCampeonatoUseCase {
             return clubeRepository.findByPais(request.pais());
         }
         throw new IllegalArgumentException("É necessário informar país ou estado para criar o campeonato");
+    }
+
+    private boolean isPotenciaDeDois(int numero) {
+        return numero > 0 && (numero & (numero - 1)) == 0;
     }
 }

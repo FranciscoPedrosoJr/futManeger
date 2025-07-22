@@ -51,7 +51,6 @@ public class GerarRodadasUseCase {
 
         if (campeonato.getTipo() == CampeonatoEntity.TipoCampeonato.MATA_MATA) {
             gerarRodadasMataMataUseCase.gerar(campeonato);
-            throw new UnsupportedOperationException("Geração de rodadas para mata-mata não implementada ainda");
         }
 
         List<ClubeParticipanteEntity> participantes = participanteRepository.findByCampeonato(campeonato);
