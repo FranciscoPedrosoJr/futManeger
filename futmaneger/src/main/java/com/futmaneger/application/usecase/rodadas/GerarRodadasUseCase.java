@@ -3,8 +3,8 @@ package com.futmaneger.application.usecase.rodadas;
 import com.futmaneger.application.dto.GerarRodadasRequestDTO;
 import com.futmaneger.application.dto.GerarRodadasResponseDTO;
 import com.futmaneger.application.exception.NaoEncontradoException;
-import com.futmaneger.domain.entity.Clube;
 import com.futmaneger.infrastructure.persistence.entity.CampeonatoEntity;
+import com.futmaneger.infrastructure.persistence.entity.ClubeEntity;
 import com.futmaneger.infrastructure.persistence.entity.ClubeParticipanteEntity;
 import com.futmaneger.infrastructure.persistence.entity.PartidaEntity;
 import com.futmaneger.infrastructure.persistence.entity.RodadaEntity;
@@ -50,11 +50,11 @@ public class GerarRodadasUseCase {
         }
 
         if (campeonato.getTipo() == CampeonatoEntity.TipoCampeonato.MATA_MATA) {
-            gerarRodadasMataMataUseCase.gerar(campeonato);
+            gerarRodadasMataMataUseCase.gerarRodadas(campeonato);
         }
 
         List<ClubeParticipanteEntity> participantes = participanteRepository.findByCampeonato(campeonato);
-        List<Clube> clubes = participantes.stream().map(ClubeParticipanteEntity::getClube).toList();
+        List<ClubeEntity> clubes = participantes.stream().map(ClubeParticipanteEntity::getClube).toList();
 
         if (clubes.size() < 2) {
             throw new IllegalStateException("Número insuficiente de clubes para gerar rodadas");
@@ -74,7 +74,7 @@ public class GerarRodadasUseCase {
             rodada = rodadaRepository.save(rodada);
 
             for (PartidaEntity partida : partidas) {
-                partida.setRodada(rodada);
+                partida.setRodada(rodada.getNumero());
                 todasPartidas.add(partidaRepository.save(partida));
             }
             rodadas.add(rodada);
@@ -89,7 +89,7 @@ public class GerarRodadasUseCase {
             rodada = rodadaRepository.save(rodada);
 
             for (PartidaEntity partida : partidas) {
-                partida.setRodada(rodada);
+                partida.setRodada(rodada.getNumero());
                 todasPartidas.add(partidaRepository.save(partida));
             }
             rodadas.add(rodada);
@@ -102,11 +102,11 @@ public class GerarRodadasUseCase {
         );
     }
 
-    private List<List<PartidaEntity>> gerarPartidasRoundRobin(List<Clube> clubes, boolean inverterMandos) {
+    private List<List<PartidaEntity>> gerarPartidasRoundRobin(List<ClubeEntity> clubes, boolean inverterMandos) {
         List<List<PartidaEntity>> rodadas = new ArrayList<>();
 
         int n = clubes.size();
-        List<Clube> lista = new ArrayList<>(clubes);
+        List<ClubeEntity> lista = new ArrayList<>(clubes);
 
         if (n % 2 != 0) {
             lista.add(null);
@@ -119,8 +119,8 @@ public class GerarRodadasUseCase {
             List<PartidaEntity> partidasDaRodada = new ArrayList<>();
 
             for (int i = 0; i < n / 2; i++) {
-                Clube casa = lista.get(i);
-                Clube fora = lista.get(n - 1 - i);
+                ClubeEntity casa = lista.get(i);
+                ClubeEntity fora = lista.get(n - 1 - i);
 
                 if (casa != null && fora != null) {
                     PartidaEntity partida = new PartidaEntity();
@@ -132,7 +132,7 @@ public class GerarRodadasUseCase {
 
             rodadas.add(partidasDaRodada);
 
-            List<Clube> novaLista = new ArrayList<>();
+            List<ClubeEntity> novaLista = new ArrayList<>();
             novaLista.add(lista.get(0));
             novaLista.add(lista.get(n - 1));
             novaLista.addAll(lista.subList(1, n - 1));

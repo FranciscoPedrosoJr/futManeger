@@ -1,12 +1,16 @@
 package com.futmaneger.application.usecase.simulacao;
 
+import static com.futmaneger.infrastructure.persistence.entity.CampeonatoEntity.TipoCampeonato.MATA_MATA;
+
 import com.futmaneger.application.dto.SimulacaoResponseDTO;
 import com.futmaneger.application.exception.NaoEncontradoException;
+import com.futmaneger.application.usecase.rodadas.GerarRodadasMataMataUseCase;
 import com.futmaneger.domain.entity.Clube;
 import com.futmaneger.domain.entity.Jogador;
 import com.futmaneger.domain.repository.JogadorRepository;
 import com.futmaneger.infrastructure.persistence.entity.*;
 import com.futmaneger.infrastructure.persistence.jpa.CampeonatoRepository;
+import com.futmaneger.infrastructure.persistence.jpa.ClubeParticipanteRepository;
 import com.futmaneger.infrastructure.persistence.jpa.EscalacaoRepository;
 import com.futmaneger.infrastructure.persistence.jpa.PartidaRepository;
 import com.futmaneger.infrastructure.persistence.jpa.RodadaRepository;
@@ -15,7 +19,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -27,6 +30,8 @@ public class SimularRodadaUseCase {
     private final JogadorRepository jogadorRepository;
     private final TabelaCampeonatoRepository tabelaCampeonato;
     private final CampeonatoRepository campeonatoRepository;
+    private final GerarRodadasMataMataUseCase gerarRodadasMataMataUseCase;
+    private final ClubeParticipanteRepository clubeParticipanteRepository;
 
     public SimularRodadaUseCase(
             RodadaRepository rodadaRepository,
@@ -34,7 +39,9 @@ public class SimularRodadaUseCase {
             EscalacaoRepository escalacaoRepository,
             JogadorRepository jogadorRepository,
             TabelaCampeonatoRepository tabelaCampeonato,
-            CampeonatoRepository campeonatoRepository
+            CampeonatoRepository campeonatoRepository,
+            GerarRodadasMataMataUseCase gerarRodadasMataMataUseCase,
+            ClubeParticipanteRepository clubeParticipanteRepository
     ) {
         this.rodadaRepository = rodadaRepository;
         this.partidaRepository = partidaRepository;
@@ -42,6 +49,8 @@ public class SimularRodadaUseCase {
         this.jogadorRepository = jogadorRepository;
         this.tabelaCampeonato = tabelaCampeonato;
         this.campeonatoRepository = campeonatoRepository;
+        this.gerarRodadasMataMataUseCase = gerarRodadasMataMataUseCase;
+        this.clubeParticipanteRepository = clubeParticipanteRepository;
     }
 
     @Transactional
@@ -97,11 +106,14 @@ public class SimularRodadaUseCase {
             definirCampeao(campeonato);
             campeonato.setEmAndamento(false);
         }
+        if (campeonato.getTipo() == MATA_MATA && isUltimaRodada(rodada, campeonato)){
+            gerarRodadasMataMataUseCase.gerarMataMata(campeonato);
+        }
 
         return resultados;
     }
 
-    private EscalacaoEntity buscarOuGerarEscalacao(Clube clube) {
+    private EscalacaoEntity buscarOuGerarEscalacao(ClubeEntity clube) {
         if (clube.getTecnico() != null) {
             return escalacaoRepository.findTopByClubeOrderByDataHoraDesc(clube)
                     .orElseThrow(() -> new NaoEncontradoException("Escalação não encontrada para clube: " + clube.getNome() + ", cadastre uma escação para seguir"));
@@ -109,7 +121,7 @@ public class SimularRodadaUseCase {
         return gerarEscalacaoAutomatica(clube);
     }
 
-    private EscalacaoEntity gerarEscalacaoAutomatica(Clube clube) {
+    private EscalacaoEntity gerarEscalacaoAutomatica(ClubeEntity clube) {
         EscalacaoEntity escalacao = new EscalacaoEntity();
         escalacao.setClube(clube);
         escalacao.setDataHora(LocalDateTime.now());
@@ -188,7 +200,7 @@ public class SimularRodadaUseCase {
 
     private void atualizarTabela(
             CampeonatoEntity campeonato,
-            Clube clube,
+            ClubeEntity clube,
             int golsPro,
             int golsContra,
             PartidaEntity.Resultado resultado,
@@ -249,7 +261,7 @@ public class SimularRodadaUseCase {
                 .findByCampeonatoOrderByPontosDescSaldoGolsDescGolsProDesc(campeonato);
 
         if (!classificacao.isEmpty()) {
-            Clube campeao = classificacao.get(0).getClube();
+            ClubeEntity campeao = classificacao.get(0).getClube();
             campeonato.setCampeao(campeao);
             campeonatoRepository.save(campeonato);
         }

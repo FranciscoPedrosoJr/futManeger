@@ -1,6 +1,5 @@
 package com.futmaneger.infrastructure.persistence.entity;
 
-import com.futmaneger.domain.entity.Clube;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -23,7 +22,11 @@ public class TabelaCampeonatoEntity {
 
     @ManyToOne
     @JoinColumn(name = "clube_id")
-    private Clube clube;
+    private ClubeEntity clube;
+
+    @ManyToOne
+    @JoinColumn(name = "grupo_id")
+    private GrupoEntity grupo;
 
     private int pontos;
     private int vitorias;
@@ -38,7 +41,7 @@ public class TabelaCampeonatoEntity {
         return this.campeonato = campeonato;
     }
 
-    public Clube setClube(Clube clube) {
+    public ClubeEntity setClube(ClubeEntity clube) {
         return this.clube = clube;
     }
 
@@ -110,7 +113,7 @@ public class TabelaCampeonatoEntity {
         return id;
     }
 
-    public Clube getClube() {
+    public ClubeEntity getClube() {
         return clube;
     }
 }

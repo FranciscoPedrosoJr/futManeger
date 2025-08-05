@@ -1,6 +1,5 @@
 package com.futmaneger.infrastructure.persistence.entity;
 
-import com.futmaneger.domain.entity.Clube;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -44,7 +43,7 @@ public class CampeonatoEntity {
 
     @ManyToOne
     @JoinColumn(name = "campeao_id")
-    private Clube campeao;
+    private ClubeEntity campeao;
 
     @OneToMany(mappedBy = "campeonato", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RodadaEntity> rodadas = new ArrayList<>();
@@ -93,7 +92,7 @@ public class CampeonatoEntity {
         return (Enum<E>) tipo;
     }
 
-    public void setCampeao(Clube campeao) {
+    public void setCampeao(ClubeEntity campeao) {
         this.campeao = campeao;
     }
 

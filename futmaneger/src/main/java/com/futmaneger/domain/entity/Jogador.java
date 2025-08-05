@@ -1,5 +1,6 @@
 package com.futmaneger.domain.entity;
 
+import com.futmaneger.infrastructure.persistence.entity.ClubeEntity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -22,9 +23,9 @@ public class Jogador {
 
     @ManyToOne
     @JoinColumn(name = "clube_id", nullable = false)
-    private Clube clube;
+    private ClubeEntity clube;
 
-    public Jogador(String nome, String posicao, int forca, boolean diferenciado, boolean identificacaoComClube, Clube clube) {
+    public Jogador(String nome, String posicao, int forca, boolean diferenciado, boolean identificacaoComClube, ClubeEntity clube) {
         this.nome = nome;
         this.posicao = posicao;
         this.forca = forca;
@@ -36,6 +37,7 @@ public class Jogador {
     public Jogador() {
 
     }
+
 
     public Long getId() {
         return id;
@@ -65,11 +67,11 @@ public class Jogador {
         return clube.getId();
     }
 
-    public Clube getClube() {
+    public ClubeEntity getClube() {
         return clube;
     }
 
-    public Clube getClubeNome() {
+    public ClubeEntity getClubeNome() {
         return clube;
     }
 
@@ -88,6 +90,6 @@ public class Jogador {
     public void setIdentificacaoComClube(boolean identificacaoComClube) {
     }
 
-    public void setClube(Clube clube) {
+    public void setClube(ClubeEntity clube) {
     }
 }

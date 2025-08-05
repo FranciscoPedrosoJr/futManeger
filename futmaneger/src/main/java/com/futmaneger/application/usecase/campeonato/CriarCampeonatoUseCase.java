@@ -4,6 +4,7 @@ import com.futmaneger.application.dto.CampeonatoResponseDTO;
 import com.futmaneger.application.dto.CriarCampeonatoRequestDTO;
 import com.futmaneger.domain.entity.Clube;
 import com.futmaneger.infrastructure.persistence.entity.CampeonatoEntity;
+import com.futmaneger.infrastructure.persistence.entity.ClubeEntity;
 import com.futmaneger.infrastructure.persistence.entity.ClubeParticipanteEntity;
 import com.futmaneger.infrastructure.persistence.jpa.CampeonatoRepository;
 import com.futmaneger.infrastructure.persistence.jpa.ClubeJpaRepository;
@@ -28,7 +29,7 @@ public class CriarCampeonatoUseCase {
     }
 
     public CampeonatoResponseDTO executar(CriarCampeonatoRequestDTO request) {
-        List<Clube> clubes = buscarClubesPorLocalidade(request);
+        List<ClubeEntity> clubes = buscarClubesPorLocalidade(request);
 
         if (clubes.size() < 2) {
             throw new IllegalArgumentException("Número insuficiente de clubes para criar um campeonato");
@@ -48,7 +49,7 @@ public class CriarCampeonatoUseCase {
         campeonato.setQuantidadeClubes(clubes.size());
         campeonato = campeonatoRepository.save(campeonato);
 
-        for (Clube clube : clubes) {
+        for (ClubeEntity clube : clubes) {
             ClubeParticipanteEntity participante = new ClubeParticipanteEntity();
             participante.setCampeonato(campeonato);
             participante.setClube(clube);
@@ -56,7 +57,7 @@ public class CriarCampeonatoUseCase {
         }
 
         List<String> nomesClubes = clubes.stream()
-                .map(Clube::getNome)
+                .map(ClubeEntity::getNome)
                 .toList();
 
         return new CampeonatoResponseDTO(
@@ -67,7 +68,7 @@ public class CriarCampeonatoUseCase {
         );
     }
 
-    private List<Clube> buscarClubesPorLocalidade(CriarCampeonatoRequestDTO request) {
+    private List<ClubeEntity> buscarClubesPorLocalidade(CriarCampeonatoRequestDTO request) {
         if (request.estado() != null && !request.estado().isBlank()) {
             return clubeRepository.findByEstado(request.estado());
         } else if (request.pais() != null && !request.pais().isBlank()) {

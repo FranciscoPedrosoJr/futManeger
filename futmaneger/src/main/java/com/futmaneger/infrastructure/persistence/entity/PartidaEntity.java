@@ -22,11 +22,11 @@ public class PartidaEntity {
 
     @ManyToOne
     @JoinColumn(name = "clube_mandante_id")
-    private Clube clubeMandante;
+    private ClubeEntity clubeMandante;
 
     @ManyToOne
     @JoinColumn(name = "clube_visitante_id")
-    private Clube clubeVisitante;
+    private ClubeEntity clubeVisitante;
 
     private int golsMandante;
     private int golsVisitante;
@@ -36,23 +36,23 @@ public class PartidaEntity {
 
     private LocalDateTime dataHora;
 
-    @ManyToOne
+    //@ManyToOne
     @JoinColumn(name = "rodada_id")
-    private RodadaEntity rodada;
+    private int rodada;
 
-    public RodadaEntity getRodada() {
+    public int getRodada() {
         return rodada;
     }
 
-    public void setRodada(RodadaEntity rodada) {
-        this.rodada = rodada;
+    public int setRodada(int rodada) {
+        return this.rodada = rodada;
     }
 
-    public Clube setClubeMandante(Clube mandante) {
+    public ClubeEntity setClubeMandante(ClubeEntity mandante) {
         return this.clubeMandante = mandante;
     }
 
-    public Clube setClubeVisitante(Clube visitante) {
+    public ClubeEntity setClubeVisitante(ClubeEntity visitante) {
         return this.clubeVisitante = visitante;
     }
 
@@ -76,15 +76,15 @@ public class PartidaEntity {
         return resultado;
     }
 
-    public Clube getClubeMandante() {
+    public ClubeEntity getClubeMandante() {
         return clubeMandante;
     }
 
-    public Clube getClubeVisitante() {
+    public ClubeEntity getClubeVisitante() {
         return clubeVisitante;
     }
 
-    public Clube getMandante() {
+    public ClubeEntity getMandante() {
         return clubeMandante;
     }
 

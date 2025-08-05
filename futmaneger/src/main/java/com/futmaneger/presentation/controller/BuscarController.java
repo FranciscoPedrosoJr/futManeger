@@ -5,7 +5,7 @@ import com.futmaneger.application.dto.JogadorResponseDTO;
 import com.futmaneger.application.usecase.clube.BuscarClubesUseCase;
 import com.futmaneger.application.usecase.jogador.BuscarJogadoresUseCase;
 import com.futmaneger.application.usecase.tecnico.BuscarTecnicoUseCase;
-import com.futmaneger.domain.entity.Clube;
+import com.futmaneger.infrastructure.persistence.entity.ClubeEntity;
 import com.futmaneger.infrastructure.persistence.entity.TecnicoEntity;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
@@ -32,7 +32,7 @@ public class BuscarController {
     }
 
     @GetMapping("/clubes")
-    public ResponseEntity<List<Clube>> listarClubes() {
+    public ResponseEntity<List<ClubeEntity>> listarClubes() {
         return ResponseEntity.ok(buscarClubesUseCase.buscarTodos());
     }
 

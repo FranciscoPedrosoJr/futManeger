@@ -23,9 +23,9 @@ public class CampeonatoClubeEntity {
 
     @ManyToOne
     @JoinColumn(name = "clube_id")
-    private Clube clube;
+    private ClubeEntity clube;
 
-    public Clube getClube() {
+    public ClubeEntity getClube() {
         return clube = clube;
     }
 }
