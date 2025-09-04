@@ -1,25 +1,21 @@
 package com.futmaneger.application.usecase.rodadas;
 
-import com.futmaneger.domain.entity.Clube;
-import com.futmaneger.infrastructure.persistence.entity.CampeonatoClubeEntity;
+import com.futmaneger.application.dto.GerarFaseDeGruposResponseDTO;
+import com.futmaneger.application.dto.GerarRodadasResponseDTO;
+import com.futmaneger.application.dto.GrupoResponseDTO;
 import com.futmaneger.infrastructure.persistence.entity.CampeonatoEntity;
 import com.futmaneger.infrastructure.persistence.entity.ClubeParticipanteEntity;
 import com.futmaneger.infrastructure.persistence.entity.GrupoEntity;
-import com.futmaneger.infrastructure.persistence.entity.PartidaEntity;
 import com.futmaneger.infrastructure.persistence.entity.PartidaFaseDeGruposEntity;
 import com.futmaneger.infrastructure.persistence.entity.PartidaMataMataEntity;
 import com.futmaneger.infrastructure.persistence.entity.TabelaCampeonatoEntity;
-import com.futmaneger.infrastructure.persistence.jpa.CampeonatoClubeRepository;
 import com.futmaneger.infrastructure.persistence.jpa.ClubeParticipanteRepository;
 import com.futmaneger.infrastructure.persistence.jpa.GrupoRepository;
 import com.futmaneger.infrastructure.persistence.jpa.PartidaFaseDeGruposRepository;
 import com.futmaneger.infrastructure.persistence.jpa.PartidaMataMataRepository;
-import com.futmaneger.infrastructure.persistence.jpa.PartidaRepository;
 import com.futmaneger.infrastructure.persistence.jpa.TabelaCampeonatoRepository;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -43,9 +39,9 @@ public class GerarRodadasMataMataUseCase {
         this.tabelaCampeonatoRepository = tabelaCampeonatoRepository;
     }
 
-    public void gerarRodadas(CampeonatoEntity campeonato) {
+    public GerarRodadasResponseDTO gerarRodadas(CampeonatoEntity campeonato) {
         if (!campeonato.getTipo().equals(CampeonatoEntity.TipoCampeonato.MATA_MATA)) {
-            return;
+            return null;
         }
 
         if (gruposRepository.existsByCampeonato(campeonato)) {
@@ -53,12 +49,12 @@ public class GerarRodadasMataMataUseCase {
                     !partidaMataMataRepository.existsByCampeonato(campeonato)) {
                 gerarMataMata(campeonato);
             }
-        } else {
-            gerarFaseDeGrupos(campeonato);
         }
+        return gerarFaseDeGrupos(campeonato);
+
     }
 
-    private void gerarFaseDeGrupos(CampeonatoEntity campeonato) {
+    private GerarRodadasResponseDTO gerarFaseDeGrupos(CampeonatoEntity campeonato) {
         List<ClubeParticipanteEntity> clubes = clubeParticipanteRepository.findByCampeonato(campeonato);
 
         if (clubes.size() < 4) {
@@ -68,6 +64,7 @@ public class GerarRodadasMataMataUseCase {
         List<List<ClubeParticipanteEntity>> grupos = dividirClubesEmGrupos(clubes);
 
         int grupoIndex = 1;
+        List<GrupoResponseDTO> gruposDTO = new ArrayList<>();
         for (List<ClubeParticipanteEntity> grupo : grupos) {
             GrupoEntity grupoEntity = new GrupoEntity();
             grupoEntity.setNome("Grupo " + grupoIndex++);
@@ -76,7 +73,14 @@ public class GerarRodadasMataMataUseCase {
 
             List<PartidaFaseDeGruposEntity> partidas = gerarPartidasFaseDeGrupos(grupo, campeonato, grupoEntity);
             partidaFaseDeGruposRepository.saveAll(partidas);
+
+            List<String> nomesClubes = grupo.stream()
+                    .map(c -> c.getClube().getNome())
+                    .toList();
+
+            gruposDTO.add(new GrupoResponseDTO(grupoEntity.getNome(), nomesClubes));
         }
+        return new GerarRodadasResponseDTO(campeonato.getId(),0,0, gruposDTO);
     }
 
     private boolean todasPartidasFaseDeGruposFinalizadas(CampeonatoEntity campeonato) {
@@ -160,6 +164,7 @@ public class GerarRodadasMataMataUseCase {
                 partida.setGrupo(grupoEntity);
                 partida.setGolsMandante(0);
                 partida.setGolsVisitante(0);
+                partida.setRodada(j++);
                 partida.setFinalizada(false);
 
                 partidas.add(partida);

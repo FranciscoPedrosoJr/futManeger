@@ -50,7 +50,7 @@ public class GerarRodadasUseCase {
         }
 
         if (campeonato.getTipo() == CampeonatoEntity.TipoCampeonato.MATA_MATA) {
-            gerarRodadasMataMataUseCase.gerarRodadas(campeonato);
+            return gerarRodadasMataMataUseCase.gerarRodadas(campeonato);
         }
 
         List<ClubeParticipanteEntity> participantes = participanteRepository.findByCampeonato(campeonato);
@@ -98,7 +98,8 @@ public class GerarRodadasUseCase {
         return new GerarRodadasResponseDTO(
                 campeonato.getId(),
                 rodadas.size(),
-                todasPartidas.size()
+                todasPartidas.size(),
+                null
         );
     }
 
