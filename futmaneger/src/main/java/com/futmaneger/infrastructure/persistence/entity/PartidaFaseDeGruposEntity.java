@@ -70,4 +70,8 @@ public class PartidaFaseDeGruposEntity {
     public void setGrupo(GrupoEntity grupo) {
         this.grupo = grupo;
     }
+
+    public int getRodada() {
+        return rodada;
+    }
 }

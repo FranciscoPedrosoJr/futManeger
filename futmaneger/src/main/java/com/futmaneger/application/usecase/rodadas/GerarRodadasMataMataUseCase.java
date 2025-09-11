@@ -4,15 +4,19 @@ import com.futmaneger.application.dto.GerarFaseDeGruposResponseDTO;
 import com.futmaneger.application.dto.GerarRodadasResponseDTO;
 import com.futmaneger.application.dto.GrupoResponseDTO;
 import com.futmaneger.infrastructure.persistence.entity.CampeonatoEntity;
+import com.futmaneger.infrastructure.persistence.entity.ClubeEntity;
 import com.futmaneger.infrastructure.persistence.entity.ClubeParticipanteEntity;
 import com.futmaneger.infrastructure.persistence.entity.GrupoEntity;
+import com.futmaneger.infrastructure.persistence.entity.PartidaEntity;
 import com.futmaneger.infrastructure.persistence.entity.PartidaFaseDeGruposEntity;
 import com.futmaneger.infrastructure.persistence.entity.PartidaMataMataEntity;
+import com.futmaneger.infrastructure.persistence.entity.RodadaEntity;
 import com.futmaneger.infrastructure.persistence.entity.TabelaCampeonatoEntity;
 import com.futmaneger.infrastructure.persistence.jpa.ClubeParticipanteRepository;
 import com.futmaneger.infrastructure.persistence.jpa.GrupoRepository;
 import com.futmaneger.infrastructure.persistence.jpa.PartidaFaseDeGruposRepository;
 import com.futmaneger.infrastructure.persistence.jpa.PartidaMataMataRepository;
+import com.futmaneger.infrastructure.persistence.jpa.RodadaRepository;
 import com.futmaneger.infrastructure.persistence.jpa.TabelaCampeonatoRepository;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,17 +30,21 @@ public class GerarRodadasMataMataUseCase {
     private final PartidaFaseDeGruposRepository partidaFaseDeGruposRepository;
     private final PartidaMataMataRepository partidaMataMataRepository;
     private final TabelaCampeonatoRepository tabelaCampeonatoRepository;
+    private final RodadaRepository rodadaRepository;
 
     public GerarRodadasMataMataUseCase(ClubeParticipanteRepository clubeParticipanteRepository,
                                        GrupoRepository gruposRepository,
                                        PartidaFaseDeGruposRepository partidaFaseDeGruposRepository,
                                        PartidaMataMataRepository partidaMataMataRepository,
-                                       TabelaCampeonatoRepository tabelaCampeonatoRepository) {
+                                       TabelaCampeonatoRepository tabelaCampeonatoRepository,
+                                       RodadaRepository rodadaRepository) {
+
         this.clubeParticipanteRepository = clubeParticipanteRepository;
         this.gruposRepository = gruposRepository;
         this.partidaFaseDeGruposRepository = partidaFaseDeGruposRepository;
         this.partidaMataMataRepository = partidaMataMataRepository;
         this.tabelaCampeonatoRepository = tabelaCampeonatoRepository;
+        this.rodadaRepository = rodadaRepository;
     }
 
     public GerarRodadasResponseDTO gerarRodadas(CampeonatoEntity campeonato) {
@@ -62,9 +70,14 @@ public class GerarRodadasMataMataUseCase {
         }
 
         List<List<ClubeParticipanteEntity>> grupos = dividirClubesEmGrupos(clubes);
+        List<RodadaEntity> rodadas = new ArrayList<>();
+        List<PartidaFaseDeGruposEntity> todasPartidas = new ArrayList<>();
+        List<GrupoResponseDTO> gruposDTO = new ArrayList<>();
+
+        int rodadaIndex = 1;
 
         int grupoIndex = 1;
-        List<GrupoResponseDTO> gruposDTO = new ArrayList<>();
+
         for (List<ClubeParticipanteEntity> grupo : grupos) {
             GrupoEntity grupoEntity = new GrupoEntity();
             grupoEntity.setNome("Grupo " + grupoIndex++);
@@ -72,15 +85,30 @@ public class GerarRodadasMataMataUseCase {
             grupoEntity = gruposRepository.save(grupoEntity);
 
             List<PartidaFaseDeGruposEntity> partidas = gerarPartidasFaseDeGrupos(grupo, campeonato, grupoEntity);
-            partidaFaseDeGruposRepository.saveAll(partidas);
 
+            for (PartidaFaseDeGruposEntity partida : partidas) {
+                RodadaEntity rodada = rodadaRepository.findByNumeroAndCampeonato(partida.getRodada(), campeonato)
+                        .orElseGet(() -> {
+                            RodadaEntity novaRodada = new RodadaEntity();
+                            novaRodada.setNumero(partida.getRodada());
+                            novaRodada.setCampeonato(campeonato);
+                            return rodadaRepository.save(novaRodada);
+                        });
+                if (!rodadas.contains(rodada)) {
+                    rodadas.add(rodada);
+                }
+
+                partidaFaseDeGruposRepository.save(partida);
+                todasPartidas.add(partida);
+            }
             List<String> nomesClubes = grupo.stream()
                     .map(c -> c.getClube().getNome())
                     .toList();
 
+
             gruposDTO.add(new GrupoResponseDTO(grupoEntity.getNome(), nomesClubes));
         }
-        return new GerarRodadasResponseDTO(campeonato.getId(),0,0, gruposDTO);
+        return new GerarRodadasResponseDTO(campeonato.getId(),rodadas.size(),todasPartidas.size(), gruposDTO);
     }
 
     private boolean todasPartidasFaseDeGruposFinalizadas(CampeonatoEntity campeonato) {
@@ -150,25 +178,43 @@ public class GerarRodadasMataMataUseCase {
         return grupos;
     }
 
-    private List<PartidaFaseDeGruposEntity> gerarPartidasFaseDeGrupos(List<ClubeParticipanteEntity> grupo,
-                                                                      CampeonatoEntity campeonato,
-                                                                      GrupoEntity grupoEntity) {
+    private List<PartidaFaseDeGruposEntity> gerarPartidasFaseDeGrupos(
+            List<ClubeParticipanteEntity> grupo,
+            CampeonatoEntity campeonato,
+            GrupoEntity grupoEntity
+    ) {
         List<PartidaFaseDeGruposEntity> partidas = new ArrayList<>();
 
-        for (int i = 0; i < grupo.size(); i++) {
-            for (int j = i + 1; j < grupo.size(); j++) {
+        int rodadaNumero = 1;
+        int n = grupo.size();
+
+        // Round-robin simples
+        for (int rodada = 0; rodada < n - 1; rodada++) {
+            for (int i = 0; i < n / 2; i++) {
+                ClubeEntity mandante = grupo.get(i).getClube();
+                ClubeEntity visitante = grupo.get(n - 1 - i).getClube();
+
                 PartidaFaseDeGruposEntity partida = new PartidaFaseDeGruposEntity();
-                partida.setClubeMandante(grupo.get(i).getClube());
-                partida.setClubeVisitante(grupo.get(j).getClube());
+                partida.setClubeMandante(mandante);
+                partida.setClubeVisitante(visitante);
                 partida.setCampeonato(campeonato);
                 partida.setGrupo(grupoEntity);
+                partida.setRodada(rodadaNumero);
                 partida.setGolsMandante(0);
                 partida.setGolsVisitante(0);
-                partida.setRodada(j++);
                 partida.setFinalizada(false);
 
                 partidas.add(partida);
             }
+
+            // Rotaciona os times (exceto o primeiro)
+            List<ClubeParticipanteEntity> novaOrdem = new ArrayList<>();
+            novaOrdem.add(grupo.get(0));
+            novaOrdem.add(grupo.get(n - 1));
+            novaOrdem.addAll(grupo.subList(1, n - 1));
+            grupo = novaOrdem;
+
+            rodadaNumero++;
         }
 
         return partidas;
