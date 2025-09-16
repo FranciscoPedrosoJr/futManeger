@@ -2,6 +2,8 @@ package com.futmaneger.presentation.controller;
 
 import com.futmaneger.application.dto.JogadorFiltroDTO;
 import com.futmaneger.application.dto.JogadorResponseDTO;
+import com.futmaneger.application.dto.PartidaMataMataResponseDTO;
+import com.futmaneger.application.usecase.campeonato.BuscarPartidasMataMataUseCase;
 import com.futmaneger.application.usecase.clube.BuscarClubesUseCase;
 import com.futmaneger.application.usecase.jogador.BuscarJogadoresUseCase;
 import com.futmaneger.application.usecase.tecnico.BuscarTecnicoUseCase;
@@ -10,6 +12,7 @@ import com.futmaneger.infrastructure.persistence.entity.TecnicoEntity;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,11 +27,14 @@ public class BuscarController {
 
     private final BuscarJogadoresUseCase buscarJogadoresUseCase;
 
+    private final BuscarPartidasMataMataUseCase buscarPartidasMataMataUseCase;
+
     public BuscarController(BuscarClubesUseCase buscarClubesUseCase, BuscarTecnicoUseCase buscarTecnicoUseCase,
-                            BuscarJogadoresUseCase buscarJogadoresUseCase) {
+                            BuscarJogadoresUseCase buscarJogadoresUseCase, BuscarPartidasMataMataUseCase buscarPartidasMataMataUseCase) {
         this.buscarClubesUseCase = buscarClubesUseCase;
         this.buscarTecnicoUseCase = buscarTecnicoUseCase;
         this.buscarJogadoresUseCase = buscarJogadoresUseCase;
+        this.buscarPartidasMataMataUseCase = buscarPartidasMataMataUseCase;
     }
 
     @GetMapping("/clubes")
@@ -45,5 +51,11 @@ public class BuscarController {
     public ResponseEntity<List<JogadorResponseDTO>> buscar(@RequestBody JogadorFiltroDTO filtro) {
         List<JogadorResponseDTO> jogadores = buscarJogadoresUseCase.buscar(filtro);
         return ResponseEntity.ok(jogadores);
+    }
+
+    @GetMapping("campeonato/{id}/partidas-mata-mata")
+    public ResponseEntity<List<PartidaMataMataResponseDTO>> listarPartidasMataMata(@PathVariable Long id) {
+        List<PartidaMataMataResponseDTO> response = buscarPartidasMataMataUseCase.buscarPorCampeonato(id);
+        return ResponseEntity.ok(response);
     }
 }
