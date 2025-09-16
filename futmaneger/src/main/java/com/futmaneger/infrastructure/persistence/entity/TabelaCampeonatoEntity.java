@@ -23,10 +23,7 @@ public class TabelaCampeonatoEntity {
     @ManyToOne
     @JoinColumn(name = "clube_id")
     private ClubeEntity clube;
-
-    @ManyToOne
-    @JoinColumn(name = "grupo_id")
-    private GrupoEntity grupo;
+    private Long grupo;
 
     private int pontos;
     private int vitorias;
@@ -115,5 +112,9 @@ public class TabelaCampeonatoEntity {
 
     public ClubeEntity getClube() {
         return clube;
+    }
+
+    public Long setGrupo(Long grupo) {
+        return this.grupo = grupo;
     }
 }

@@ -1,8 +1,6 @@
 package com.futmaneger.infrastructure.persistence.jpa;
 
-import com.futmaneger.domain.entity.Clube;
 import com.futmaneger.infrastructure.persistence.entity.CampeonatoEntity;
-import com.futmaneger.infrastructure.persistence.entity.GrupoEntity;
 import com.futmaneger.infrastructure.persistence.entity.TabelaCampeonatoEntity;
 import java.util.List;
 import java.util.Optional;
@@ -15,6 +13,6 @@ public interface TabelaCampeonatoRepository extends JpaRepository<TabelaCampeona
 
     List<TabelaCampeonatoEntity> findByCampeonatoOrderByPontosDescSaldoGolsDescGolsProDesc(CampeonatoEntity campeonato);
 
-    List<TabelaCampeonatoEntity> findByGrupoOrderByPontosDesc(GrupoEntity grupo_clubes);
+    List<TabelaCampeonatoEntity> findByGrupoOrderByPontosDesc(Long grupo_clubes);
 }
 

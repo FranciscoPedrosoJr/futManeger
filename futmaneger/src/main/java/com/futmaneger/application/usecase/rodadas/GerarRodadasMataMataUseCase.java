@@ -16,6 +16,7 @@ import com.futmaneger.infrastructure.persistence.jpa.ClubeParticipanteRepository
 import com.futmaneger.infrastructure.persistence.jpa.GrupoRepository;
 import com.futmaneger.infrastructure.persistence.jpa.PartidaFaseDeGruposRepository;
 import com.futmaneger.infrastructure.persistence.jpa.PartidaMataMataRepository;
+import com.futmaneger.infrastructure.persistence.jpa.PartidaRepository;
 import com.futmaneger.infrastructure.persistence.jpa.RodadaRepository;
 import com.futmaneger.infrastructure.persistence.jpa.TabelaCampeonatoRepository;
 import java.util.ArrayList;
@@ -27,21 +28,21 @@ public class GerarRodadasMataMataUseCase {
 
     private final ClubeParticipanteRepository clubeParticipanteRepository;
     private final GrupoRepository gruposRepository;
-    private final PartidaFaseDeGruposRepository partidaFaseDeGruposRepository;
+    private final PartidaRepository partidaRepository;
     private final PartidaMataMataRepository partidaMataMataRepository;
     private final TabelaCampeonatoRepository tabelaCampeonatoRepository;
     private final RodadaRepository rodadaRepository;
 
     public GerarRodadasMataMataUseCase(ClubeParticipanteRepository clubeParticipanteRepository,
                                        GrupoRepository gruposRepository,
-                                       PartidaFaseDeGruposRepository partidaFaseDeGruposRepository,
+                                       PartidaRepository partidaRepository,
                                        PartidaMataMataRepository partidaMataMataRepository,
                                        TabelaCampeonatoRepository tabelaCampeonatoRepository,
                                        RodadaRepository rodadaRepository) {
 
         this.clubeParticipanteRepository = clubeParticipanteRepository;
         this.gruposRepository = gruposRepository;
-        this.partidaFaseDeGruposRepository = partidaFaseDeGruposRepository;
+        this.partidaRepository = partidaRepository;
         this.partidaMataMataRepository = partidaMataMataRepository;
         this.tabelaCampeonatoRepository = tabelaCampeonatoRepository;
         this.rodadaRepository = rodadaRepository;
@@ -71,7 +72,7 @@ public class GerarRodadasMataMataUseCase {
 
         List<List<ClubeParticipanteEntity>> grupos = dividirClubesEmGrupos(clubes);
         List<RodadaEntity> rodadas = new ArrayList<>();
-        List<PartidaFaseDeGruposEntity> todasPartidas = new ArrayList<>();
+        List<PartidaEntity> todasPartidas = new ArrayList<>();
         List<GrupoResponseDTO> gruposDTO = new ArrayList<>();
 
         int rodadaIndex = 1;
@@ -84,9 +85,9 @@ public class GerarRodadasMataMataUseCase {
             grupoEntity.setCampeonato(campeonato);
             grupoEntity = gruposRepository.save(grupoEntity);
 
-            List<PartidaFaseDeGruposEntity> partidas = gerarPartidasFaseDeGrupos(grupo, campeonato, grupoEntity);
+            List<PartidaEntity> partidas = gerarPartidasFaseDeGrupos(grupo, campeonato, grupoEntity);
 
-            for (PartidaFaseDeGruposEntity partida : partidas) {
+            for (PartidaEntity partida : partidas) {
                 RodadaEntity rodada = rodadaRepository.findByNumeroAndCampeonato(partida.getRodada(), campeonato)
                         .orElseGet(() -> {
                             RodadaEntity novaRodada = new RodadaEntity();
@@ -98,7 +99,7 @@ public class GerarRodadasMataMataUseCase {
                     rodadas.add(rodada);
                 }
 
-                partidaFaseDeGruposRepository.save(partida);
+                partidaRepository.save(partida);
                 todasPartidas.add(partida);
             }
             List<String> nomesClubes = grupo.stream()
@@ -112,7 +113,7 @@ public class GerarRodadasMataMataUseCase {
     }
 
     private boolean todasPartidasFaseDeGruposFinalizadas(CampeonatoEntity campeonato) {
-        List<PartidaFaseDeGruposEntity> partidas = partidaFaseDeGruposRepository.findByCampeonato(campeonato);
+        List<PartidaFaseDeGruposEntity> partidas = partidaRepository.findByCampeonato(campeonato);
         return partidas.stream().allMatch(PartidaFaseDeGruposEntity::isFinalizada);
     }
 
@@ -121,7 +122,7 @@ public class GerarRodadasMataMataUseCase {
         List<ClubeParticipanteEntity> classificados = new ArrayList<>();
 
         for (GrupoEntity grupo : grupos) {
-            List<TabelaCampeonatoEntity> tabelaGrupo = tabelaCampeonatoRepository.findByGrupoOrderByPontosDesc(grupo);
+            List<TabelaCampeonatoEntity> tabelaGrupo = tabelaCampeonatoRepository.findByGrupoOrderByPontosDesc(grupo.getId());
 
             ClubeParticipanteEntity primeiro = (ClubeParticipanteEntity) clubeParticipanteRepository
                     .findByClubeAndCampeonato(tabelaGrupo.get(0).getClube(), campeonato)
@@ -178,12 +179,12 @@ public class GerarRodadasMataMataUseCase {
         return grupos;
     }
 
-    private List<PartidaFaseDeGruposEntity> gerarPartidasFaseDeGrupos(
+    private List<PartidaEntity> gerarPartidasFaseDeGrupos(
             List<ClubeParticipanteEntity> grupo,
             CampeonatoEntity campeonato,
             GrupoEntity grupoEntity
     ) {
-        List<PartidaFaseDeGruposEntity> partidas = new ArrayList<>();
+        List<PartidaEntity> partidas = new ArrayList<>();
 
         int rodadaNumero = 1;
         int n = grupo.size();
@@ -194,7 +195,7 @@ public class GerarRodadasMataMataUseCase {
                 ClubeEntity mandante = grupo.get(i).getClube();
                 ClubeEntity visitante = grupo.get(n - 1 - i).getClube();
 
-                PartidaFaseDeGruposEntity partida = new PartidaFaseDeGruposEntity();
+                PartidaEntity partida = new PartidaEntity();
                 partida.setClubeMandante(mandante);
                 partida.setClubeVisitante(visitante);
                 partida.setCampeonato(campeonato);

@@ -1,6 +1,5 @@
 package com.futmaneger.infrastructure.persistence.entity;
 
-import com.futmaneger.domain.entity.Clube;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -39,6 +38,14 @@ public class PartidaEntity {
     //@ManyToOne
     @JoinColumn(name = "rodada_id")
     private int rodada;
+
+    @ManyToOne
+    private CampeonatoEntity campeonato;
+
+    @ManyToOne(optional = true)
+    private GrupoEntity grupo;
+
+    private boolean finalizada;
 
     public int getRodada() {
         return rodada;
@@ -86,6 +93,17 @@ public class PartidaEntity {
 
     public ClubeEntity getMandante() {
         return clubeMandante;
+    }
+
+    public CampeonatoEntity setCampeonato(CampeonatoEntity campeonato) {
+        return this.campeonato = campeonato;
+    }
+
+    public GrupoEntity setGrupo(GrupoEntity grupo) {
+        return this.grupo = grupo;
+    }
+    public void setFinalizada(boolean finalizada) {
+        this.finalizada = finalizada;
     }
 
     public enum Resultado {

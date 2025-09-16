@@ -1,6 +1,7 @@
 package com.futmaneger.application.usecase.simulacao;
 
 import static com.futmaneger.infrastructure.persistence.entity.CampeonatoEntity.TipoCampeonato.MATA_MATA;
+import static com.futmaneger.infrastructure.persistence.entity.CampeonatoEntity.TipoCampeonato.PONTOS_CORRIDOS;
 
 import com.futmaneger.application.dto.SimulacaoResponseDTO;
 import com.futmaneger.application.exception.NaoEncontradoException;
@@ -12,6 +13,7 @@ import com.futmaneger.infrastructure.persistence.entity.*;
 import com.futmaneger.infrastructure.persistence.jpa.CampeonatoRepository;
 import com.futmaneger.infrastructure.persistence.jpa.ClubeParticipanteRepository;
 import com.futmaneger.infrastructure.persistence.jpa.EscalacaoRepository;
+import com.futmaneger.infrastructure.persistence.jpa.GrupoRepository;
 import com.futmaneger.infrastructure.persistence.jpa.PartidaRepository;
 import com.futmaneger.infrastructure.persistence.jpa.RodadaRepository;
 import com.futmaneger.infrastructure.persistence.jpa.TabelaCampeonatoRepository;
@@ -32,6 +34,7 @@ public class SimularRodadaUseCase {
     private final CampeonatoRepository campeonatoRepository;
     private final GerarRodadasMataMataUseCase gerarRodadasMataMataUseCase;
     private final ClubeParticipanteRepository clubeParticipanteRepository;
+    private final GrupoRepository grupoRepository;
 
     public SimularRodadaUseCase(
             RodadaRepository rodadaRepository,
@@ -41,7 +44,8 @@ public class SimularRodadaUseCase {
             TabelaCampeonatoRepository tabelaCampeonato,
             CampeonatoRepository campeonatoRepository,
             GerarRodadasMataMataUseCase gerarRodadasMataMataUseCase,
-            ClubeParticipanteRepository clubeParticipanteRepository
+            ClubeParticipanteRepository clubeParticipanteRepository,
+            GrupoRepository grupoRepository
     ) {
         this.rodadaRepository = rodadaRepository;
         this.partidaRepository = partidaRepository;
@@ -51,6 +55,7 @@ public class SimularRodadaUseCase {
         this.campeonatoRepository = campeonatoRepository;
         this.gerarRodadasMataMataUseCase = gerarRodadasMataMataUseCase;
         this.clubeParticipanteRepository = clubeParticipanteRepository;
+        this.grupoRepository = grupoRepository;
     }
 
     @Transactional
@@ -59,6 +64,8 @@ public class SimularRodadaUseCase {
                 .orElseThrow(() -> new IllegalArgumentException("Rodada não encontrada com id: " + rodadaId));
 
         CampeonatoEntity campeonato = rodada.getCampeonato();
+        List<GrupoEntity> grupo = grupoRepository.findByCampeonato(campeonato);
+
 
         List<PartidaEntity> partidas = rodada.getPartidas();
         if (partidas.isEmpty()) {
@@ -84,10 +91,11 @@ public class SimularRodadaUseCase {
             partida.setGolsVisitante(golsVisitante);
             partida.setResultado(resultado);
             partida.setDataHora(LocalDateTime.now());
+            partida.setFinalizada(true);
             partidaRepository.save(partida);
 
-            atualizarTabela(campeonato, partida.getClubeMandante(), golsMandante, golsVisitante, resultado, true);
-            atualizarTabela(campeonato, partida.getClubeVisitante(), golsVisitante, golsMandante, resultado, false);
+            atualizarTabela(campeonato, partida.getClubeMandante(), golsMandante, golsVisitante, resultado, true, grupo.get(grupo.size()-1).getId());
+            atualizarTabela(campeonato, partida.getClubeVisitante(), golsVisitante, golsMandante, resultado, false, grupo.get(grupo.size()-1).getId());
 
             resultados.add(new SimulacaoResponseDTO(
                     partida.getClubeMandante().getNome(),
@@ -102,11 +110,10 @@ public class SimularRodadaUseCase {
 
         rodada.setFinalizada(true);
 
-        if (isUltimaRodada(rodada, campeonato)) {
+        if (isUltimaRodada(rodada, campeonato) && campeonato.getTipo() == PONTOS_CORRIDOS) {
             definirCampeao(campeonato);
             campeonato.setEmAndamento(false);
-        }
-        if (campeonato.getTipo() == MATA_MATA && isUltimaRodada(rodada, campeonato)){
+        }else if (campeonato.getTipo() == MATA_MATA && isUltimaRodada(rodada, campeonato)){
             gerarRodadasMataMataUseCase.gerarMataMata(campeonato);
         }
 
@@ -204,7 +211,8 @@ public class SimularRodadaUseCase {
             int golsPro,
             int golsContra,
             PartidaEntity.Resultado resultado,
-            boolean isMandante
+            boolean isMandante,
+            Long grupo
     ) {
         TabelaCampeonatoEntity tabela = tabelaCampeonato
                 .findByCampeonatoIdAndClubeId(campeonato.getId(), clube.getId())
@@ -228,6 +236,11 @@ public class SimularRodadaUseCase {
         tabela.setGolsPro(tabela.getGolsPro() + golsPro);
         tabela.setGolsContra(tabela.getGolsContra() + golsContra);
         tabela.setSaldoGols(tabela.getSaldoGols() + (golsPro - golsContra));
+
+        if (campeonato.getTipo() == MATA_MATA){
+
+            tabela.setGrupo(grupo);
+        }
 
         switch (resultado)
         {
