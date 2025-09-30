@@ -109,7 +109,7 @@ public class GerarRodadasMataMataUseCase {
 
             gruposDTO.add(new GrupoResponseDTO(grupoEntity.getNome(), nomesClubes));
         }
-        return new GerarRodadasResponseDTO(campeonato.getId(),rodadas.size(),todasPartidas.size(), gruposDTO);
+        return new GerarRodadasResponseDTO(campeonato.getId(), rodadas.size(), todasPartidas.size(), gruposDTO);
     }
 
     private boolean todasPartidasFaseDeGruposFinalizadas(CampeonatoEntity campeonato) {
@@ -136,10 +136,13 @@ public class GerarRodadasMataMataUseCase {
             classificados.add(segundo);
         }
 
-        gerarPartidasMataMataRecursivamente(classificados, campeonato, 1);
+        PartidaMataMataEntity.FaseMataMata faseInicial = definirFaseInicial(classificados.size());
+
+        gerarPartidasMataMataRecursivamente(classificados, campeonato, faseInicial);
     }
 
-    private void gerarPartidasMataMataRecursivamente(List<ClubeParticipanteEntity> clubes, CampeonatoEntity campeonato, int fase) {
+    private void gerarPartidasMataMataRecursivamente(List<ClubeParticipanteEntity> clubes, CampeonatoEntity campeonato,
+                                                     PartidaMataMataEntity.FaseMataMata fase) {
         if (clubes.size() < 2) return;
 
         List<PartidaMataMataEntity> partidas = new ArrayList<>();
@@ -221,4 +224,14 @@ public class GerarRodadasMataMataUseCase {
         return partidas;
     }
 
+    private PartidaMataMataEntity.FaseMataMata definirFaseInicial(int quantidadeClassificados) {
+        return switch (quantidadeClassificados) {
+            case 16 -> PartidaMataMataEntity.FaseMataMata.OITAVAS;
+            case 8 -> PartidaMataMataEntity.FaseMataMata.QUARTAS;
+            case 4 -> PartidaMataMataEntity.FaseMataMata.SEMIFINAL;
+            case 2 -> PartidaMataMataEntity.FaseMataMata.FINAL;
+            default -> throw new IllegalArgumentException("Quantidade de classificados inválida: " + quantidadeClassificados);
+        };
+
+    }
 }

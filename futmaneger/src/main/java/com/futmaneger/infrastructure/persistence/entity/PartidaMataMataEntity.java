@@ -1,6 +1,8 @@
 package com.futmaneger.infrastructure.persistence.entity;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -18,7 +20,8 @@ public class PartidaMataMataEntity {
     @JoinColumn(name = "campeonato_id")
     private CampeonatoEntity campeonato;
 
-    private int fase;
+    @Enumerated(EnumType.STRING)
+    private FaseMataMata fase;
 
     @ManyToOne
     @JoinColumn(name = "clube_a_id")
@@ -54,11 +57,11 @@ public class PartidaMataMataEntity {
         this.campeonato = campeonato;
     }
 
-    public int getFase() {
+    public FaseMataMata getFase() {
         return fase;
     }
 
-    public void setFase(int fase) {
+    public void setFase(FaseMataMata fase) {
         this.fase = fase;
     }
 
@@ -132,5 +135,12 @@ public class PartidaMataMataEntity {
 
     public void setFinalizada(boolean finalizada) {
         this.finalizada = finalizada;
+    }
+
+    public enum FaseMataMata {
+        OITAVAS,
+        QUARTAS,
+        SEMIFINAL,
+        FINAL;
     }
 }
