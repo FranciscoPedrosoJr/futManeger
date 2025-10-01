@@ -6,6 +6,8 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -13,6 +15,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "partidas")
+@Inheritance(strategy = InheritanceType.JOINED)
 public class PartidaEntity {
 
     @Id
@@ -42,8 +45,6 @@ public class PartidaEntity {
     @ManyToOne
     private CampeonatoEntity campeonato;
 
-    @ManyToOne(optional = true)
-    private GrupoEntity grupo;
 
     private boolean finalizada;
 
@@ -99,9 +100,6 @@ public class PartidaEntity {
         return this.campeonato = campeonato;
     }
 
-    public GrupoEntity setGrupo(GrupoEntity grupo) {
-        return this.grupo = grupo;
-    }
     public void setFinalizada(boolean finalizada) {
         this.finalizada = finalizada;
     }

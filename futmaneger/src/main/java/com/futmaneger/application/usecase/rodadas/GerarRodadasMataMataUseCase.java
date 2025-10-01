@@ -141,9 +141,20 @@ public class GerarRodadasMataMataUseCase {
         gerarPartidasMataMataRecursivamente(classificados, campeonato, faseInicial);
     }
 
-    private void gerarPartidasMataMataRecursivamente(List<ClubeParticipanteEntity> clubes, CampeonatoEntity campeonato,
+    private void gerarPartidasMataMataRecursivamente(List<ClubeParticipanteEntity> clubes,
+                                                     CampeonatoEntity campeonato,
                                                      PartidaMataMataEntity.FaseMataMata fase) {
         if (clubes.size() < 2) return;
+
+        int ultimaRodada = rodadaRepository.findMaxNumeroByCampeonato(campeonato)
+                .orElse(0);
+        int novaRodadaNumero = ultimaRodada + 1;
+
+        RodadaEntity rodada = new RodadaEntity();
+        rodada.setNumero(novaRodadaNumero);
+        rodada.setCampeonato(campeonato);
+        rodada.setFinalizada(false);
+        rodada = rodadaRepository.save(rodada);
 
         List<PartidaMataMataEntity> partidas = new ArrayList<>();
 
@@ -159,6 +170,7 @@ public class GerarRodadasMataMataUseCase {
             partida.setFinalizada(false);
             partida.setGolsMandante(0);
             partida.setGolsVisitante(0);
+            partida.setRodada(rodada.getNumero());
 
             partidas.add(partida);
         }
@@ -202,7 +214,6 @@ public class GerarRodadasMataMataUseCase {
                 partida.setClubeMandante(mandante);
                 partida.setClubeVisitante(visitante);
                 partida.setCampeonato(campeonato);
-                partida.setGrupo(grupoEntity);
                 partida.setRodada(rodadaNumero);
                 partida.setGolsMandante(0);
                 partida.setGolsVisitante(0);

@@ -10,7 +10,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 
 @Entity
-public class PartidaMataMataEntity {
+public class PartidaMataMataEntity extends PartidaEntity{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -53,8 +53,9 @@ public class PartidaMataMataEntity {
         return campeonato;
     }
 
-    public void setCampeonato(CampeonatoEntity campeonato) {
+    public CampeonatoEntity setCampeonato(CampeonatoEntity campeonato) {
         this.campeonato = campeonato;
+        return campeonato;
     }
 
     public FaseMataMata getFase() {
@@ -69,32 +70,36 @@ public class PartidaMataMataEntity {
         return clubeA;
     }
 
-    public void setClubeMandante(ClubeEntity clubeA) {
+    public ClubeEntity setClubeMandante(ClubeEntity clubeA) {
         this.clubeA = clubeA;
+        return clubeA;
     }
 
     public ClubeEntity getClubeB() {
         return clubeB;
     }
 
-    public void setClubeVisitante(ClubeEntity clubeB) {
+    public ClubeEntity setClubeVisitante(ClubeEntity clubeB) {
         this.clubeB = clubeB;
+        return clubeB;
     }
 
     public int getGolsClubeA() {
         return golsClubeA;
     }
 
-    public void setGolsMandante(int golsClubeA) {
+    public int setGolsMandante(int golsClubeA) {
         this.golsClubeA = golsClubeA;
+        return golsClubeA;
     }
 
     public int getGolsClubeB() {
         return golsClubeB;
     }
 
-    public void setGolsVisitante(int golsClubeB) {
+    public int setGolsVisitante(int golsClubeB) {
         this.golsClubeB = golsClubeB;
+        return golsClubeB;
     }
 
     public boolean isJogoDeVolta() {
