@@ -14,6 +14,7 @@ import com.futmaneger.infrastructure.persistence.jpa.CampeonatoRepository;
 import com.futmaneger.infrastructure.persistence.jpa.ClubeParticipanteRepository;
 import com.futmaneger.infrastructure.persistence.jpa.EscalacaoRepository;
 import com.futmaneger.infrastructure.persistence.jpa.GrupoRepository;
+import com.futmaneger.infrastructure.persistence.jpa.PartidaMataMataRepository;
 import com.futmaneger.infrastructure.persistence.jpa.PartidaRepository;
 import com.futmaneger.infrastructure.persistence.jpa.RodadaRepository;
 import com.futmaneger.infrastructure.persistence.jpa.TabelaCampeonatoRepository;
@@ -35,6 +36,7 @@ public class SimularRodadaUseCase {
     private final GerarRodadasMataMataUseCase gerarRodadasMataMataUseCase;
     private final ClubeParticipanteRepository clubeParticipanteRepository;
     private final GrupoRepository grupoRepository;
+    private final PartidaMataMataRepository partidaMataMataRepository;
 
     public SimularRodadaUseCase(
             RodadaRepository rodadaRepository,
@@ -45,7 +47,8 @@ public class SimularRodadaUseCase {
             CampeonatoRepository campeonatoRepository,
             GerarRodadasMataMataUseCase gerarRodadasMataMataUseCase,
             ClubeParticipanteRepository clubeParticipanteRepository,
-            GrupoRepository grupoRepository
+            GrupoRepository grupoRepository,
+            PartidaMataMataRepository partidaMataMataRepository
     ) {
         this.rodadaRepository = rodadaRepository;
         this.partidaRepository = partidaRepository;
@@ -56,6 +59,7 @@ public class SimularRodadaUseCase {
         this.gerarRodadasMataMataUseCase = gerarRodadasMataMataUseCase;
         this.clubeParticipanteRepository = clubeParticipanteRepository;
         this.grupoRepository = grupoRepository;
+        this.partidaMataMataRepository = partidaMataMataRepository;
     }
 
     @Transactional
@@ -77,6 +81,12 @@ public class SimularRodadaUseCase {
         for (PartidaEntity partida : partidas) {
             if (partida.getResultado() != null) {
                 continue;
+            }
+            if(campeonato.getMataMataIniciado() == true){
+                List<PartidaMataMataEntity> partidasMataMata = partidaMataMataRepository.findByRodada(rodada);
+                EscalacaoEntity escalacaoMandante = buscarOuGerarEscalacao(partidasMataMata.getFirst().getClubeA());
+                EscalacaoEntity escalacaoVisitante = buscarOuGerarEscalacao(partidasMataMata.getFirst().getClubeB());
+
             }
 
             EscalacaoEntity escalacaoMandante = buscarOuGerarEscalacao(partida.getClubeMandante());
@@ -123,7 +133,7 @@ public class SimularRodadaUseCase {
     private EscalacaoEntity buscarOuGerarEscalacao(ClubeEntity clube) {
         if (clube.getTecnico() != null) {
             return escalacaoRepository.findTopByClubeOrderByDataHoraDesc(clube)
-                    .orElseThrow(() -> new NaoEncontradoException("Escalação não encontrada para clube: " + clube.getNome() + ", cadastre uma escação para seguir"));
+                    .orElseThrow(() -> new NaoEncontradoException("Escalação não encontrada para clube: " + clube.getNome() + ", cadastre uma escalação para seguir"));
         }
         return gerarEscalacaoAutomatica(clube);
     }

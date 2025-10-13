@@ -47,6 +47,7 @@ public class CampeonatoEntity {
 
     @OneToMany(mappedBy = "campeonato", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RodadaEntity> rodadas = new ArrayList<>();
+    private boolean mataMataIniciado;
 
     public List<RodadaEntity> getRodadas() {
         return rodadas;
@@ -96,8 +97,14 @@ public class CampeonatoEntity {
         this.campeao = campeao;
     }
 
+    public boolean getMataMataIniciado() {
+        return mataMataIniciado;
+    }
+
     public enum TipoCampeonato {
         PONTOS_CORRIDOS, MATA_MATA
     }
+
+    public void setMataMataIniciado(boolean mataMataIniciado){this.mataMataIniciado = mataMataIniciado;}
 
 }

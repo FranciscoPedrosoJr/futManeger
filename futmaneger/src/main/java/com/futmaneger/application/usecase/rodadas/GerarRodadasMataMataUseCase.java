@@ -146,6 +146,8 @@ public class GerarRodadasMataMataUseCase {
                                                      PartidaMataMataEntity.FaseMataMata fase) {
         if (clubes.size() < 2) return;
 
+        campeonato.setMataMataIniciado(true);
+
         int ultimaRodada = rodadaRepository.findMaxNumeroByCampeonato(campeonato)
                 .orElse(0);
         int novaRodadaNumero = ultimaRodada + 1;
