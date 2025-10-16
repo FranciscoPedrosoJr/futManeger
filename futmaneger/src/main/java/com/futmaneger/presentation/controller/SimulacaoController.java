@@ -35,7 +35,7 @@ public class SimulacaoController {
             @PathVariable Long campeonatoId,
             @PathVariable Long rodadaId
     ) {
-        List<SimulacaoResponseDTO> resultados = simularRodadaUseCase.executar(rodadaId);
+        List<SimulacaoResponseDTO> resultados = simularRodadaUseCase.executar(campeonatoId, rodadaId);
         return ResponseEntity.ok(resultados);
     }
 }

@@ -64,11 +64,13 @@ public class SimularRodadaUseCase {
     }
 
     @Transactional
-    public List<SimulacaoResponseDTO> executar(Long rodadaId) {
+    public List<SimulacaoResponseDTO> executar(Long campeonatoId, Long rodadaId) {
+        CampeonatoEntity campeonato = campeonatoRepository.findById(campeonatoId)
+                .orElseThrow(() -> new IllegalArgumentException("Campeonato não encontrado"));
+
         RodadaEntity rodada = rodadaRepository.findById(rodadaId)
                 .orElseThrow(() -> new IllegalArgumentException("Rodada não encontrada com id: " + rodadaId));
 
-        CampeonatoEntity campeonato = rodada.getCampeonato();
         List<? extends PartidaSimulavel> partidas;
         List<GrupoEntity> grupo = grupoRepository.findByCampeonato(campeonato);
 
@@ -108,10 +110,16 @@ public class SimularRodadaUseCase {
                 partidaMataMataRepository.save(partidaMataMata);
             }
 
+            Long grupoDefinido = null;
+
+            if (campeonato.getTipo() == MATA_MATA){
+                grupoDefinido = grupo.get(grupo.size()-1).getId();
+            }
+
             atualizarTabela(campeonato, partida.getMandante(), golsMandante, golsVisitante,
-                    PartidaEntity.Resultado.valueOf(resultado), true, grupo.get(grupo.size()-1).getId());
+                    PartidaEntity.Resultado.valueOf(resultado), true, grupoDefinido);
             atualizarTabela(campeonato, partida.getVisitante(), golsVisitante, golsMandante,
-                    PartidaEntity.Resultado.valueOf(resultado), false, grupo.get(grupo.size()-1).getId());
+                    PartidaEntity.Resultado.valueOf(resultado), false, grupoDefinido);
 
             resultados.add(new SimulacaoResponseDTO(
                     partida.getMandante().getNome(),
@@ -123,6 +131,7 @@ public class SimularRodadaUseCase {
         }
 
         rodada.setFinalizada(true);
+        rodadaRepository.save(rodada);
 
         if (isUltimaRodada(rodada, campeonato) && campeonato.getTipo() == PONTOS_CORRIDOS) {
             definirCampeao(campeonato);
