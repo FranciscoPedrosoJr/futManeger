@@ -1,5 +1,6 @@
 package com.futmaneger.infrastructure.persistence.entity;
 
+import com.futmaneger.domain.entity.PartidaSimulavel;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -16,7 +17,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "partidas")
 @Inheritance(strategy = InheritanceType.JOINED)
-public class PartidaEntity {
+public class PartidaEntity implements PartidaSimulavel {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -96,12 +97,27 @@ public class PartidaEntity {
         return clubeMandante;
     }
 
+    @Override
+    public ClubeEntity getVisitante() {
+        return clubeVisitante;
+    }
+
+    @Override
+    public boolean isFinalizada() {
+        return false;
+    }
+
     public CampeonatoEntity setCampeonato(CampeonatoEntity campeonato) {
         return this.campeonato = campeonato;
     }
 
     public void setFinalizada(boolean finalizada) {
         this.finalizada = finalizada;
+    }
+
+    @Override
+    public void aplicarResultado(int golsMandante, int golsVisitante, String resultado) {
+
     }
 
     public enum Resultado {

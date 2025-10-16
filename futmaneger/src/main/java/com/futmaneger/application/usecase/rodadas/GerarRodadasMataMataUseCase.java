@@ -12,6 +12,7 @@ import com.futmaneger.infrastructure.persistence.entity.PartidaFaseDeGruposEntit
 import com.futmaneger.infrastructure.persistence.entity.PartidaMataMataEntity;
 import com.futmaneger.infrastructure.persistence.entity.RodadaEntity;
 import com.futmaneger.infrastructure.persistence.entity.TabelaCampeonatoEntity;
+import com.futmaneger.infrastructure.persistence.jpa.CampeonatoRepository;
 import com.futmaneger.infrastructure.persistence.jpa.ClubeParticipanteRepository;
 import com.futmaneger.infrastructure.persistence.jpa.GrupoRepository;
 import com.futmaneger.infrastructure.persistence.jpa.PartidaFaseDeGruposRepository;
@@ -32,13 +33,15 @@ public class GerarRodadasMataMataUseCase {
     private final PartidaMataMataRepository partidaMataMataRepository;
     private final TabelaCampeonatoRepository tabelaCampeonatoRepository;
     private final RodadaRepository rodadaRepository;
+    private final CampeonatoRepository campeonatoRepository;
 
     public GerarRodadasMataMataUseCase(ClubeParticipanteRepository clubeParticipanteRepository,
                                        GrupoRepository gruposRepository,
                                        PartidaRepository partidaRepository,
                                        PartidaMataMataRepository partidaMataMataRepository,
                                        TabelaCampeonatoRepository tabelaCampeonatoRepository,
-                                       RodadaRepository rodadaRepository) {
+                                       RodadaRepository rodadaRepository,
+                                       CampeonatoRepository campeonatoRepository) {
 
         this.clubeParticipanteRepository = clubeParticipanteRepository;
         this.gruposRepository = gruposRepository;
@@ -46,6 +49,7 @@ public class GerarRodadasMataMataUseCase {
         this.partidaMataMataRepository = partidaMataMataRepository;
         this.tabelaCampeonatoRepository = tabelaCampeonatoRepository;
         this.rodadaRepository = rodadaRepository;
+        this.campeonatoRepository = campeonatoRepository;
     }
 
     public GerarRodadasResponseDTO gerarRodadas(CampeonatoEntity campeonato) {
@@ -136,7 +140,13 @@ public class GerarRodadasMataMataUseCase {
             classificados.add(segundo);
         }
 
-        PartidaMataMataEntity.FaseMataMata faseInicial = definirFaseInicial(classificados.size());
+        PartidaMataMataEntity.FaseMataMata faseInicial = campeonato.getFaseAtualMataMata();
+
+        if(campeonato.getFaseAtualMataMata() == null){
+            faseInicial = definirFaseInicial(classificados.size());
+        }else{
+            faseInicial = determinarProximaFase(faseInicial);
+        }
 
         gerarPartidasMataMataRecursivamente(classificados, campeonato, faseInicial);
     }
@@ -172,10 +182,12 @@ public class GerarRodadasMataMataUseCase {
             partida.setFinalizada(false);
             partida.setGolsMandante(0);
             partida.setGolsVisitante(0);
-            partida.setRodada(rodada.getNumero());
+            partida.setRodada(rodada);
 
             partidas.add(partida);
         }
+        campeonato.setFaseAtualMataMata(fase);
+        campeonatoRepository.save(campeonato);
 
         partidaMataMataRepository.saveAll(partidas);
     }
@@ -246,5 +258,14 @@ public class GerarRodadasMataMataUseCase {
             default -> throw new IllegalArgumentException("Quantidade de classificados inválida: " + quantidadeClassificados);
         };
 
+    }
+
+    private PartidaMataMataEntity.FaseMataMata determinarProximaFase(PartidaMataMataEntity.FaseMataMata faseInicial){
+        return switch (faseInicial){
+            case OITAVAS -> PartidaMataMataEntity.FaseMataMata.QUARTAS;
+            case QUARTAS -> PartidaMataMataEntity.FaseMataMata.SEMIFINAL;
+            case SEMIFINAL -> PartidaMataMataEntity.FaseMataMata.FINAL;
+            case FINAL -> null;
+        };
     }
 }

@@ -49,6 +49,9 @@ public class CampeonatoEntity {
     private List<RodadaEntity> rodadas = new ArrayList<>();
     private boolean mataMataIniciado;
 
+    @Enumerated(EnumType.STRING)
+    private PartidaMataMataEntity.FaseMataMata faseAtualMataMata;
+
     public List<RodadaEntity> getRodadas() {
         return rodadas;
     }
@@ -99,6 +102,14 @@ public class CampeonatoEntity {
 
     public boolean getMataMataIniciado() {
         return mataMataIniciado;
+    }
+
+    public PartidaMataMataEntity.FaseMataMata getFaseAtualMataMata() {
+        return faseAtualMataMata;
+    }
+
+    public void setFaseAtualMataMata(PartidaMataMataEntity.FaseMataMata fase) {
+        this.faseAtualMataMata = fase;
     }
 
     public enum TipoCampeonato {

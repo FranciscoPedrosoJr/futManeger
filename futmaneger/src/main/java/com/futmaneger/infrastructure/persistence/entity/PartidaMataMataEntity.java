@@ -1,5 +1,6 @@
 package com.futmaneger.infrastructure.persistence.entity;
 
+import com.futmaneger.domain.entity.PartidaSimulavel;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -10,7 +11,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 
 @Entity
-public class PartidaMataMataEntity extends PartidaEntity{
+public class PartidaMataMataEntity implements PartidaSimulavel {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,14 +34,50 @@ public class PartidaMataMataEntity extends PartidaEntity{
 
     private int golsClubeA;
     private int golsClubeB;
-
     private boolean jogoDeVolta;
     private boolean foiParaPenaltis;
     private int golsPenaltisA;
     private int golsPenaltisB;
-
     private boolean finalizada;
 
+    @ManyToOne
+    @JoinColumn(name = "rodada_id")
+    private RodadaEntity rodada;
+
+    public void setRodada(RodadaEntity rodada) {
+        this.rodada = rodada;
+    }
+
+    public enum FaseMataMata {
+        OITAVAS, QUARTAS, SEMIFINAL, FINAL
+    }
+
+    @Override
+    public ClubeEntity getMandante() {
+        return clubeA;
+    }
+
+    @Override
+    public ClubeEntity getVisitante() {
+        return clubeB;
+    }
+
+    @Override
+    public boolean isFinalizada() {
+        return finalizada;
+    }
+
+    @Override
+    public void setFinalizada(boolean finalizada) {
+        this.finalizada = finalizada;
+    }
+
+    @Override
+    public void aplicarResultado(int golsMandante, int golsVisitante, String resultado) {
+        this.golsClubeA = golsMandante;
+        this.golsClubeB = golsVisitante;
+        this.finalizada = true;
+    }
     public Long getId() {
         return id;
     }
@@ -134,18 +171,4 @@ public class PartidaMataMataEntity extends PartidaEntity{
         this.golsPenaltisB = golsPenaltisB;
     }
 
-    public boolean isFinalizada() {
-        return finalizada;
-    }
-
-    public void setFinalizada(boolean finalizada) {
-        this.finalizada = finalizada;
-    }
-
-    public enum FaseMataMata {
-        OITAVAS,
-        QUARTAS,
-        SEMIFINAL,
-        FINAL;
-    }
 }

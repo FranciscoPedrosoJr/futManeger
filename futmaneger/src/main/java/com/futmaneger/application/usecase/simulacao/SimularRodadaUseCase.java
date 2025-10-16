@@ -8,6 +8,7 @@ import com.futmaneger.application.exception.NaoEncontradoException;
 import com.futmaneger.application.usecase.rodadas.GerarRodadasMataMataUseCase;
 import com.futmaneger.domain.entity.Clube;
 import com.futmaneger.domain.entity.Jogador;
+import com.futmaneger.domain.entity.PartidaSimulavel;
 import com.futmaneger.domain.repository.JogadorRepository;
 import com.futmaneger.infrastructure.persistence.entity.*;
 import com.futmaneger.infrastructure.persistence.jpa.CampeonatoRepository;
@@ -68,54 +69,57 @@ public class SimularRodadaUseCase {
                 .orElseThrow(() -> new IllegalArgumentException("Rodada não encontrada com id: " + rodadaId));
 
         CampeonatoEntity campeonato = rodada.getCampeonato();
+        List<? extends PartidaSimulavel> partidas;
         List<GrupoEntity> grupo = grupoRepository.findByCampeonato(campeonato);
 
+        if (Boolean.TRUE.equals(campeonato.getMataMataIniciado())) {
+            partidas = partidaMataMataRepository.findByRodada(rodada);
+        } else {
+            partidas = rodada.getPartidas();
+        }
 
-        List<PartidaEntity> partidas = rodada.getPartidas();
         if (partidas.isEmpty()) {
             throw new IllegalArgumentException("Nenhuma partida cadastrada para a rodada");
         }
 
         List<SimulacaoResponseDTO> resultados = new ArrayList<>();
 
-        for (PartidaEntity partida : partidas) {
-            if (partida.getResultado() != null) {
-                continue;
-            }
-            if(campeonato.getMataMataIniciado() == true){
-                List<PartidaMataMataEntity> partidasMataMata = partidaMataMataRepository.findByRodada(rodada);
-                EscalacaoEntity escalacaoMandante = buscarOuGerarEscalacao(partidasMataMata.getFirst().getClubeA());
-                EscalacaoEntity escalacaoVisitante = buscarOuGerarEscalacao(partidasMataMata.getFirst().getClubeB());
+        for (PartidaSimulavel partida : partidas) {
+            if (partida.isFinalizada()) continue;
 
-            }
-
-            EscalacaoEntity escalacaoMandante = buscarOuGerarEscalacao(partida.getClubeMandante());
-            EscalacaoEntity escalacaoVisitante = buscarOuGerarEscalacao(partida.getClubeVisitante());
+            EscalacaoEntity escalacaoMandante = buscarOuGerarEscalacao(partida.getMandante());
+            EscalacaoEntity escalacaoVisitante = buscarOuGerarEscalacao(partida.getVisitante());
 
             int golsMandante = calcularGols(escalacaoMandante, escalacaoVisitante);
             int golsVisitante = calcularGols(escalacaoVisitante, escalacaoMandante);
 
-            PartidaEntity.Resultado resultado = determinarResultado(golsMandante, golsVisitante);
+            if (campeonato.getFaseAtualMataMata() == PartidaMataMataEntity.FaseMataMata.FINAL && golsMandante == golsVisitante) {
+                if (new Random().nextBoolean()) golsMandante++;
+                else golsVisitante++;
+            }
 
-            partida.setGolsMandante(golsMandante);
-            partida.setGolsVisitante(golsVisitante);
-            partida.setResultado(resultado);
-            partida.setDataHora(LocalDateTime.now());
-            partida.setFinalizada(true);
-            partidaRepository.save(partida);
+            String resultado = determinarResultado(golsMandante, golsVisitante).name();
 
-            atualizarTabela(campeonato, partida.getClubeMandante(), golsMandante, golsVisitante, resultado, true, grupo.get(grupo.size()-1).getId());
-            atualizarTabela(campeonato, partida.getClubeVisitante(), golsVisitante, golsMandante, resultado, false, grupo.get(grupo.size()-1).getId());
+            partida.aplicarResultado(golsMandante, golsVisitante, resultado);
+
+            if (partida instanceof PartidaEntity partidaNormal) {
+                partidaRepository.save(partidaNormal);
+            } else if (partida instanceof PartidaMataMataEntity partidaMataMata) {
+                partidaMataMataRepository.save(partidaMataMata);
+            }
+
+            atualizarTabela(campeonato, partida.getMandante(), golsMandante, golsVisitante,
+                    PartidaEntity.Resultado.valueOf(resultado), true, grupo.get(grupo.size()-1).getId());
+            atualizarTabela(campeonato, partida.getVisitante(), golsVisitante, golsMandante,
+                    PartidaEntity.Resultado.valueOf(resultado), false, grupo.get(grupo.size()-1).getId());
 
             resultados.add(new SimulacaoResponseDTO(
-                    partida.getClubeMandante().getNome(),
+                    partida.getMandante().getNome(),
                     golsMandante,
-                    partida.getClubeVisitante().getNome(),
+                    partida.getVisitante().getNome(),
                     golsVisitante,
-                    resultado.name()
+                    resultado
             ));
-
-
         }
 
         rodada.setFinalizada(true);
@@ -123,8 +127,11 @@ public class SimularRodadaUseCase {
         if (isUltimaRodada(rodada, campeonato) && campeonato.getTipo() == PONTOS_CORRIDOS) {
             definirCampeao(campeonato);
             campeonato.setEmAndamento(false);
-        }else if (campeonato.getTipo() == MATA_MATA && isUltimaRodada(rodada, campeonato)){
+        } else if (campeonato.getTipo() == MATA_MATA && isUltimaRodada(rodada, campeonato) &&
+                campeonato.getFaseAtualMataMata() != PartidaMataMataEntity.FaseMataMata.FINAL) {
             gerarRodadasMataMataUseCase.gerarMataMata(campeonato);
+        } else if (campeonato.getFaseAtualMataMata() == PartidaMataMataEntity.FaseMataMata.FINAL){
+            definirCampeao(campeonato);
         }
 
         return resultados;
@@ -286,6 +293,7 @@ public class SimularRodadaUseCase {
         if (!classificacao.isEmpty()) {
             ClubeEntity campeao = classificacao.get(0).getClube();
             campeonato.setCampeao(campeao);
+            campeonato.setEmAndamento(false);
             campeonatoRepository.save(campeonato);
         }
     }
