@@ -75,6 +75,7 @@ public class GerarRodadasUseCase {
 
             for (PartidaEntity partida : partidas) {
                 partida.setRodada(rodada.getNumero());
+                partida.setCampeonato(campeonato);
                 todasPartidas.add(partidaRepository.save(partida));
             }
             rodadas.add(rodada);
@@ -90,6 +91,7 @@ public class GerarRodadasUseCase {
 
             for (PartidaEntity partida : partidas) {
                 partida.setRodada(rodada.getNumero());
+                partida.setCampeonato(campeonato);
                 todasPartidas.add(partidaRepository.save(partida));
             }
             rodadas.add(rodada);
