@@ -68,7 +68,7 @@ public class SimularRodadaUseCase {
         CampeonatoEntity campeonato = campeonatoRepository.findById(campeonatoId)
                 .orElseThrow(() -> new IllegalArgumentException("Campeonato não encontrado"));
 
-        RodadaEntity rodada = rodadaRepository.findById(rodadaId)
+        RodadaEntity rodada = rodadaRepository.findByIdAndCampeonatoIdWithFetch(rodadaId, campeonatoId)
                 .orElseThrow(() -> new IllegalArgumentException("Rodada não encontrada com id: " + rodadaId));
 
         List<? extends PartidaSimulavel> partidas;

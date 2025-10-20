@@ -13,4 +13,17 @@ public interface RodadaRepository extends JpaRepository<RodadaEntity, Long> {
 
     @Query("SELECT MAX(r.numero) FROM RodadaEntity r WHERE r.campeonato = :campeonato")
     Optional<Integer> findMaxNumeroByCampeonato(@Param("campeonato") CampeonatoEntity campeonato);
+
+    @Query("""
+
+        SELECT r
+        FROM RodadaEntity r
+        JOIN r.campeonato c
+        WHERE r.numero = :rodadaId AND c.id = :campeonatoId
+
+    """)
+    Optional<RodadaEntity> findByIdAndCampeonatoIdWithFetch(
+            @Param("rodadaId") Long rodadaId,
+            @Param("campeonatoId") Long campeonatoId
+    );
 }
