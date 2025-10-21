@@ -120,6 +120,11 @@ public class PartidaEntity implements PartidaSimulavel {
 
     }
 
+    @Override
+    public Long getId() {
+        return id;
+    }
+
     public enum Resultado {
         VITORIA_MANDANTE, VITORIA_VISITANTE, EMPATE
     }

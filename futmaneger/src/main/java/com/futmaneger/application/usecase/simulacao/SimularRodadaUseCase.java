@@ -6,7 +6,6 @@ import static com.futmaneger.infrastructure.persistence.entity.CampeonatoEntity.
 import com.futmaneger.application.dto.SimulacaoResponseDTO;
 import com.futmaneger.application.exception.NaoEncontradoException;
 import com.futmaneger.application.usecase.rodadas.GerarRodadasMataMataUseCase;
-import com.futmaneger.domain.entity.Clube;
 import com.futmaneger.domain.entity.Jogador;
 import com.futmaneger.domain.entity.PartidaSimulavel;
 import com.futmaneger.domain.repository.JogadorRepository;
@@ -81,7 +80,7 @@ public class SimularRodadaUseCase {
         }
 
         if (partidas.isEmpty()) {
-            throw new IllegalArgumentException("Nenhuma partida cadastrada para a rodada");
+            throw new NaoEncontradoException("Nenhuma partida cadastrada");
         }
 
         List<SimulacaoResponseDTO> resultados = new ArrayList<>();
@@ -120,6 +119,10 @@ public class SimularRodadaUseCase {
                     PartidaEntity.Resultado.valueOf(resultado), true, grupoDefinido);
             atualizarTabela(campeonato, partida.getVisitante(), golsVisitante, golsMandante,
                     PartidaEntity.Resultado.valueOf(resultado), false, grupoDefinido);
+
+            if(campeonato.getMataMataIniciado() == false){
+                salvarPartida(partida.getId(), golsMandante, golsVisitante, resultado);
+            }
 
             resultados.add(new SimulacaoResponseDTO(
                     partida.getMandante().getNome(),
@@ -311,4 +314,21 @@ public class SimularRodadaUseCase {
         int totalRodadas = campeonato.getRodadas().size();
         return rodada.getNumero() == totalRodadas;
     }
+
+    private void salvarPartida(Long partidaId,
+                               int golsMandante,
+                               int golsVisitante,
+                               String resultado) {
+
+        PartidaEntity partida = partidaRepository.findById(partidaId)
+                .orElseThrow(() -> new NaoEncontradoException("Partida não encontrada com id: " + partidaId));
+
+        partida.setGolsMandante(golsMandante);
+        partida.setGolsVisitante(golsVisitante);
+        partida.setResultado(PartidaEntity.Resultado.valueOf(resultado));
+        partida.setDataHora(LocalDateTime.now());
+
+        partidaRepository.save(partida);
+    }
+
 }

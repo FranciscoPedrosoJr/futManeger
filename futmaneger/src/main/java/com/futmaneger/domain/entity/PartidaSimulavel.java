@@ -11,4 +11,6 @@ public interface PartidaSimulavel {
     void setFinalizada(boolean finalizada);
 
     void aplicarResultado(int golsMandante, int golsVisitante, String resultado);
+
+    Long getId();
 }
