@@ -3,6 +3,7 @@ package com.futmaneger.application.usecase.rodadas;
 import com.futmaneger.application.dto.GerarFaseDeGruposResponseDTO;
 import com.futmaneger.application.dto.GerarRodadasResponseDTO;
 import com.futmaneger.application.dto.GrupoResponseDTO;
+import com.futmaneger.application.exception.NaoEncontradoException;
 import com.futmaneger.infrastructure.persistence.entity.CampeonatoEntity;
 import com.futmaneger.infrastructure.persistence.entity.ClubeEntity;
 import com.futmaneger.infrastructure.persistence.entity.ClubeParticipanteEntity;
@@ -130,11 +131,11 @@ public class GerarRodadasMataMataUseCase {
 
             ClubeParticipanteEntity primeiro = (ClubeParticipanteEntity) clubeParticipanteRepository
                     .findByClubeAndCampeonato(tabelaGrupo.get(0).getClube(), campeonato)
-                    .orElseThrow(() -> new IllegalStateException("Participante não encontrado"));
+                    .orElseThrow(() -> new NaoEncontradoException("Participante não encontrado"));
 
             ClubeParticipanteEntity segundo = (ClubeParticipanteEntity) clubeParticipanteRepository
                     .findByClubeAndCampeonato(tabelaGrupo.get(1).getClube(), campeonato)
-                    .orElseThrow(() -> new IllegalStateException("Participante não encontrado"));
+                    .orElseThrow(() -> new NaoEncontradoException("Participante não encontrado"));
 
             classificados.add(primeiro);
             classificados.add(segundo);

@@ -7,9 +7,12 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 @Entity
-@Table(name = "tabela_campeonato")
+@Table(name = "tabela_campeonato",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"campeonato_id", "clube_id"}))
+
 public class TabelaCampeonatoEntity {
 
     @Id
@@ -34,12 +37,12 @@ public class TabelaCampeonatoEntity {
     private int saldoGols;
     private int jogos;
 
-    public CampeonatoEntity setCampeonato(CampeonatoEntity campeonato) {
-        return this.campeonato = campeonato;
+    public void setCampeonato(CampeonatoEntity campeonato) {
+        this.campeonato = campeonato;
     }
 
-    public ClubeEntity setClube(ClubeEntity clube) {
-        return this.clube = clube;
+    public void setClube(ClubeEntity clube) {
+        this.clube = clube;
     }
 
     public int getJogos() {
@@ -114,7 +117,7 @@ public class TabelaCampeonatoEntity {
         return clube;
     }
 
-    public Long setGrupo(Long grupo) {
-        return this.grupo = grupo;
+    public void setGrupo(Long grupo) {
+        this.grupo = grupo;
     }
 }

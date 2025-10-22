@@ -65,10 +65,10 @@ public class SimularRodadaUseCase {
     @Transactional
     public List<SimulacaoResponseDTO> executar(Long campeonatoId, Long rodadaId) {
         CampeonatoEntity campeonato = campeonatoRepository.findById(campeonatoId)
-                .orElseThrow(() -> new IllegalArgumentException("Campeonato não encontrado"));
+                .orElseThrow(() -> new NaoEncontradoException("Campeonato não encontrado"));
 
         RodadaEntity rodada = rodadaRepository.findByIdAndCampeonatoIdWithFetch(rodadaId, campeonatoId)
-                .orElseThrow(() -> new IllegalArgumentException("Rodada não encontrada com id: " + rodadaId));
+                .orElseThrow(() -> new NaoEncontradoException("Rodada não encontrada com id: " + rodadaId));
 
         List<? extends PartidaSimulavel> partidas;
         List<GrupoEntity> grupo = grupoRepository.findByCampeonato(campeonato);
@@ -77,9 +77,9 @@ public class SimularRodadaUseCase {
             partidas = partidaMataMataRepository.findByRodada(rodada);
         } else {
             partidas = rodada.getPartidas();
-        }
-
-        if (partidas.isEmpty()) {
+        } if (partidas.isEmpty()) {
+            partidas = partidaRepository.findPartidasByCampeonato(campeonato);
+        } if (partidas.isEmpty()){
             throw new NaoEncontradoException("Nenhuma partida cadastrada");
         }
 
