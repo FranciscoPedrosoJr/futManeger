@@ -78,7 +78,7 @@ public class SimularRodadaUseCase {
         } else {
             partidas = rodada.getPartidas();
         } if (partidas.isEmpty()) {
-            partidas = partidaRepository.findPartidasByCampeonato(campeonato);
+            partidas = partidaRepository.buscarPorCampeonatoERodada(campeonato, Math.toIntExact(rodadaId));
         } if (partidas.isEmpty()){
             throw new NaoEncontradoException("Nenhuma partida cadastrada");
         }
