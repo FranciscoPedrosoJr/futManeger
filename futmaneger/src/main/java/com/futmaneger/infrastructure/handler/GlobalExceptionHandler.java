@@ -46,7 +46,7 @@ public class GlobalExceptionHandler {
         return problemDetail;
     }
 
-    @ExceptionHandler(NaoEncontradoException.class)
+    @ExceptionHandler(DadosInvalidosException.class)
     public ProblemDetail handleDadosInvalidosException(DadosInvalidosException ex, jakarta.servlet.http.HttpServletRequest request) {
         ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
         problemDetail.setTitle("Erro de validação");
