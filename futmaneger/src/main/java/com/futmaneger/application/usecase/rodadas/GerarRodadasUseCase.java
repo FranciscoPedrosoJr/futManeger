@@ -2,6 +2,7 @@ package com.futmaneger.application.usecase.rodadas;
 
 import com.futmaneger.application.dto.GerarRodadasRequestDTO;
 import com.futmaneger.application.dto.GerarRodadasResponseDTO;
+import com.futmaneger.application.exception.DadosInvalidosException;
 import com.futmaneger.application.exception.NaoEncontradoException;
 import com.futmaneger.infrastructure.persistence.entity.CampeonatoEntity;
 import com.futmaneger.infrastructure.persistence.entity.ClubeEntity;
@@ -46,7 +47,7 @@ public class GerarRodadasUseCase {
                 .orElseThrow(() -> new NaoEncontradoException("Campeonato não encontrado"));
 
         if (!campeonato.getRodadas().isEmpty()) {
-            throw new IllegalStateException("Rodadas já foram geradas para este campeonato");
+            throw new DadosInvalidosException("Rodadas já foram geradas para este campeonato");
         }
 
         if (campeonato.getTipo() == CampeonatoEntity.TipoCampeonato.MATA_MATA) {
@@ -57,7 +58,7 @@ public class GerarRodadasUseCase {
         List<ClubeEntity> clubes = participantes.stream().map(ClubeParticipanteEntity::getClube).toList();
 
         if (clubes.size() < 2) {
-            throw new IllegalStateException("Número insuficiente de clubes para gerar rodadas");
+            throw new DadosInvalidosException("Número insuficiente de clubes para gerar rodadas");
         }
 
         List<PartidaEntity> todasPartidas = new ArrayList<>();

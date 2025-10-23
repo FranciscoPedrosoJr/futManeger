@@ -2,7 +2,7 @@ package com.futmaneger.application.usecase.campeonato;
 
 import com.futmaneger.application.dto.CampeonatoResponseDTO;
 import com.futmaneger.application.dto.CriarCampeonatoRequestDTO;
-import com.futmaneger.domain.entity.Clube;
+import com.futmaneger.application.exception.DadosInvalidosException;
 import com.futmaneger.infrastructure.persistence.entity.CampeonatoEntity;
 import com.futmaneger.infrastructure.persistence.entity.ClubeEntity;
 import com.futmaneger.infrastructure.persistence.entity.ClubeParticipanteEntity;
@@ -32,7 +32,7 @@ public class CriarCampeonatoUseCase {
         List<ClubeEntity> clubes = buscarClubesPorLocalidade(request);
 
         if (clubes.size() < 2) {
-            throw new IllegalArgumentException("Número insuficiente de clubes para criar um campeonato");
+            throw new DadosInvalidosException("Número insuficiente de clubes para criar um campeonato");
         }
 
         CampeonatoEntity.TipoCampeonato tipo =
@@ -74,7 +74,7 @@ public class CriarCampeonatoUseCase {
         } else if (request.pais() != null && !request.pais().isBlank()) {
             return clubeRepository.findByPais(request.pais());
         }
-        throw new IllegalArgumentException("É necessário informar país ou estado para criar o campeonato");
+        throw new DadosInvalidosException("É necessário informar país ou estado para criar o campeonato");
     }
 
     private boolean isPotenciaDeDois(int numero) {

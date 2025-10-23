@@ -1,6 +1,7 @@
 package com.futmaneger.infrastructure.handler;
 
 import com.futmaneger.application.exception.AutenticacaoException;
+import com.futmaneger.application.exception.DadosInvalidosException;
 import com.futmaneger.application.exception.NaoEncontradoException;
 import com.futmaneger.application.exception.NenhumClubeCadastradoException;
 import java.net.URI;
@@ -38,6 +39,17 @@ public class GlobalExceptionHandler {
     public ProblemDetail handleNaoEncontradoException(NaoEncontradoException ex, jakarta.servlet.http.HttpServletRequest request) {
         ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
         problemDetail.setTitle("Não encontrado");
+        problemDetail.setDetail(ex.getMessage());
+        problemDetail.setInstance(URI.create(request.getRequestURI()));
+        problemDetail.setProperty("timestamp", OffsetDateTime.now());
+
+        return problemDetail;
+    }
+
+    @ExceptionHandler(NaoEncontradoException.class)
+    public ProblemDetail handleDadosInvalidosException(DadosInvalidosException ex, jakarta.servlet.http.HttpServletRequest request) {
+        ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
+        problemDetail.setTitle("Erro de validação");
         problemDetail.setDetail(ex.getMessage());
         problemDetail.setInstance(URI.create(request.getRequestURI()));
         problemDetail.setProperty("timestamp", OffsetDateTime.now());

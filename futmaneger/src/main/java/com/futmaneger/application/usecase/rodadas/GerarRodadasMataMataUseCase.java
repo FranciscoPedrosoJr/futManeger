@@ -1,8 +1,8 @@
 package com.futmaneger.application.usecase.rodadas;
 
-import com.futmaneger.application.dto.GerarFaseDeGruposResponseDTO;
 import com.futmaneger.application.dto.GerarRodadasResponseDTO;
 import com.futmaneger.application.dto.GrupoResponseDTO;
+import com.futmaneger.application.exception.DadosInvalidosException;
 import com.futmaneger.application.exception.NaoEncontradoException;
 import com.futmaneger.infrastructure.persistence.entity.CampeonatoEntity;
 import com.futmaneger.infrastructure.persistence.entity.ClubeEntity;
@@ -16,7 +16,6 @@ import com.futmaneger.infrastructure.persistence.entity.TabelaCampeonatoEntity;
 import com.futmaneger.infrastructure.persistence.jpa.CampeonatoRepository;
 import com.futmaneger.infrastructure.persistence.jpa.ClubeParticipanteRepository;
 import com.futmaneger.infrastructure.persistence.jpa.GrupoRepository;
-import com.futmaneger.infrastructure.persistence.jpa.PartidaFaseDeGruposRepository;
 import com.futmaneger.infrastructure.persistence.jpa.PartidaMataMataRepository;
 import com.futmaneger.infrastructure.persistence.jpa.PartidaRepository;
 import com.futmaneger.infrastructure.persistence.jpa.RodadaRepository;
@@ -256,7 +255,7 @@ public class GerarRodadasMataMataUseCase {
             case 8 -> PartidaMataMataEntity.FaseMataMata.QUARTAS;
             case 4 -> PartidaMataMataEntity.FaseMataMata.SEMIFINAL;
             case 2 -> PartidaMataMataEntity.FaseMataMata.FINAL;
-            default -> throw new IllegalArgumentException("Quantidade de classificados inválida: " + quantidadeClassificados);
+            default -> throw new DadosInvalidosException("Quantidade de classificados inválida: " + quantidadeClassificados);
         };
 
     }
