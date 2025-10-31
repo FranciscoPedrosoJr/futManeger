@@ -71,18 +71,19 @@ public class SimularRodadaUseCase {
                 .orElseThrow(() -> new NaoEncontradoException("Rodada não encontrada com id: " + rodadaId));
 
         List<? extends PartidaSimulavel> partidas;
+        partidas = partidaRepository.buscarPorCampeonatoERodada(campeonato, Math.toIntExact(rodadaId));
         List<GrupoEntity> grupo = grupoRepository.findByCampeonato(campeonato);
-
+        //Melhorar esse trecho
         if (Boolean.TRUE.equals(campeonato.getMataMataIniciado())) {
             partidas = partidaMataMataRepository.findByRodada(rodada);
-        } else {
+        } else if (partidas.isEmpty()){
             partidas = rodada.getPartidas();
         } if (partidas.isEmpty()) {
             partidas = partidaRepository.buscarPorCampeonatoERodada(campeonato, Math.toIntExact(rodadaId));
         } if (partidas.isEmpty()){
             throw new NaoEncontradoException("Nenhuma partida cadastrada");
         }
-
+        //até aqui
         List<SimulacaoResponseDTO> resultados = new ArrayList<>();
 
         for (PartidaSimulavel partida : partidas) {
@@ -111,7 +112,7 @@ public class SimularRodadaUseCase {
 
             Long grupoDefinido = null;
 
-            if (campeonato.getTipo() == MATA_MATA){
+            if (MATA_MATA.equals(campeonato.getTipo())){
                 grupoDefinido = grupo.get(grupo.size()-1).getId();
             }
 
@@ -136,10 +137,10 @@ public class SimularRodadaUseCase {
         rodada.setFinalizada(true);
         rodadaRepository.save(rodada);
 
-        if (isUltimaRodada(rodada, campeonato) && campeonato.getTipo() == PONTOS_CORRIDOS) {
+        if (isUltimaRodada(rodada, campeonato) && PONTOS_CORRIDOS.equals(campeonato.getTipo())) {
             definirCampeao(campeonato);
             campeonato.setEmAndamento(false);
-        } else if (campeonato.getTipo() == MATA_MATA && isUltimaRodada(rodada, campeonato) &&
+        } else if (MATA_MATA.equals(campeonato.getTipo()) && isUltimaRodada(rodada, campeonato) &&
                 campeonato.getFaseAtualMataMata() != PartidaMataMataEntity.FaseMataMata.FINAL) {
             gerarRodadasMataMataUseCase.gerarMataMata(campeonato);
         } else if (campeonato.getFaseAtualMataMata() == PartidaMataMataEntity.FaseMataMata.FINAL){
@@ -266,7 +267,7 @@ public class SimularRodadaUseCase {
         tabela.setGolsContra(tabela.getGolsContra() + golsContra);
         tabela.setSaldoGols(tabela.getSaldoGols() + (golsPro - golsContra));
 
-        if (campeonato.getTipo() == MATA_MATA){
+        if (MATA_MATA.equals(campeonato.getTipo())){
 
             tabela.setGrupo(grupo);
         }
@@ -327,6 +328,7 @@ public class SimularRodadaUseCase {
         partida.setGolsVisitante(golsVisitante);
         partida.setResultado(PartidaEntity.Resultado.valueOf(resultado));
         partida.setDataHora(LocalDateTime.now());
+        partida.setFinalizada(true);
 
         partidaRepository.save(partida);
     }

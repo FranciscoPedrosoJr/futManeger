@@ -21,7 +21,9 @@ import com.futmaneger.infrastructure.persistence.jpa.PartidaRepository;
 import com.futmaneger.infrastructure.persistence.jpa.RodadaRepository;
 import com.futmaneger.infrastructure.persistence.jpa.TabelaCampeonatoRepository;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -218,11 +220,25 @@ public class GerarRodadasMataMataUseCase {
         int rodadaNumero = 1;
         int n = grupo.size();
 
-        // Round-robin simples
+        if (n % 2 != 0) {
+            grupo.add(null);
+            n++;
+        }
+
         for (int rodada = 0; rodada < n - 1; rodada++) {
+            Set<Long> clubesDaRodada = new HashSet<>();
             for (int i = 0; i < n / 2; i++) {
-                ClubeEntity mandante = grupo.get(i).getClube();
-                ClubeEntity visitante = grupo.get(n - 1 - i).getClube();
+                ClubeParticipanteEntity mandanteEntity = grupo.get(i);
+                ClubeParticipanteEntity visitanteEntity = grupo.get(n - 1 - i);
+
+                if (mandanteEntity == null || visitanteEntity == null) continue;
+
+                ClubeEntity mandante = mandanteEntity.getClube();
+                ClubeEntity visitante = visitanteEntity.getClube();
+
+                if (clubesDaRodada.contains(mandante.getId()) || clubesDaRodada.contains(visitante.getId())) {
+                    continue;
+                }
 
                 PartidaEntity partida = new PartidaEntity();
                 partida.setClubeMandante(mandante);
@@ -234,9 +250,11 @@ public class GerarRodadasMataMataUseCase {
                 partida.setFinalizada(false);
 
                 partidas.add(partida);
+
+                clubesDaRodada.add(mandante.getId());
+                clubesDaRodada.add(visitante.getId());
             }
 
-            // Rotaciona os times (exceto o primeiro)
             List<ClubeParticipanteEntity> novaOrdem = new ArrayList<>();
             novaOrdem.add(grupo.get(0));
             novaOrdem.add(grupo.get(n - 1));

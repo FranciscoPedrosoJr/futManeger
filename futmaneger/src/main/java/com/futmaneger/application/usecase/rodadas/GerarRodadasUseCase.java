@@ -50,7 +50,7 @@ public class GerarRodadasUseCase {
             throw new DadosInvalidosException("Rodadas já foram geradas para este campeonato");
         }
 
-        if (campeonato.getTipo() == CampeonatoEntity.TipoCampeonato.MATA_MATA) {
+        if (campeonato.getTipo() != null && CampeonatoEntity.TipoCampeonato.MATA_MATA.name().equals(campeonato.getTipo().name())) {
             return gerarRodadasMataMataUseCase.gerarRodadas(campeonato);
         }
 
@@ -118,18 +118,19 @@ public class GerarRodadasUseCase {
         }
 
         int rodadasTotais = n - 1;
+        int metade = n / 2;
 
         for (int rodada = 0; rodada < rodadasTotais; rodada++) {
             List<PartidaEntity> partidasDaRodada = new ArrayList<>();
 
-            for (int i = 0; i < n / 2; i++) {
-                ClubeEntity casa = lista.get(i);
-                ClubeEntity fora = lista.get(n - 1 - i);
+            for (int i = 0; i < metade; i++) {
+                ClubeEntity mandante = lista.get(i);
+                ClubeEntity visitante = lista.get(n - 1 - i);
 
-                if (casa != null && fora != null) {
+                if (mandante != null && visitante != null) {
                     PartidaEntity partida = new PartidaEntity();
-                    partida.setClubeMandante(inverterMandos ? fora : casa);
-                    partida.setClubeVisitante(inverterMandos ? casa : fora);
+                    partida.setClubeMandante(inverterMandos ? visitante : mandante);
+                    partida.setClubeVisitante(inverterMandos ? mandante : visitante);
                     partidasDaRodada.add(partida);
                 }
             }
