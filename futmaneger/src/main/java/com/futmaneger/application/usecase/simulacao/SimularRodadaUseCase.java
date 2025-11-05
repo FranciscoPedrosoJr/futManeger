@@ -4,6 +4,7 @@ import static com.futmaneger.infrastructure.persistence.entity.CampeonatoEntity.
 import static com.futmaneger.infrastructure.persistence.entity.CampeonatoEntity.TipoCampeonato.PONTOS_CORRIDOS;
 
 import com.futmaneger.application.dto.SimulacaoResponseDTO;
+import com.futmaneger.application.exception.DadosInvalidosException;
 import com.futmaneger.application.exception.NaoEncontradoException;
 import com.futmaneger.application.usecase.rodadas.GerarRodadasMataMataUseCase;
 import com.futmaneger.domain.entity.Jogador;
@@ -113,8 +114,27 @@ public class SimularRodadaUseCase {
             Long grupoDefinido = null;
 
             if (MATA_MATA.equals(campeonato.getTipo())){
-                grupoDefinido = grupo.get(grupo.size()-1).getId();
-            }
+                    GrupoEntity grupoClube = grupoRepository.findByClubes_IdAndCampeonato_Id(
+                            partida.getMandante().getId(),
+                            campeonato.getId()
+                    ).orElse(null);
+
+                    if (grupoClube == null) {
+                        grupoClube = grupoRepository.findByClubes_IdAndCampeonato_Id(
+                                partida.getVisitante().getId(),
+                                campeonato.getId()
+                        ).orElse(null);
+                    }
+
+                    if (grupoClube != null) {
+                        grupoDefinido = grupoClube.getId();
+                    } else {
+                        throw new DadosInvalidosException(
+                                "Não foi possível encontrar o grupo para o clube nesta partida (campeonato: "
+                                        + campeonato.getId() + ")"
+                        );
+                    }
+                }
 
             atualizarTabela(campeonato, partida.getMandante(), golsMandante, golsVisitante,
                     PartidaEntity.Resultado.valueOf(resultado), true, grupoDefinido);
@@ -267,9 +287,30 @@ public class SimularRodadaUseCase {
         tabela.setGolsContra(tabela.getGolsContra() + golsContra);
         tabela.setSaldoGols(tabela.getSaldoGols() + (golsPro - golsContra));
 
-        if (MATA_MATA.equals(campeonato.getTipo())){
+        Long grupoDefinido = null;
 
-            tabela.setGrupo(grupo);
+        if (MATA_MATA.equals(campeonato.getTipo())){
+            GrupoEntity grupoClube = grupoRepository.findByClubes_IdAndCampeonato_Id(
+                    tabela.getClube().getId(),
+                    campeonato.getId()
+            ).orElse(null);
+
+            if (grupoClube == null) {
+                grupoClube = grupoRepository.findByClubes_IdAndCampeonato_Id(
+                        tabela.getClube().getId(),
+                        campeonato.getId()
+                ).orElse(null);
+            }
+
+            if (grupoClube != null) {
+                grupoDefinido = grupoClube.getId();
+            } else {
+                throw new DadosInvalidosException(
+                        "Não foi possível encontrar o grupo para o clube nesta partida (campeonato: "
+                                + campeonato.getId() + ")"
+                );
+            }
+            tabela.setGrupo(grupoDefinido);
         }
 
         switch (resultado)

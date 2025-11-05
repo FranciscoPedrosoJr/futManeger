@@ -1,7 +1,7 @@
 package com.futmaneger.infrastructure.persistence.entity;
 
-import com.futmaneger.domain.entity.Clube;
 import jakarta.persistence.*;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -18,13 +18,13 @@ public class GrupoEntity {
     @JoinColumn(name = "campeonato_id", nullable = false)
     private CampeonatoEntity campeonato;
 
-    @ManyToMany
+    @ManyToMany(cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     @JoinTable(
             name = "grupo_clubes",
             joinColumns = @JoinColumn(name = "grupo_id"),
             inverseJoinColumns = @JoinColumn(name = "clube_id")
     )
-    private Set<ClubeEntity> clubes;
+    private Set<ClubeEntity> clubes = new HashSet<>();;
 
     public Long getId() {
         return id;

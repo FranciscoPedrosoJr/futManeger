@@ -23,7 +23,9 @@ import com.futmaneger.infrastructure.persistence.jpa.TabelaCampeonatoRepository;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -89,6 +91,12 @@ public class GerarRodadasMataMataUseCase {
             GrupoEntity grupoEntity = new GrupoEntity();
             grupoEntity.setNome("Grupo " + grupoIndex++);
             grupoEntity.setCampeonato(campeonato);
+
+            Set<ClubeEntity> clubesDoGrupo = grupo.stream()
+                    .map(ClubeParticipanteEntity::getClube)
+                    .collect(Collectors.toSet());
+
+            grupoEntity.setClubes(clubesDoGrupo);
             grupoEntity = gruposRepository.save(grupoEntity);
 
             List<PartidaEntity> partidas = gerarPartidasFaseDeGrupos(grupo, campeonato, grupoEntity);
@@ -101,6 +109,7 @@ public class GerarRodadasMataMataUseCase {
                             novaRodada.setCampeonato(campeonato);
                             return rodadaRepository.save(novaRodada);
                         });
+
                 if (!rodadas.contains(rodada)) {
                     rodadas.add(rodada);
                 }
@@ -108,13 +117,14 @@ public class GerarRodadasMataMataUseCase {
                 partidaRepository.save(partida);
                 todasPartidas.add(partida);
             }
+
             List<String> nomesClubes = grupo.stream()
                     .map(c -> c.getClube().getNome())
                     .toList();
 
-
             gruposDTO.add(new GrupoResponseDTO(grupoEntity.getNome(), nomesClubes));
         }
+
         return new GerarRodadasResponseDTO(campeonato.getId(), rodadas.size(), todasPartidas.size(), gruposDTO);
     }
 
@@ -125,40 +135,63 @@ public class GerarRodadasMataMataUseCase {
 
     public void gerarMataMata(CampeonatoEntity campeonato) {
         List<GrupoEntity> grupos = gruposRepository.findByCampeonato(campeonato);
+        if (grupos == null || grupos.isEmpty()) {
+            throw new NaoEncontradoException("Nenhum grupo encontrado para o campeonato id=" + campeonato.getId());
+        }
+
         List<ClubeParticipanteEntity> classificados = new ArrayList<>();
 
         for (GrupoEntity grupo : grupos) {
             List<TabelaCampeonatoEntity> tabelaGrupo = tabelaCampeonatoRepository.findByGrupoOrderByPontosDesc(grupo.getId());
 
-            ClubeParticipanteEntity primeiro = (ClubeParticipanteEntity) clubeParticipanteRepository
-                    .findByClubeAndCampeonato(tabelaGrupo.get(0).getClube(), campeonato)
-                    .orElseThrow(() -> new NaoEncontradoException("Participante não encontrado"));
+            if (tabelaGrupo == null || tabelaGrupo.size() < 2) {
+                throw new NaoEncontradoException("Não há registros suficientes na tabela para o grupo: " + grupo.getNome() +
+                        " (esperado >=2, encontrado=" + (tabelaGrupo == null ? 0 : tabelaGrupo.size()) + ")");
+            }
 
-            ClubeParticipanteEntity segundo = (ClubeParticipanteEntity) clubeParticipanteRepository
-                    .findByClubeAndCampeonato(tabelaGrupo.get(1).getClube(), campeonato)
-                    .orElseThrow(() -> new NaoEncontradoException("Participante não encontrado"));
+            ClubeEntity clubePrimeiro = tabelaGrupo.get(0).getClube();
+            ClubeEntity clubeSegundo = tabelaGrupo.get(1).getClube();
+
+            ClubeParticipanteEntity primeiro = clubeParticipanteRepository
+                    .findByClubeAndCampeonato(clubePrimeiro, campeonato)
+                    .orElseThrow(() -> new NaoEncontradoException("Participante não encontrado para clube: " + clubePrimeiro.getNome()));
+
+            ClubeParticipanteEntity segundo = clubeParticipanteRepository
+                    .findByClubeAndCampeonato(clubeSegundo, campeonato)
+                    .orElseThrow(() -> new NaoEncontradoException("Participante não encontrado para clube: " + clubeSegundo.getNome()));
 
             classificados.add(primeiro);
             classificados.add(segundo);
         }
 
-        PartidaMataMataEntity.FaseMataMata faseInicial = campeonato.getFaseAtualMataMata();
+        if (classificados.isEmpty()) {
+            throw new DadosInvalidosException("Nenhum clube classificado encontrado para gerar mata-mata.");
+        }
 
-        if(campeonato.getFaseAtualMataMata() == null){
+        PartidaMataMataEntity.FaseMataMata faseInicial = campeonato.getFaseAtualMataMata();
+        if (faseInicial == null) {
             faseInicial = definirFaseInicial(classificados.size());
-        }else{
+        } else {
             faseInicial = determinarProximaFase(faseInicial);
         }
 
         gerarPartidasMataMataRecursivamente(classificados, campeonato, faseInicial);
     }
 
-    private void gerarPartidasMataMataRecursivamente(List<ClubeParticipanteEntity> clubes,
-                                                     CampeonatoEntity campeonato,
-                                                     PartidaMataMataEntity.FaseMataMata fase) {
-        if (clubes.size() < 2) return;
+    private void gerarPartidasMataMataRecursivamente(
+            List<ClubeParticipanteEntity> clubes,
+            CampeonatoEntity campeonato,
+            PartidaMataMataEntity.FaseMataMata fase) {
+
+        if (clubes == null || clubes.size() < 2) return;
+
+        if (partidaMataMataRepository.existsByCampeonatoAndFase(campeonato, fase)) {
+            return;
+        }
 
         campeonato.setMataMataIniciado(true);
+        campeonato.setFaseAtualMataMata(fase);
+        campeonatoRepository.save(campeonato);
 
         int ultimaRodada = rodadaRepository.findMaxNumeroByCampeonato(campeonato)
                 .orElse(0);
@@ -188,8 +221,6 @@ public class GerarRodadasMataMataUseCase {
 
             partidas.add(partida);
         }
-        campeonato.setFaseAtualMataMata(fase);
-        campeonatoRepository.save(campeonato);
 
         partidaMataMataRepository.saveAll(partidas);
     }

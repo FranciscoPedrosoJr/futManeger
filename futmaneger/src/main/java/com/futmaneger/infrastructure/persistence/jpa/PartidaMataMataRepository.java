@@ -12,4 +12,6 @@ public interface PartidaMataMataRepository extends JpaRepository<PartidaMataMata
     List<PartidaMataMataEntity> findByCampeonatoId(Long campeonatoId);
 
     List<PartidaMataMataEntity> findByRodada(RodadaEntity rodada);
+
+    boolean existsByCampeonatoAndFase(CampeonatoEntity campeonato, PartidaMataMataEntity.FaseMataMata fase);
 }
