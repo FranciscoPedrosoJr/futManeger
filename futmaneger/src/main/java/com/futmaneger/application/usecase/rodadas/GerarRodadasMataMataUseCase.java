@@ -24,9 +24,12 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class GerarRodadasMataMataUseCase {
@@ -189,6 +192,13 @@ public class GerarRodadasMataMataUseCase {
             return;
         }
 
+        if (campeonato.getFaseAtualMataMata() != null
+                && !campeonato.getFaseAtualMataMata().equals(fase)) {
+            clubes = buscarVencedoresDaRodadaAnterior(campeonato);
+        }
+
+        if (clubes.size() < 2) return;
+
         campeonato.setMataMataIniciado(true);
         campeonato.setFaseAtualMataMata(fase);
         campeonatoRepository.save(campeonato);
@@ -206,6 +216,8 @@ public class GerarRodadasMataMataUseCase {
         List<PartidaMataMataEntity> partidas = new ArrayList<>();
 
         for (int i = 0; i < clubes.size(); i += 2) {
+            if (i + 1 >= clubes.size()) break;
+
             ClubeParticipanteEntity clubeA = clubes.get(i);
             ClubeParticipanteEntity clubeB = clubes.get(i + 1);
 
@@ -316,5 +328,59 @@ public class GerarRodadasMataMataUseCase {
             case SEMIFINAL -> PartidaMataMataEntity.FaseMataMata.FINAL;
             case FINAL -> null;
         };
+    }
+
+    public void gerarProximaFase(CampeonatoEntity campeonato) {
+        List<ClubeParticipanteEntity> vencedores = buscarVencedoresDaRodadaAnterior(campeonato);
+
+        PartidaMataMataEntity.FaseMataMata proximaFase = determinarProximaFase(campeonato.getFaseAtualMataMata());
+
+        gerarPartidasMataMataRecursivamente(vencedores, campeonato, proximaFase);
+    }
+
+    @Transactional(readOnly = true)
+    private List<ClubeParticipanteEntity> buscarVencedoresDaRodadaAnterior(CampeonatoEntity campeonato) {
+        Optional<Integer> numeroRodadaAtualOpt = rodadaRepository.findMaxNumeroByCampeonato(campeonato);
+
+        if (numeroRodadaAtualOpt.isEmpty() || numeroRodadaAtualOpt.get() <= 1) {
+            throw new DadosInvalidosException("Não há rodada anterior para buscar vencedores.");
+        }
+
+        int numeroRodadaAnterior = numeroRodadaAtualOpt.get() - 1;
+
+        RodadaEntity rodadaAnterior = rodadaRepository
+                .findByNumeroAndCampeonato(numeroRodadaAnterior, campeonato)
+                .orElseThrow(() -> new NaoEncontradoException("Rodada anterior não encontrada."));
+
+        List<PartidaMataMataEntity> partidasDaRodadaAnterior =
+                partidaMataMataRepository.findByCampeonatoId(campeonato.getId());
+
+        if (partidasDaRodadaAnterior.isEmpty()) {
+            throw new NaoEncontradoException("Nenhuma partida encontrada na rodada anterior.");
+        }
+
+        List<ClubeParticipanteEntity> vencedores = new ArrayList<>();
+
+        for (PartidaMataMataEntity partida : partidasDaRodadaAnterior) {
+            ClubeEntity vencedor;
+
+            if (partida.getGolsClubeA() > partida.getGolsClubeB()) {
+                vencedor = partida.getMandante();
+            } else if (partida.getGolsClubeB() > partida.getGolsClubeA()) {
+                vencedor = partida.getVisitante();
+            } else {
+                vencedor = ThreadLocalRandom.current().nextBoolean()
+                        ? partida.getMandante()
+                        : partida.getVisitante();
+            }
+
+            ClubeParticipanteEntity participanteVencedor =
+                    clubeParticipanteRepository.findByClubeAndCampeonato(vencedor, campeonato)
+                            .orElseThrow(() -> new DadosInvalidosException("Clube vencedor não encontrado como participante."));
+
+            vencedores.add(participanteVencedor);
+        }
+
+        return vencedores;
     }
 }
