@@ -96,9 +96,16 @@ public class SimularRodadaUseCase {
             int golsMandante = calcularGols(escalacaoMandante, escalacaoVisitante);
             int golsVisitante = calcularGols(escalacaoVisitante, escalacaoMandante);
 
-            if (campeonato.getFaseAtualMataMata() == PartidaMataMataEntity.FaseMataMata.FINAL && golsMandante == golsVisitante) {
-                if (new Random().nextBoolean()) golsMandante++;
-                else golsVisitante++;
+            if (Boolean.TRUE.equals(campeonato.getMataMataIniciado()) && golsMandante == golsVisitante) {
+                if (new Random().nextBoolean()) {
+                    golsMandante += 1 + new Random().nextInt(2);
+                } else {
+                    golsVisitante += 1 + new Random().nextInt(2);
+                }
+                if (golsMandante == golsVisitante) {
+                    if (new Random().nextBoolean()) golsMandante++;
+                    else golsVisitante++;
+                }
             }
 
             String resultado = determinarResultado(golsMandante, golsVisitante).name();
