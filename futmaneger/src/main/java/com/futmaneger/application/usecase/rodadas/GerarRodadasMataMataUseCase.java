@@ -346,22 +346,20 @@ public class GerarRodadasMataMataUseCase {
             throw new DadosInvalidosException("Não há rodada anterior para buscar vencedores.");
         }
 
-        int numeroRodadaAnterior = numeroRodadaAtualOpt.get() - 1;
-
-        RodadaEntity rodadaAnterior = rodadaRepository
-                .findByNumeroAndCampeonato(numeroRodadaAnterior, campeonato)
+        RodadaEntity rodadaAtual = rodadaRepository
+                .findByNumeroAndCampeonato(numeroRodadaAtualOpt.get(), campeonato)
                 .orElseThrow(() -> new NaoEncontradoException("Rodada anterior não encontrada."));
 
-        List<PartidaMataMataEntity> partidasDaRodadaAnterior =
-                partidaMataMataRepository.findByCampeonatoId(campeonato.getId());
+        List<PartidaMataMataEntity> partidasDaRodada =
+                partidaMataMataRepository.findByRodadaId(rodadaAtual.getId());
 
-        if (partidasDaRodadaAnterior.isEmpty()) {
-            throw new NaoEncontradoException("Nenhuma partida encontrada na rodada anterior.");
+        if (partidasDaRodada.isEmpty()) {
+            throw new NaoEncontradoException("A rodada não foi encontrada.");
         }
 
         List<ClubeParticipanteEntity> vencedores = new ArrayList<>();
 
-        for (PartidaMataMataEntity partida : partidasDaRodadaAnterior) {
+        for (PartidaMataMataEntity partida : partidasDaRodada) {
             ClubeEntity vencedor;
 
             if (partida.getGolsClubeA() > partida.getGolsClubeB()) {

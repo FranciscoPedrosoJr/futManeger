@@ -78,6 +78,6 @@ public class CriarCampeonatoUseCase {
     }
 
     private boolean isPotenciaDeDois(int numero) {
-        return numero > 0 && (numero & (numero - 1)) == 0;
+        return numero > 0 && (numero & (numero - 1)) == 0 && numero <= 32;
     }
 }
