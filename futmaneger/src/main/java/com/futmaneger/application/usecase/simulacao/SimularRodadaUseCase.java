@@ -74,7 +74,7 @@ public class SimularRodadaUseCase {
         List<? extends PartidaSimulavel> partidas;
         partidas = partidaRepository.buscarPorCampeonatoERodada(campeonato, Math.toIntExact(rodadaId));
         List<GrupoEntity> grupo = grupoRepository.findByCampeonato(campeonato);
-        //Melhorar esse trecho
+
         if (Boolean.TRUE.equals(campeonato.getMataMataIniciado())) {
             partidas = partidaMataMataRepository.findByRodada(rodada);
         } else if (partidas.isEmpty()){
@@ -84,7 +84,7 @@ public class SimularRodadaUseCase {
         } if (partidas.isEmpty()){
             throw new NaoEncontradoException("Nenhuma partida cadastrada");
         }
-        //até aqui
+
         List<SimulacaoResponseDTO> resultados = new ArrayList<>();
 
         for (PartidaSimulavel partida : partidas) {
