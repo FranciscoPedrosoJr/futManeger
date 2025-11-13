@@ -12,31 +12,31 @@
   "tags": [
     {
       "name": "CadastrarController",
-      "description": "CadastrarController"
+      "description": "Realizar cadastros"
     },
     {
       "name": "SimulacaoController",
-      "description": "SimulacaoController"
+      "description": "Simular partidas"
     },
     {
       "name": "ExcluirController",
-      "description": "ExcluirController"
+      "description": "Excluir cadastros"
     },
     {
       "name": "VinculoController",
-      "description": "VinculoController"
+      "description": "Vincular técnico à um clube"
     },
     {
       "name": "BuscarController",
-      "description": "BuscarController"
+      "description": "Realizar buscas"
     },
     {
       "name": "EscalacaoController",
-      "description": "EscalacaoController"
+      "description": "Criar uma escalação"
     },
     {
       "name": "AuthController",
-      "description": "AuthController"
+      "description": "Se cadastrar e realizar o login"
     }
   ],
   "paths": {
@@ -483,6 +483,48 @@
         "parameters": []
       }
     },
+    "/buscar/campeonato/{id}/partidas-mata-mata": {
+      "get": {
+        "summary": "listarPartidasMataMata",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "BuscarController"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/2abeb538a92f71b698b9360d277f9754"
+                },
+                "examples": {
+                  "json": {
+                    "summary": "test data",
+                    "value": "[\n  {\n    \"campeonato\": \"\",\n    \"fase\": \"OITAVAS\",\n    \"clubeMandante\": \"\",\n    \"clubeVisitante\": \"\",\n    \"finalizada\": true\n  }\n]"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "listarPartidasMataMata",
+        "parameters": [
+          {
+            "schema": {
+              "format": "int64",
+              "type": "number"
+            },
+            "in": "path",
+            "description": "No comments found.",
+            "required": true,
+            "example": 0,
+            "name": "id"
+          }
+        ]
+      }
+    },
     "/cadastrar/clubes": {
       "post": {
         "summary": "cadastrar",
@@ -642,12 +684,12 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/c72fb9c4c3cfaf3195be06ce35c2756f"
+                "$ref": "#/components/schemas/7b7d7bc9e4d09651eecbfcb8efc0f682"
               },
               "examples": {
                 "json": {
                   "summary": "test data",
-                  "value": "{\n  \"nome\": \"\",\n  \"pais\": \"\",\n  \"estado\": \"\"\n}"
+                  "value": "{\n  \"nome\": \"\",\n  \"pais\": \"\",\n  \"estado\": \"\",\n  \"clubes\": [\n    0\n  ]\n}"
                 }
               }
             }
@@ -672,6 +714,51 @@
           }
         },
         "operationId": "criar",
+        "parameters": []
+      }
+    },
+    "/cadastrar/campeonatos-clubes": {
+      "post": {
+        "summary": "cadastrarCampeonato",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "CadastrarController"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/7b7d7bc9e4d09651eecbfcb8efc0f682"
+              },
+              "examples": {
+                "json": {
+                  "summary": "test data",
+                  "value": "{\n  \"nome\": \"\",\n  \"pais\": \"\",\n  \"estado\": \"\",\n  \"clubes\": [\n    0\n  ]\n}"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/c9b9bdc5c80e186a9ada584a467e4833"
+                },
+                "examples": {
+                  "json": {
+                    "summary": "test data",
+                    "value": "{\n  \"id\": 0,\n  \"nome\": \"\",\n  \"tipo\": \"\",\n  \"clubes\": [\n    \"\"\n  ]\n}"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "cadastrarCampeonato",
         "parameters": []
       }
     },
@@ -1260,22 +1347,7 @@
           }
         }
       },
-      "ce44d4e2e52bee991033cef4e23e3582": {
-        "type": "object",
-        "properties": {
-          "email": {
-            "format": "string",
-            "description": "No comments found.",
-            "type": "string"
-          },
-          "senha": {
-            "format": "string",
-            "description": "No comments found.",
-            "type": "string"
-          }
-        }
-      },
-      "c72fb9c4c3cfaf3195be06ce35c2756f": {
+      "7b7d7bc9e4d09651eecbfcb8efc0f682": {
         "type": "object",
         "properties": {
           "nome": {
@@ -1292,6 +1364,67 @@
             "format": "string",
             "description": "No comments found.",
             "type": "string"
+          },
+          "clubes": {
+            "description": "No comments found.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": "\"0,0\""
+          }
+        }
+      },
+      "ce44d4e2e52bee991033cef4e23e3582": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "senha": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          }
+        }
+      },
+      "2abeb538a92f71b698b9360d277f9754": {
+        "type": "object",
+        "properties": {
+          "campeonato": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "fase": {
+            "format": "enum",
+            "description": "No comments found.",
+            "type": "string",
+            "enum": [
+              "OITAVAS",
+              "QUARTAS",
+              "SEMIFINAL",
+              "FINAL"
+            ],
+            "example": "OITAVAS"
+          },
+          "clubeMandante": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "clubeVisitante": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "finalizada": {
+            "format": "boolean",
+            "description": "No comments found.",
+            "type": "boolean",
+            "example": true
           }
         }
       },
