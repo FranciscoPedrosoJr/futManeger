@@ -29,7 +29,13 @@ public class CriarCampeonatoUseCase {
     }
 
     public CampeonatoResponseDTO executar(CriarCampeonatoRequestDTO request) {
-        List<ClubeEntity> clubes = buscarClubesPorLocalidade(request);
+        List<ClubeEntity> clubes;
+
+        if (request.clubes() != null && !request.clubes().isEmpty()) {
+            clubes = clubeRepository.findAllById(request.clubes());
+        } else {
+            clubes = buscarClubesPorLocalidade(request);
+        }
 
         if (clubes.size() < 2) {
             throw new DadosInvalidosException("Número insuficiente de clubes para criar um campeonato");

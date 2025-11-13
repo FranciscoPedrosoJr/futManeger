@@ -63,4 +63,10 @@ public class CadastrarController {
         CampeonatoResponseDTO response = criarCampeonatoUseCase.executar(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+
+    @PostMapping("/campeonatos-clubes")
+    public ResponseEntity<CampeonatoResponseDTO> cadastrarCampeonato(@RequestBody CriarCampeonatoRequestDTO request) {
+        CampeonatoResponseDTO response = criarCampeonatoUseCase.executar(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
 }
