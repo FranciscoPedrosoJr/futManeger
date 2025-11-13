@@ -1,5 +1,6 @@
 package com.futmaneger.domain.entity;
 
+import com.futmaneger.infrastructure.persistence.entity.ClubeEntity;
 import com.futmaneger.infrastructure.persistence.entity.TecnicoEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -10,8 +11,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-@Entity
-@Table(name = "clubes")
 public class Clube {
 
     @Id
@@ -30,12 +29,6 @@ public class Clube {
 
     public Clube() {}
 
-    public Clube(String nome, String estado, String pais) {
-        this.nome = nome;
-        this.estado = estado;
-        this.pais = pais;
-    }
-
     public Long getId() {
         return id;
     }
@@ -53,15 +46,11 @@ public class Clube {
         return pais;
     }
 
-    public void setTecnico(TecnicoEntity tecnico) {
-        this.tecnico = tecnico;
-    }
-
     public TecnicoEntity getTecnico() {
         return tecnico;
     }
 
-    public Clube getClube(Clube clube) {
+    public ClubeEntity getClube(ClubeEntity clube) {
         return clube;
     }
 }

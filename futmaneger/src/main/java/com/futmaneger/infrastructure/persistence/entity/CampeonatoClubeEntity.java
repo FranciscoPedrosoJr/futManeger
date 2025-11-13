@@ -23,7 +23,10 @@ public class CampeonatoClubeEntity {
 
     @ManyToOne
     @JoinColumn(name = "clube_id")
-    private Clube clube;
+    private ClubeEntity clube;
 
+    public ClubeEntity getClube() {
+        return clube = clube;
+    }
 }
 

@@ -5,6 +5,7 @@ import com.futmaneger.application.dto.JogadorResponseDTO;
 import com.futmaneger.domain.entity.Clube;
 import com.futmaneger.domain.entity.Jogador;
 import com.futmaneger.domain.repository.JogadorRepository;
+import com.futmaneger.infrastructure.persistence.entity.ClubeEntity;
 import com.futmaneger.infrastructure.persistence.jpa.ClubeJpaRepository;
 import java.util.List;
 import org.springframework.stereotype.Service;
@@ -22,7 +23,7 @@ public class CadastrarJogadoresUseCase {
     public List<JogadorResponseDTO> cadastrarLote(JogadorLoteRequestDTO request) {
         List<Jogador> jogadores = request.jogadores().stream()
                 .map(dto -> {
-                    Clube clube = clubeRepository.findById(dto.clubeId())
+                    ClubeEntity clube = clubeRepository.findById(dto.clubeId())
                             .orElseThrow(() -> new RuntimeException("Clube não encontrado"));
                     return new Jogador(
                             dto.nome(),

@@ -1,11 +1,11 @@
 package com.futmaneger.infrastructure.persistence.jpa;
 
-import com.futmaneger.domain.entity.Clube;
+import com.futmaneger.infrastructure.persistence.entity.ClubeEntity;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface ClubeJpaRepository extends JpaRepository<Clube, Long> {
-    List<Clube> findByEstado(String estado);
+public interface ClubeJpaRepository extends JpaRepository<ClubeEntity, Long> {
+    List<ClubeEntity> findByEstado(String estado);
 
-    List<Clube> findByPais(String pais);
+    List<ClubeEntity> findByPais(String pais);
 }

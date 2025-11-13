@@ -1,6 +1,5 @@
 package com.futmaneger.infrastructure.persistence.entity;
 
-import com.futmaneger.domain.entity.Clube;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -44,10 +43,14 @@ public class CampeonatoEntity {
 
     @ManyToOne
     @JoinColumn(name = "campeao_id")
-    private Clube campeao;
+    private ClubeEntity campeao;
 
     @OneToMany(mappedBy = "campeonato", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RodadaEntity> rodadas = new ArrayList<>();
+    private boolean mataMataIniciado;
+
+    @Enumerated(EnumType.STRING)
+    private PartidaMataMataEntity.FaseMataMata faseAtualMataMata;
 
     public List<RodadaEntity> getRodadas() {
         return rodadas;
@@ -93,12 +96,26 @@ public class CampeonatoEntity {
         return (Enum<E>) tipo;
     }
 
-    public void setCampeao(Clube campeao) {
+    public void setCampeao(ClubeEntity campeao) {
         this.campeao = campeao;
+    }
+
+    public boolean getMataMataIniciado() {
+        return mataMataIniciado;
+    }
+
+    public PartidaMataMataEntity.FaseMataMata getFaseAtualMataMata() {
+        return faseAtualMataMata;
+    }
+
+    public void setFaseAtualMataMata(PartidaMataMataEntity.FaseMataMata fase) {
+        this.faseAtualMataMata = fase;
     }
 
     public enum TipoCampeonato {
         PONTOS_CORRIDOS, MATA_MATA
     }
+
+    public void setMataMataIniciado(boolean mataMataIniciado){this.mataMataIniciado = mataMataIniciado;}
 
 }

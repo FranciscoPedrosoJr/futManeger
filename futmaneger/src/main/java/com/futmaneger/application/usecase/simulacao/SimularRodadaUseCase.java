@@ -1,12 +1,21 @@
 package com.futmaneger.application.usecase.simulacao;
 
+import static com.futmaneger.infrastructure.persistence.entity.CampeonatoEntity.TipoCampeonato.MATA_MATA;
+import static com.futmaneger.infrastructure.persistence.entity.CampeonatoEntity.TipoCampeonato.PONTOS_CORRIDOS;
+
 import com.futmaneger.application.dto.SimulacaoResponseDTO;
-import com.futmaneger.domain.entity.Clube;
+import com.futmaneger.application.exception.DadosInvalidosException;
+import com.futmaneger.application.exception.NaoEncontradoException;
+import com.futmaneger.application.usecase.rodadas.GerarRodadasMataMataUseCase;
 import com.futmaneger.domain.entity.Jogador;
+import com.futmaneger.domain.entity.PartidaSimulavel;
 import com.futmaneger.domain.repository.JogadorRepository;
 import com.futmaneger.infrastructure.persistence.entity.*;
 import com.futmaneger.infrastructure.persistence.jpa.CampeonatoRepository;
+import com.futmaneger.infrastructure.persistence.jpa.ClubeParticipanteRepository;
 import com.futmaneger.infrastructure.persistence.jpa.EscalacaoRepository;
+import com.futmaneger.infrastructure.persistence.jpa.GrupoRepository;
+import com.futmaneger.infrastructure.persistence.jpa.PartidaMataMataRepository;
 import com.futmaneger.infrastructure.persistence.jpa.PartidaRepository;
 import com.futmaneger.infrastructure.persistence.jpa.RodadaRepository;
 import com.futmaneger.infrastructure.persistence.jpa.TabelaCampeonatoRepository;
@@ -14,7 +23,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -26,6 +34,10 @@ public class SimularRodadaUseCase {
     private final JogadorRepository jogadorRepository;
     private final TabelaCampeonatoRepository tabelaCampeonato;
     private final CampeonatoRepository campeonatoRepository;
+    private final GerarRodadasMataMataUseCase gerarRodadasMataMataUseCase;
+    private final ClubeParticipanteRepository clubeParticipanteRepository;
+    private final GrupoRepository grupoRepository;
+    private final PartidaMataMataRepository partidaMataMataRepository;
 
     public SimularRodadaUseCase(
             RodadaRepository rodadaRepository,
@@ -33,7 +45,11 @@ public class SimularRodadaUseCase {
             EscalacaoRepository escalacaoRepository,
             JogadorRepository jogadorRepository,
             TabelaCampeonatoRepository tabelaCampeonato,
-            CampeonatoRepository campeonatoRepository
+            CampeonatoRepository campeonatoRepository,
+            GerarRodadasMataMataUseCase gerarRodadasMataMataUseCase,
+            ClubeParticipanteRepository clubeParticipanteRepository,
+            GrupoRepository grupoRepository,
+            PartidaMataMataRepository partidaMataMataRepository
     ) {
         this.rodadaRepository = rodadaRepository;
         this.partidaRepository = partidaRepository;
@@ -41,78 +57,139 @@ public class SimularRodadaUseCase {
         this.jogadorRepository = jogadorRepository;
         this.tabelaCampeonato = tabelaCampeonato;
         this.campeonatoRepository = campeonatoRepository;
+        this.gerarRodadasMataMataUseCase = gerarRodadasMataMataUseCase;
+        this.clubeParticipanteRepository = clubeParticipanteRepository;
+        this.grupoRepository = grupoRepository;
+        this.partidaMataMataRepository = partidaMataMataRepository;
     }
 
     @Transactional
-    public List<SimulacaoResponseDTO> executar(Long rodadaId) {
-        RodadaEntity rodada = rodadaRepository.findById(rodadaId)
-                .orElseThrow(() -> new IllegalArgumentException("Rodada não encontrada com id: " + rodadaId));
+    public List<SimulacaoResponseDTO> executar(Long campeonatoId, Long rodadaId) {
+        CampeonatoEntity campeonato = campeonatoRepository.findById(campeonatoId)
+                .orElseThrow(() -> new NaoEncontradoException("Campeonato não encontrado"));
 
-        CampeonatoEntity campeonato = rodada.getCampeonato();
+        RodadaEntity rodada = rodadaRepository.findByIdAndCampeonatoIdWithFetch(rodadaId, campeonatoId)
+                .orElseThrow(() -> new NaoEncontradoException("Rodada não encontrada com id: " + rodadaId));
 
-        List<PartidaEntity> partidas = rodada.getPartidas();
-        if (partidas.isEmpty()) {
-            throw new IllegalArgumentException("Nenhuma partida cadastrada para a rodada");
+        List<? extends PartidaSimulavel> partidas;
+        partidas = partidaRepository.buscarPorCampeonatoERodada(campeonato, Math.toIntExact(rodadaId));
+        List<GrupoEntity> grupo = grupoRepository.findByCampeonato(campeonato);
+
+        if (Boolean.TRUE.equals(campeonato.getMataMataIniciado())) {
+            partidas = partidaMataMataRepository.findByRodada(rodada);
+        } else if (partidas.isEmpty()){
+            partidas = rodada.getPartidas();
+        } if (partidas.isEmpty()) {
+            partidas = partidaRepository.buscarPorCampeonatoERodada(campeonato, Math.toIntExact(rodadaId));
+        } if (partidas.isEmpty()){
+            throw new NaoEncontradoException("Nenhuma partida cadastrada");
         }
 
         List<SimulacaoResponseDTO> resultados = new ArrayList<>();
 
-        for (PartidaEntity partida : partidas) {
-            if (partida.getResultado() != null) {
-                continue;
-            }
+        for (PartidaSimulavel partida : partidas) {
+            if (partida.isFinalizada()) continue;
 
-            EscalacaoEntity escalacaoMandante = buscarOuGerarEscalacao(partida.getClubeMandante());
-            EscalacaoEntity escalacaoVisitante = buscarOuGerarEscalacao(partida.getClubeVisitante());
+            EscalacaoEntity escalacaoMandante = buscarOuGerarEscalacao(partida.getMandante());
+            EscalacaoEntity escalacaoVisitante = buscarOuGerarEscalacao(partida.getVisitante());
 
             int golsMandante = calcularGols(escalacaoMandante, escalacaoVisitante);
             int golsVisitante = calcularGols(escalacaoVisitante, escalacaoMandante);
 
-            PartidaEntity.Resultado resultado = determinarResultado(golsMandante, golsVisitante);
+            if (Boolean.TRUE.equals(campeonato.getMataMataIniciado()) && golsMandante == golsVisitante) {
+                if (new Random().nextBoolean()) {
+                    golsMandante += 1 + new Random().nextInt(2);
+                } else {
+                    golsVisitante += 1 + new Random().nextInt(2);
+                }
+                if (golsMandante == golsVisitante) {
+                    if (new Random().nextBoolean()) golsMandante++;
+                    else golsVisitante++;
+                }
+            }
 
-            partida.setGolsMandante(golsMandante);
-            partida.setGolsVisitante(golsVisitante);
-            partida.setResultado(resultado);
-            partida.setDataHora(LocalDateTime.now());
-            partidaRepository.save(partida);
+            String resultado = determinarResultado(golsMandante, golsVisitante).name();
 
-            atualizarTabela(campeonato, partida.getClubeMandante(), golsMandante, golsVisitante, resultado, true);
-            atualizarTabela(campeonato, partida.getClubeVisitante(), golsVisitante, golsMandante, resultado, false);
+            partida.aplicarResultado(golsMandante, golsVisitante, resultado);
+
+            if (partida instanceof PartidaEntity partidaNormal) {
+                partidaRepository.save(partidaNormal);
+            } else if (partida instanceof PartidaMataMataEntity partidaMataMata) {
+                partidaMataMataRepository.save(partidaMataMata);
+            }
+
+            Long grupoDefinido = null;
+
+            if (MATA_MATA.equals(campeonato.getTipo())){
+                    GrupoEntity grupoClube = grupoRepository.findByClubes_IdAndCampeonato_Id(
+                            partida.getMandante().getId(),
+                            campeonato.getId()
+                    ).orElse(null);
+
+                    if (grupoClube == null) {
+                        grupoClube = grupoRepository.findByClubes_IdAndCampeonato_Id(
+                                partida.getVisitante().getId(),
+                                campeonato.getId()
+                        ).orElse(null);
+                    }
+
+                    if (grupoClube != null) {
+                        grupoDefinido = grupoClube.getId();
+                    } else {
+                        throw new DadosInvalidosException(
+                                "Não foi possível encontrar o grupo para o clube nesta partida (campeonato: "
+                                        + campeonato.getId() + ")"
+                        );
+                    }
+                }
+
+            atualizarTabela(campeonato, partida.getMandante(), golsMandante, golsVisitante,
+                    PartidaEntity.Resultado.valueOf(resultado), true, grupoDefinido);
+            atualizarTabela(campeonato, partida.getVisitante(), golsVisitante, golsMandante,
+                    PartidaEntity.Resultado.valueOf(resultado), false, grupoDefinido);
+
+            if(campeonato.getMataMataIniciado() == false){
+                salvarPartida(partida.getId(), golsMandante, golsVisitante, resultado);
+            }
 
             resultados.add(new SimulacaoResponseDTO(
-                    partida.getClubeMandante().getNome(),
+                    partida.getMandante().getNome(),
                     golsMandante,
-                    partida.getClubeVisitante().getNome(),
+                    partida.getVisitante().getNome(),
                     golsVisitante,
-                    resultado.name()
+                    resultado
             ));
-
-
         }
 
         rodada.setFinalizada(true);
+        rodadaRepository.save(rodada);
 
-        if (isUltimaRodada(rodada, campeonato)) {
+        if (isUltimaRodada(rodada, campeonato) && PONTOS_CORRIDOS.equals(campeonato.getTipo())) {
+            definirCampeao(campeonato);
+            campeonato.setEmAndamento(false);
+        } else if (MATA_MATA.equals(campeonato.getTipo()) && isUltimaRodada(rodada, campeonato) &&
+                campeonato.getFaseAtualMataMata() != PartidaMataMataEntity.FaseMataMata.FINAL) {
+            gerarRodadasMataMataUseCase.gerarMataMata(campeonato);
+        } else if (campeonato.getFaseAtualMataMata() == PartidaMataMataEntity.FaseMataMata.FINAL){
             definirCampeao(campeonato);
         }
 
         return resultados;
     }
 
-    private EscalacaoEntity buscarOuGerarEscalacao(Clube clube) {
+    private EscalacaoEntity buscarOuGerarEscalacao(ClubeEntity clube) {
         if (clube.getTecnico() != null) {
             return escalacaoRepository.findTopByClubeOrderByDataHoraDesc(clube)
-                    .orElseThrow(() -> new RuntimeException("Escalação não encontrada para clube com técnico: " + clube.getNome()));
+                    .orElseThrow(() -> new NaoEncontradoException("Escalação não encontrada para clube: " + clube.getNome() + ", cadastre uma escalação para seguir"));
         }
         return gerarEscalacaoAutomatica(clube);
     }
 
-    private EscalacaoEntity gerarEscalacaoAutomatica(Clube clube) {
+    private EscalacaoEntity gerarEscalacaoAutomatica(ClubeEntity clube) {
         EscalacaoEntity escalacao = new EscalacaoEntity();
         escalacao.setClube(clube);
         escalacao.setDataHora(LocalDateTime.now());
         escalacao.setFormacao("4-4-2");
-        //escalacao = escalacaoRepository.save(escalacao);
 
         List<Jogador> jogadores = jogadorRepository.findByClube(clube);
 
@@ -187,11 +264,12 @@ public class SimularRodadaUseCase {
 
     private void atualizarTabela(
             CampeonatoEntity campeonato,
-            Clube clube,
+            ClubeEntity clube,
             int golsPro,
             int golsContra,
             PartidaEntity.Resultado resultado,
-            boolean isMandante
+            boolean isMandante,
+            Long grupo
     ) {
         TabelaCampeonatoEntity tabela = tabelaCampeonato
                 .findByCampeonatoIdAndClubeId(campeonato.getId(), clube.getId())
@@ -215,6 +293,32 @@ public class SimularRodadaUseCase {
         tabela.setGolsPro(tabela.getGolsPro() + golsPro);
         tabela.setGolsContra(tabela.getGolsContra() + golsContra);
         tabela.setSaldoGols(tabela.getSaldoGols() + (golsPro - golsContra));
+
+        Long grupoDefinido = null;
+
+        if (MATA_MATA.equals(campeonato.getTipo())){
+            GrupoEntity grupoClube = grupoRepository.findByClubes_IdAndCampeonato_Id(
+                    tabela.getClube().getId(),
+                    campeonato.getId()
+            ).orElse(null);
+
+            if (grupoClube == null) {
+                grupoClube = grupoRepository.findByClubes_IdAndCampeonato_Id(
+                        tabela.getClube().getId(),
+                        campeonato.getId()
+                ).orElse(null);
+            }
+
+            if (grupoClube != null) {
+                grupoDefinido = grupoClube.getId();
+            } else {
+                throw new DadosInvalidosException(
+                        "Não foi possível encontrar o grupo para o clube nesta partida (campeonato: "
+                                + campeonato.getId() + ")"
+                );
+            }
+            tabela.setGrupo(grupoDefinido);
+        }
 
         switch (resultado)
         {
@@ -248,8 +352,9 @@ public class SimularRodadaUseCase {
                 .findByCampeonatoOrderByPontosDescSaldoGolsDescGolsProDesc(campeonato);
 
         if (!classificacao.isEmpty()) {
-            Clube campeao = classificacao.get(0).getClube();
+            ClubeEntity campeao = classificacao.get(0).getClube();
             campeonato.setCampeao(campeao);
+            campeonato.setEmAndamento(false);
             campeonatoRepository.save(campeonato);
         }
     }
@@ -258,4 +363,22 @@ public class SimularRodadaUseCase {
         int totalRodadas = campeonato.getRodadas().size();
         return rodada.getNumero() == totalRodadas;
     }
+
+    private void salvarPartida(Long partidaId,
+                               int golsMandante,
+                               int golsVisitante,
+                               String resultado) {
+
+        PartidaEntity partida = partidaRepository.findById(partidaId)
+                .orElseThrow(() -> new NaoEncontradoException("Partida não encontrada com id: " + partidaId));
+
+        partida.setGolsMandante(golsMandante);
+        partida.setGolsVisitante(golsVisitante);
+        partida.setResultado(PartidaEntity.Resultado.valueOf(resultado));
+        partida.setDataHora(LocalDateTime.now());
+        partida.setFinalizada(true);
+
+        partidaRepository.save(partida);
+    }
+
 }

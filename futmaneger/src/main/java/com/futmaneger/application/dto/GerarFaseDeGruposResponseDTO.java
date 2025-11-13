@@ -2,11 +2,8 @@ package com.futmaneger.application.dto;
 
 import java.util.List;
 
-public record GerarRodadasResponseDTO(
+public record GerarFaseDeGruposResponseDTO(
         Long campeonatoId,
-        int totalRodadas,
-        int totalPartidas,
-
         List<GrupoResponseDTO> grupos
-
-) {}
+) {
+}

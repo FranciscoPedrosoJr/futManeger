@@ -1,6 +1,7 @@
 package com.futmaneger.application.usecase.clube;
 
 import com.futmaneger.domain.entity.Clube;
+import com.futmaneger.infrastructure.persistence.entity.ClubeEntity;
 import com.futmaneger.infrastructure.persistence.jpa.ClubeJpaRepository;
 import org.springframework.stereotype.Service;
 
@@ -12,8 +13,8 @@ public class CadastrarClubeUseCase {
         this.clubeJpaRepository = clubeJpaRepository;
     }
 
-    public Clube executar(String nome, String pais, String estado) {
-        Clube clube = new Clube(nome, pais, estado);
+    public ClubeEntity executar(String nome, String estado, String pais) {
+        ClubeEntity clube = new ClubeEntity(nome, estado, pais);
         return clubeJpaRepository.save(clube);
     }
 }

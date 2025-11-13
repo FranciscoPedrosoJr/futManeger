@@ -1,0 +1,1367 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "futManager",
+    "version": "v1.0.0"
+  },
+  "servers": [
+    {
+      "url": "localhost:10300"
+    }
+  ],
+  "tags": [
+    {
+      "name": "CadastrarController",
+      "description": "CadastrarController"
+    },
+    {
+      "name": "SimulacaoController",
+      "description": "SimulacaoController"
+    },
+    {
+      "name": "ExcluirController",
+      "description": "ExcluirController"
+    },
+    {
+      "name": "VinculoController",
+      "description": "VinculoController"
+    },
+    {
+      "name": "BuscarController",
+      "description": "BuscarController"
+    },
+    {
+      "name": "EscalacaoController",
+      "description": "EscalacaoController"
+    },
+    {
+      "name": "AuthController",
+      "description": "AuthController"
+    }
+  ],
+  "paths": {
+    "/escalacao": {
+      "post": {
+        "summary": "escalar",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "EscalacaoController"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/877c77b418b3b01b8c96d53ae1c43d6f"
+              },
+              "examples": {
+                "json": {
+                  "summary": "test data",
+                  "value": "{\n  \"clubeId\": 0,\n  \"titulares\": [\n    0\n  ],\n  \"reservas\": [\n    0\n  ],\n  \"formacao\": \"\"\n}"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/74e1214bc55921753cb2bc27a826b6c9"
+                },
+                "examples": {
+                  "json": {
+                    "summary": "test data",
+                    "value": "{\n  \"nomeClube\": \"\",\n  \"formacao\": \"\",\n  \"titulares\": [\n    {\n      \"nome\": \"\",\n      \"posicao\": \"\"\n    }\n  ],\n  \"reservas\": [\n    {\n      \"nome\": \"\",\n      \"posicao\": \"\"\n    }\n  ]\n}"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "escalar",
+        "parameters": []
+      }
+    },
+    "/escalacao/teste": {
+      "post": {
+        "summary": "escalarNovo",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "EscalacaoController"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/877c77b418b3b01b8c96d53ae1c43d6f"
+              },
+              "examples": {
+                "json": {
+                  "summary": "test data",
+                  "value": "{\n  \"clubeId\": 0,\n  \"titulares\": [\n    0\n  ],\n  \"reservas\": [\n    0\n  ],\n  \"formacao\": \"\"\n}"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/74e1214bc55921753cb2bc27a826b6c9"
+                },
+                "examples": {
+                  "json": {
+                    "summary": "test data",
+                    "value": "{\n  \"nomeClube\": \"\",\n  \"formacao\": \"\",\n  \"titulares\": [\n    {\n      \"nome\": \"\",\n      \"posicao\": \"\"\n    }\n  ],\n  \"reservas\": [\n    {\n      \"nome\": \"\",\n      \"posicao\": \"\"\n    }\n  ]\n}"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "escalarNovo",
+        "parameters": []
+      }
+    },
+    "/vinculo/tecnico-clube": {
+      "post": {
+        "summary": "vincularTecnicoAoClube",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "VinculoController"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/2ea2529b52e98bebb8119b34870e1896"
+              },
+              "examples": {
+                "json": {
+                  "summary": "test data",
+                  "value": "{\n  \"clubeId\": 0,\n  \"tecnicoId\": 0\n}"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/f6f6f805c908a189ab7500898f369054"
+                },
+                "examples": {
+                  "json": {
+                    "summary": "test data",
+                    "value": "{\n  \"mensagem\": \"\"\n}"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "vincularTecnicoAoClube",
+        "parameters": []
+      }
+    },
+    "/api/auth/registrar": {
+      "post": {
+        "summary": "registrar",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "AuthController"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/7cf5a67d3136e8d45ff31b444f1f3696"
+              },
+              "examples": {
+                "json": {
+                  "summary": "test data",
+                  "value": "{\n  \"nome\": \"\",\n  \"email\": \"\",\n  \"senha\": \"\"\n}"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/6fe317de4779be43f75c49e466fb4960"
+                },
+                "examples": {
+                  "json": {
+                    "summary": "test data",
+                    "value": "{\n  \"id\": 0,\n  \"nome\": \"\",\n  \"email\": \"\"\n}"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "registrar",
+        "parameters": []
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "summary": "login",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "AuthController"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ce44d4e2e52bee991033cef4e23e3582"
+              },
+              "examples": {
+                "json": {
+                  "summary": "test data",
+                  "value": "{\n  \"email\": \"\",\n  \"senha\": \"\"\n}"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/8bbfa18e19ff9913421cab6bfc60d8d7"
+                },
+                "examples": {
+                  "json": {
+                    "summary": "test data",
+                    "value": "{\n  \"id\": 0,\n  \"nome\": \"\",\n  \"email\": \"\",\n  \"token\": \"\"\n}"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "login",
+        "parameters": []
+      }
+    },
+    "/simulacoes": {
+      "post": {
+        "summary": "simular",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "SimulacaoController"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/40634a3278b737fc2bd71155c353c074"
+              },
+              "examples": {
+                "json": {
+                  "summary": "test data",
+                  "value": "{\n  \"clubeMandanteId\": 0,\n  \"clubeVisitanteId\": 0,\n  \"escalacaoMandanteId\": 0\n}"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/1a067f09c091ed3985218338ed76709a"
+                },
+                "examples": {
+                  "json": {
+                    "summary": "test data",
+                    "value": "{\n  \"nomeMandante\": \"\",\n  \"golsMandante\": 0,\n  \"nomeVisitante\": \"\",\n  \"golsVisitante\": 0,\n  \"resultado\": \"\"\n}"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "simular",
+        "parameters": []
+      }
+    },
+    "/simulacoes/{campeonatoId}/rodadas/{rodadaId}/simulacoes": {
+      "post": {
+        "summary": "simularRodada",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "SimulacaoController"
+        ],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object"
+              },
+              "examples": {
+                "json": {
+                  "summary": "test data",
+                  "value": "curl -X POST -i 'localhost:10300/simulacoes/{campeonatoId}/rodadas/{rodadaId}/simulacoes'"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/1a067f09c091ed3985218338ed76709a"
+                },
+                "examples": {
+                  "json": {
+                    "summary": "test data",
+                    "value": "[\n  {\n    \"nomeMandante\": \"\",\n    \"golsMandante\": 0,\n    \"nomeVisitante\": \"\",\n    \"golsVisitante\": 0,\n    \"resultado\": \"\"\n  }\n]"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "simularRodada",
+        "parameters": [
+          {
+            "schema": {
+              "format": "int64",
+              "type": "number"
+            },
+            "in": "path",
+            "description": "No comments found.",
+            "required": true,
+            "example": 0,
+            "name": "campeonatoId"
+          },
+          {
+            "schema": {
+              "format": "int64",
+              "type": "number"
+            },
+            "in": "path",
+            "description": "No comments found.",
+            "required": true,
+            "example": 0,
+            "name": "rodadaId"
+          }
+        ]
+      }
+    },
+    "/buscar/clubes": {
+      "get": {
+        "summary": "listarClubes",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "BuscarController"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/b5534beab1e1a24e9479404ac8e06859"
+                },
+                "examples": {
+                  "json": {
+                    "summary": "test data",
+                    "value": "[\n  {\n    \"id\": 0,\n    \"nome\": \"\",\n    \"estado\": \"\",\n    \"pais\": \"\",\n    \"tecnico\": {\n      \"id\": 0,\n      \"nome\": \"\",\n      \"email\": \"\",\n      \"senha\": \"\"\n    }\n  }\n]"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "listarClubes",
+        "parameters": []
+      }
+    },
+    "/buscar/tecnicos": {
+      "get": {
+        "summary": "listarTecnicos",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "BuscarController"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/a157f846ca44bd8dcf367c4fb837d356"
+                },
+                "examples": {
+                  "json": {
+                    "summary": "test data",
+                    "value": "[\n  {\n    \"id\": 0,\n    \"nome\": \"\",\n    \"email\": \"\",\n    \"senha\": \"\"\n  }\n]"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "listarTecnicos",
+        "parameters": []
+      }
+    },
+    "/buscar/jogadores": {
+      "post": {
+        "summary": "buscar",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "BuscarController"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/e824f635f6f1be93aa867f30c11c24b1"
+              },
+              "examples": {
+                "json": {
+                  "summary": "test data",
+                  "value": "{\n  \"nome\": \"\",\n  \"forca\": 0,\n  \"posicao\": \"\"\n}"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/7962c1949b72f9e70fc1ff862790b929"
+                },
+                "examples": {
+                  "json": {
+                    "summary": "test data",
+                    "value": "[\n  {\n    \"id\": 0,\n    \"nome\": \"\",\n    \"posicao\": \"\",\n    \"forca\": 0,\n    \"diferenciado\": true,\n    \"identificacaoComClube\": true,\n    \"nomeClube\": \"\"\n  }\n]"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "buscar",
+        "parameters": []
+      }
+    },
+    "/cadastrar/clubes": {
+      "post": {
+        "summary": "cadastrar",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "CadastrarController"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/c66f59469914eb1a5571a6efa9b418b8"
+              },
+              "examples": {
+                "json": {
+                  "summary": "test data",
+                  "value": "{\n  \"nome\": \"\",\n  \"pais\": \"\",\n  \"estado\": \"\"\n}"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ab5ba9ace1cec917a1cc9e04f36ec7e9"
+                },
+                "examples": {
+                  "json": {
+                    "summary": "test data",
+                    "value": "{\n  \"id\": 0,\n  \"nome\": \"\",\n  \"estado\": \"\",\n  \"pais\": \"\"\n}"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "cadastrar",
+        "parameters": []
+      }
+    },
+    "/cadastrar/jogadores": {
+      "post": {
+        "summary": "cadastrarJogadores",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "CadastrarController"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/806ffdea1d3521775ef20bb9699e956c"
+              },
+              "examples": {
+                "json": {
+                  "summary": "test data",
+                  "value": "{\n  \"jogadores\": [\n    {\n      \"nome\": \"\",\n      \"posicao\": \"\",\n      \"forca\": 0,\n      \"diferenciado\": true,\n      \"identificacaoComClube\": true,\n      \"clubeId\": 0\n    }\n  ]\n}"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/7962c1949b72f9e70fc1ff862790b929"
+                },
+                "examples": {
+                  "json": {
+                    "summary": "test data",
+                    "value": "[\n  {\n    \"id\": 0,\n    \"nome\": \"\",\n    \"posicao\": \"\",\n    \"forca\": 0,\n    \"diferenciado\": true,\n    \"identificacaoComClube\": true,\n    \"nomeClube\": \"\"\n  }\n]"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "cadastrarJogadores",
+        "parameters": []
+      }
+    },
+    "/cadastrar/campeonatos/{id}/rodadas": {
+      "post": {
+        "summary": "gerarRodadas",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "CadastrarController"
+        ],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object"
+              },
+              "examples": {
+                "json": {
+                  "summary": "test data",
+                  "value": "curl -X POST -i 'localhost:10300/cadastrar/campeonatos/{id}/rodadas'"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/a3ee1ec5383e9ae84e9941fa46512116"
+                },
+                "examples": {
+                  "json": {
+                    "summary": "test data",
+                    "value": "{\n  \"campeonatoId\": 0,\n  \"totalRodadas\": 0,\n  \"totalPartidas\": 0,\n  \"grupos\": [\n    {\n      \"nome\": \"\",\n      \"clubes\": [\n        \"\"\n      ]\n    }\n  ]\n}"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "gerarRodadas",
+        "parameters": [
+          {
+            "schema": {
+              "format": "int64",
+              "type": "number"
+            },
+            "in": "path",
+            "description": "No comments found.",
+            "required": true,
+            "example": 0,
+            "name": "id"
+          }
+        ]
+      }
+    },
+    "/cadastrar/campeonatos": {
+      "post": {
+        "summary": "criar",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "CadastrarController"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/c72fb9c4c3cfaf3195be06ce35c2756f"
+              },
+              "examples": {
+                "json": {
+                  "summary": "test data",
+                  "value": "{\n  \"nome\": \"\",\n  \"pais\": \"\",\n  \"estado\": \"\"\n}"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/c9b9bdc5c80e186a9ada584a467e4833"
+                },
+                "examples": {
+                  "json": {
+                    "summary": "test data",
+                    "value": "{\n  \"id\": 0,\n  \"nome\": \"\",\n  \"tipo\": \"\",\n  \"clubes\": [\n    \"\"\n  ]\n}"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "criar",
+        "parameters": []
+      }
+    },
+    "/excluir/clubes/{id}": {
+      "delete": {
+        "summary": "excluirClube",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "ExcluirController"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/f6f6f805c908a189ab7500898f369054"
+                },
+                "examples": {
+                  "json": {
+                    "summary": "test data",
+                    "value": "{\n  \"mensagem\": \"\"\n}"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "excluirClube",
+        "parameters": [
+          {
+            "schema": {
+              "format": "int64",
+              "type": "number"
+            },
+            "in": "path",
+            "description": "No comments found.",
+            "required": true,
+            "example": 0,
+            "name": "id"
+          }
+        ]
+      }
+    },
+    "/excluir/tecnicos/{id}": {
+      "delete": {
+        "summary": "excluirTecnico",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "ExcluirController"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/f6f6f805c908a189ab7500898f369054"
+                },
+                "examples": {
+                  "json": {
+                    "summary": "test data",
+                    "value": "{\n  \"mensagem\": \"\"\n}"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "excluirTecnico",
+        "parameters": [
+          {
+            "schema": {
+              "format": "int64",
+              "type": "number"
+            },
+            "in": "path",
+            "description": "No comments found.",
+            "required": true,
+            "example": 0,
+            "name": "id"
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "tecnico": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "format": "int64",
+            "description": "id do tecnico.",
+            "type": "number",
+            "example": 0
+          },
+          "nome": {
+            "format": "string",
+            "description": "nome do tecnico.",
+            "type": "string"
+          },
+          "email": {
+            "format": "string",
+            "description": "email do cadastro.",
+            "type": "string"
+          },
+          "senha": {
+            "format": "string",
+            "description": "senha de acesso.",
+            "type": "string"
+          }
+        }
+      },
+      "ab5ba9ace1cec917a1cc9e04f36ec7e9": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "format": "int64",
+            "description": "No comments found.",
+            "type": "number",
+            "example": 0
+          },
+          "nome": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "estado": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "pais": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          }
+        }
+      },
+      "d751713988987e9331980363e24189ce": {},
+      "806ffdea1d3521775ef20bb9699e956c": {
+        "type": "object",
+        "properties": {
+          "jogadores": {
+            "description": "No comments found.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/bbfb15d0c78726223ddbc8d57b98e463"
+            }
+          }
+        }
+      },
+      "7962c1949b72f9e70fc1ff862790b929": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "format": "int64",
+            "description": "No comments found.",
+            "type": "number",
+            "example": 0
+          },
+          "nome": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "posicao": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "forca": {
+            "format": "int32",
+            "description": "No comments found.",
+            "type": "integer",
+            "example": 0
+          },
+          "diferenciado": {
+            "format": "boolean",
+            "description": "No comments found.",
+            "type": "boolean",
+            "example": true
+          },
+          "identificacaoComClube": {
+            "format": "boolean",
+            "description": "No comments found.",
+            "type": "boolean",
+            "example": true
+          },
+          "nomeClube": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          }
+        }
+      },
+      "c66f59469914eb1a5571a6efa9b418b8": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "pais": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "estado": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          }
+        }
+      },
+      "b856f47a90a32ee8b3daa733bd4962ba": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "posicao": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          }
+        }
+      },
+      "40634a3278b737fc2bd71155c353c074": {
+        "type": "object",
+        "properties": {
+          "clubeMandanteId": {
+            "format": "int64",
+            "description": "No comments found.",
+            "type": "number",
+            "example": 0
+          },
+          "clubeVisitanteId": {
+            "format": "int64",
+            "description": "No comments found.",
+            "type": "number",
+            "example": 0
+          },
+          "escalacaoMandanteId": {
+            "format": "int64",
+            "description": "No comments found.",
+            "type": "number",
+            "example": 0
+          }
+        }
+      },
+      "f6f6f805c908a189ab7500898f369054": {
+        "type": "object",
+        "properties": {
+          "mensagem": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          }
+        }
+      },
+      "9cd7905956c85d92291949a453580249": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "posicao": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          }
+        }
+      },
+      "1a067f09c091ed3985218338ed76709a": {
+        "type": "object",
+        "properties": {
+          "nomeMandante": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "golsMandante": {
+            "format": "int32",
+            "description": "No comments found.",
+            "type": "integer",
+            "example": 0
+          },
+          "nomeVisitante": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "golsVisitante": {
+            "format": "int32",
+            "description": "No comments found.",
+            "type": "integer",
+            "example": 0
+          },
+          "resultado": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          }
+        }
+      },
+      "a157f846ca44bd8dcf367c4fb837d356": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "format": "int64",
+            "description": "No comments found.",
+            "type": "number",
+            "example": 0
+          },
+          "nome": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "email": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "senha": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          }
+        }
+      },
+      "e824f635f6f1be93aa867f30c11c24b1": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "forca": {
+            "format": "int32",
+            "description": "No comments found.",
+            "type": "integer",
+            "example": 0
+          },
+          "posicao": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          }
+        }
+      },
+      "2ea2529b52e98bebb8119b34870e1896": {
+        "type": "object",
+        "properties": {
+          "clubeId": {
+            "format": "int64",
+            "description": "No comments found.",
+            "type": "number",
+            "example": 0
+          },
+          "tecnicoId": {
+            "format": "int64",
+            "description": "No comments found.",
+            "type": "number",
+            "example": 0
+          }
+        }
+      },
+      "74e1214bc55921753cb2bc27a826b6c9": {
+        "type": "object",
+        "properties": {
+          "nomeClube": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "formacao": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "titulares": {
+            "description": "No comments found.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/9cd7905956c85d92291949a453580249"
+            }
+          },
+          "reservas": {
+            "description": "No comments found.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/b856f47a90a32ee8b3daa733bd4962ba"
+            }
+          }
+        }
+      },
+      "8bbfa18e19ff9913421cab6bfc60d8d7": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "format": "int64",
+            "description": "No comments found.",
+            "type": "number",
+            "example": 0
+          },
+          "nome": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "email": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "token": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          }
+        }
+      },
+      "877c77b418b3b01b8c96d53ae1c43d6f": {
+        "type": "object",
+        "properties": {
+          "clubeId": {
+            "format": "int64",
+            "description": "No comments found.",
+            "type": "number",
+            "example": 0
+          },
+          "titulares": {
+            "description": "No comments found.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": "\"0,0\""
+          },
+          "reservas": {
+            "description": "No comments found.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": "\"0,0\""
+          },
+          "formacao": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          }
+        }
+      },
+      "6fe317de4779be43f75c49e466fb4960": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "format": "int64",
+            "description": "No comments found.",
+            "type": "number",
+            "example": 0
+          },
+          "nome": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "email": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          }
+        }
+      },
+      "b5534beab1e1a24e9479404ac8e06859": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "format": "int64",
+            "description": "No comments found.",
+            "type": "number",
+            "example": 0
+          },
+          "nome": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "estado": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "pais": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "tecnico": {
+            "$ref": "#/components/schemas/tecnico"
+          }
+        }
+      },
+      "defaultPrimitive": {
+        "format": "string",
+        "type": "string"
+      },
+      "bbfb15d0c78726223ddbc8d57b98e463": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "posicao": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "forca": {
+            "format": "int32",
+            "description": "No comments found.",
+            "type": "integer",
+            "example": 0
+          },
+          "diferenciado": {
+            "format": "boolean",
+            "description": "No comments found.",
+            "type": "boolean",
+            "example": true
+          },
+          "identificacaoComClube": {
+            "format": "boolean",
+            "description": "No comments found.",
+            "type": "boolean",
+            "example": true
+          },
+          "clubeId": {
+            "format": "int64",
+            "description": "No comments found.",
+            "type": "number",
+            "example": 0
+          }
+        }
+      },
+      "a3ee1ec5383e9ae84e9941fa46512116": {
+        "type": "object",
+        "properties": {
+          "campeonatoId": {
+            "format": "int64",
+            "description": "No comments found.",
+            "type": "number",
+            "example": 0
+          },
+          "totalRodadas": {
+            "format": "int32",
+            "description": "No comments found.",
+            "type": "integer",
+            "example": 0
+          },
+          "totalPartidas": {
+            "format": "int32",
+            "description": "No comments found.",
+            "type": "integer",
+            "example": 0
+          },
+          "grupos": {
+            "description": "No comments found.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/5e0f4b549a19a9aac202c99ecf1a4c03"
+            }
+          }
+        }
+      },
+      "ce44d4e2e52bee991033cef4e23e3582": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "senha": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          }
+        }
+      },
+      "c72fb9c4c3cfaf3195be06ce35c2756f": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "pais": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "estado": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          }
+        }
+      },
+      "c9b9bdc5c80e186a9ada584a467e4833": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "format": "int64",
+            "description": "No comments found.",
+            "type": "number",
+            "example": 0
+          },
+          "nome": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "tipo": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "clubes": {
+            "description": "No comments found.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": "\"\"\",\"\"\""
+          }
+        }
+      },
+      "7cf5a67d3136e8d45ff31b444f1f3696": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "email": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "senha": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          }
+        }
+      },
+      "5e0f4b549a19a9aac202c99ecf1a4c03": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "clubes": {
+            "description": "No comments found.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": "\"\"\",\"\"\""
+          }
+        }
+      }
+    }
+  }
+}

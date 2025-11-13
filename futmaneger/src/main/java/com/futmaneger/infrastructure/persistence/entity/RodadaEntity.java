@@ -51,4 +51,6 @@ public class RodadaEntity {
     }
 
     public int getNumero() { return numero;}
+
+    public Long getId() { return id;}
 }

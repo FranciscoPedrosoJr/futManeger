@@ -5,6 +5,7 @@ import com.futmaneger.application.dto.SimulacaoResponseDTO;
 import com.futmaneger.domain.entity.Clube;
 import com.futmaneger.domain.entity.Jogador;
 import com.futmaneger.domain.repository.JogadorRepository;
+import com.futmaneger.infrastructure.persistence.entity.ClubeEntity;
 import com.futmaneger.infrastructure.persistence.entity.EscalacaoEntity;
 import com.futmaneger.infrastructure.persistence.entity.EscalacaoJogadorEntity;
 import com.futmaneger.infrastructure.persistence.entity.PartidaEntity;
@@ -16,7 +17,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 import java.util.Random;
 import org.springframework.stereotype.Service;
 
@@ -40,8 +40,8 @@ public class SimulacaoUseCase {
     }
 
     public SimulacaoResponseDTO simular(SimulacaoRequestDTO request) {
-        Clube mandante = buscarClube(request.clubeMandanteId());
-        Clube visitante = buscarClube(request.clubeVisitanteId());
+        ClubeEntity mandante = buscarClube(request.clubeMandanteId());
+        ClubeEntity visitante = buscarClube(request.clubeVisitanteId());
 
         EscalacaoEntity escalacaoMandante = buscarEscalacaoMandante(request.escalacaoMandanteId());
         EscalacaoEntity escalacaoVisitante = buscarOuGerarEscalacaoVisitante(visitante);
@@ -61,7 +61,7 @@ public class SimulacaoUseCase {
         );
     }
 
-    private Clube buscarClube(Long id) {
+    private ClubeEntity buscarClube(Long id) {
         return clubeRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Clube não encontrado: " + id));
     }
@@ -71,7 +71,7 @@ public class SimulacaoUseCase {
                 .orElseThrow(() -> new RuntimeException("Escalação do mandante não encontrada"));
     }
 
-    private EscalacaoEntity buscarOuGerarEscalacaoVisitante(Clube visitante) {
+    private EscalacaoEntity buscarOuGerarEscalacaoVisitante(ClubeEntity visitante) {
         if (visitante.getTecnico() != null) {
             return (EscalacaoEntity) escalacaoRepository.findTopByClubeOrderByDataHoraDesc(visitante)
                     .orElseThrow(() -> new RuntimeException("Escalação do visitante não encontrada"));
@@ -79,7 +79,7 @@ public class SimulacaoUseCase {
         return gerarEscalacaoAutomatica(visitante);
     }
 
-    private EscalacaoEntity gerarEscalacaoAutomatica(Clube clube) {
+    private EscalacaoEntity gerarEscalacaoAutomatica(ClubeEntity clube) {
         EscalacaoEntity escalacao = new EscalacaoEntity();
         escalacao.setClube(clube);
         escalacao.setDataHora(LocalDateTime.now());
@@ -156,7 +156,7 @@ public class SimulacaoUseCase {
         return PartidaEntity.Resultado.EMPATE;
     }
 
-    private void salvarPartida(Clube mandante, Clube visitante, int golsMandante, int golsVisitante, PartidaEntity.Resultado resultado) {
+    private void salvarPartida(ClubeEntity mandante, ClubeEntity visitante, int golsMandante, int golsVisitante, PartidaEntity.Resultado resultado) {
         PartidaEntity partida = new PartidaEntity();
         partida.setClubeMandante(mandante);
         partida.setClubeVisitante(visitante);

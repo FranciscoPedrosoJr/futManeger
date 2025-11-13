@@ -1,8 +1,8 @@
 package com.futmaneger.infrastructure.persistence.impl;
 
-import com.futmaneger.domain.entity.Clube;
 import com.futmaneger.domain.entity.Jogador;
 import com.futmaneger.domain.repository.JogadorRepository;
+import com.futmaneger.infrastructure.persistence.entity.ClubeEntity;
 import com.futmaneger.infrastructure.persistence.jpa.JogadorJpaRepository;
 import java.util.List;
 import org.springframework.stereotype.Repository;
@@ -21,7 +21,7 @@ public class JogadorRepositoryImpl implements JogadorRepository {
     }
 
     @Override
-    public List<Jogador> findByClube(Clube clube) {
+    public List<Jogador> findByClube(ClubeEntity clube) {
         return jogadorJpaRepository.findByClube(clube);
     }
 }

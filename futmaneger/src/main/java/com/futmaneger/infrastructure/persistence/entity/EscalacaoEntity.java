@@ -1,7 +1,6 @@
 package com.futmaneger.infrastructure.persistence.entity;
 
 import com.futmaneger.domain.entity.Clube;
-import com.futmaneger.domain.entity.Jogador;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -13,7 +12,6 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -27,7 +25,7 @@ public class EscalacaoEntity {
 
     @ManyToOne
     @JoinColumn(name = "clube_id")
-    private Clube clube;
+    private ClubeEntity clube;
 
     @OneToMany(mappedBy = "escalacao", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<EscalacaoJogadorEntity> jogadores = new ArrayList<>();
@@ -37,7 +35,7 @@ public class EscalacaoEntity {
     @CreationTimestamp
     private LocalDateTime dataHora;
 
-    public Clube setClube(Clube clube) {
+    public ClubeEntity setClube(ClubeEntity clube) {
         return this.clube = clube;
     }
 
@@ -53,7 +51,7 @@ public class EscalacaoEntity {
         return jogadores;
     }
 
-    public Clube getClube() {
+    public ClubeEntity getClube() {
         return this.clube = clube;
     }
 
