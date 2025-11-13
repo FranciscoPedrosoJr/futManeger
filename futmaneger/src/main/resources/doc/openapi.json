@@ -527,7 +527,7 @@
     },
     "/cadastrar/clubes": {
       "post": {
-        "summary": "cadastrar",
+        "summary": "cadastrar clubes",
         "deprecated": false,
         "description": "",
         "tags": [
@@ -537,13 +537,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/c66f59469914eb1a5571a6efa9b418b8"
-              },
-              "examples": {
-                "json": {
-                  "summary": "test data",
-                  "value": "{\n  \"nome\": \"\",\n  \"pais\": \"\",\n  \"estado\": \"\"\n}"
-                }
+                "$ref": "#/components/schemas/requestCadastrarClubes"
               }
             }
           }
@@ -552,15 +546,9 @@
           "200": {
             "description": "OK",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ab5ba9ace1cec917a1cc9e04f36ec7e9"
-                },
-                "examples": {
-                  "json": {
-                    "summary": "test data",
-                    "value": "{\n  \"id\": 0,\n  \"nome\": \"\",\n  \"estado\": \"\",\n  \"pais\": \"\"\n}"
-                  }
+                  "$ref": "#/components/schemas/responseSucessoCadastrarClubes"
                 }
               }
             }
@@ -572,7 +560,7 @@
     },
     "/cadastrar/jogadores": {
       "post": {
-        "summary": "cadastrarJogadores",
+        "summary": "cadastrar Jogadores",
         "deprecated": false,
         "description": "",
         "tags": [
@@ -582,13 +570,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/806ffdea1d3521775ef20bb9699e956c"
-              },
-              "examples": {
-                "json": {
-                  "summary": "test data",
-                  "value": "{\n  \"jogadores\": [\n    {\n      \"nome\": \"\",\n      \"posicao\": \"\",\n      \"forca\": 0,\n      \"diferenciado\": true,\n      \"identificacaoComClube\": true,\n      \"clubeId\": 0\n    }\n  ]\n}"
-                }
+                "$ref": "#/components/schemas/requestCadastrarJogadores"
               }
             }
           }
@@ -597,15 +579,9 @@
           "200": {
             "description": "OK",
             "content": {
-              "*/*": {
+              "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/7962c1949b72f9e70fc1ff862790b929"
-                },
-                "examples": {
-                  "json": {
-                    "summary": "test data",
-                    "value": "[\n  {\n    \"id\": 0,\n    \"nome\": \"\",\n    \"posicao\": \"\",\n    \"forca\": 0,\n    \"diferenciado\": true,\n    \"identificacaoComClube\": true,\n    \"nomeClube\": \"\"\n  }\n]"
-                  }
+                  "$ref": "#/components/schemas/responseSucessoCadastrarJogadores"
                 }
               }
             }
@@ -875,105 +851,105 @@
           }
         }
       },
-      "ab5ba9ace1cec917a1cc9e04f36ec7e9": {
+      "responseSucessoCadastrarClubes": {
         "type": "object",
         "properties": {
           "id": {
             "format": "int64",
-            "description": "No comments found.",
+            "description": "id do clube",
             "type": "number",
             "example": 0
           },
           "nome": {
             "format": "string",
-            "description": "No comments found.",
+            "description": "nome do clube",
             "type": "string"
           },
           "estado": {
             "format": "string",
-            "description": "No comments found.",
+            "description": "estado do clube",
             "type": "string"
           },
           "pais": {
             "format": "string",
-            "description": "No comments found.",
+            "description": "pais do clube",
             "type": "string"
           }
         }
       },
       "d751713988987e9331980363e24189ce": {},
-      "806ffdea1d3521775ef20bb9699e956c": {
+      "requestCadastrarJogadores": {
         "type": "object",
         "properties": {
           "jogadores": {
-            "description": "No comments found.",
+            "description": "lista de jogadores",
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/bbfb15d0c78726223ddbc8d57b98e463"
+              "$ref": "#/components/schemas/listaDeJogadores"
             }
           }
         }
       },
-      "7962c1949b72f9e70fc1ff862790b929": {
+      "responseSucessoCadastrarJogadores": {
         "type": "object",
         "properties": {
           "id": {
             "format": "int64",
-            "description": "No comments found.",
+            "description": "id do jogador",
             "type": "number",
             "example": 0
           },
           "nome": {
             "format": "string",
-            "description": "No comments found.",
+            "description": "nome do jogador",
             "type": "string"
           },
           "posicao": {
             "format": "string",
-            "description": "No comments found.",
+            "description": "posição em que atua",
             "type": "string"
           },
           "forca": {
             "format": "int32",
-            "description": "No comments found.",
+            "description": "força do jogador",
             "type": "integer",
             "example": 0
           },
           "diferenciado": {
             "format": "boolean",
-            "description": "No comments found.",
+            "description": "possui habilidades extras",
             "type": "boolean",
             "example": true
           },
           "identificacaoComClube": {
             "format": "boolean",
-            "description": "No comments found.",
+            "description": "jogador com identificação com o clube em que atua",
             "type": "boolean",
             "example": true
           },
           "nomeClube": {
             "format": "string",
-            "description": "No comments found.",
+            "description": "clube onde o jogador joga",
             "type": "string"
           }
         }
       },
-      "c66f59469914eb1a5571a6efa9b418b8": {
+      "requestCadastrarClubes": {
         "type": "object",
         "properties": {
           "nome": {
             "format": "string",
-            "description": "No comments found.",
+            "description": "nome do clube",
             "type": "string"
           },
           "pais": {
             "format": "string",
-            "description": "No comments found.",
+            "description": "pais do clube",
             "type": "string"
           },
           "estado": {
             "format": "string",
-            "description": "No comments found.",
+            "description": "estado do clube",
             "type": "string"
           }
         }
@@ -1278,40 +1254,40 @@
         "format": "string",
         "type": "string"
       },
-      "bbfb15d0c78726223ddbc8d57b98e463": {
+      "listaDeJogadores": {
         "type": "object",
         "properties": {
           "nome": {
             "format": "string",
-            "description": "No comments found.",
+            "description": "nome do jogador",
             "type": "string"
           },
           "posicao": {
             "format": "string",
-            "description": "No comments found.",
+            "description": "posição em que atua",
             "type": "string"
           },
           "forca": {
             "format": "int32",
-            "description": "No comments found.",
+            "description": "força do jogador",
             "type": "integer",
             "example": 0
           },
           "diferenciado": {
             "format": "boolean",
-            "description": "No comments found.",
+            "description": "possui habilidades extras",
             "type": "boolean",
             "example": true
           },
           "identificacaoComClube": {
             "format": "boolean",
-            "description": "No comments found.",
+            "description": "jogador com identificação com o clube em que atua",
             "type": "boolean",
             "example": true
           },
           "clubeId": {
             "format": "int64",
-            "description": "No comments found.",
+            "description": "clube onde o jogador joga",
             "type": "number",
             "example": 0
           }
