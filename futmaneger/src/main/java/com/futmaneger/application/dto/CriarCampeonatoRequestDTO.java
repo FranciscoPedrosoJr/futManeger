@@ -1,3 +1,10 @@
 package com.futmaneger.application.dto;
 
-public record CriarCampeonatoRequestDTO(String nome, String pais, String estado) {}
+import java.util.List;
+
+public record CriarCampeonatoRequestDTO(
+        String nome,
+        String pais,
+        String estado,
+        List<Long>clubes
+) {}
