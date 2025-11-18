@@ -24,7 +24,8 @@ public class BuscarJogadoresUseCase {
                         j.getForca(),
                         j.isDiferenciado(),
                         j.isIdentificacaoComClube(),
-                        j.getClubeNome().getNome()
+                        j.getClubeNome().getNome(),
+                        j.getValorMercado()
                 ))
                 .toList();
     }

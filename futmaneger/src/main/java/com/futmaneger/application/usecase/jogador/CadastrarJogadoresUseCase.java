@@ -1,12 +1,17 @@
 package com.futmaneger.application.usecase.jogador;
 
+import static java.util.stream.Collectors.toList;
+
 import com.futmaneger.application.dto.JogadorLoteRequestDTO;
 import com.futmaneger.application.dto.JogadorResponseDTO;
+import com.futmaneger.application.exception.NaoEncontradoException;
 import com.futmaneger.domain.entity.Clube;
 import com.futmaneger.domain.entity.Jogador;
 import com.futmaneger.domain.repository.JogadorRepository;
 import com.futmaneger.infrastructure.persistence.entity.ClubeEntity;
 import com.futmaneger.infrastructure.persistence.jpa.ClubeJpaRepository;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import org.springframework.stereotype.Service;
 
@@ -24,8 +29,8 @@ public class CadastrarJogadoresUseCase {
         List<Jogador> jogadores = request.jogadores().stream()
                 .map(dto -> {
                     ClubeEntity clube = clubeRepository.findById(dto.clubeId())
-                            .orElseThrow(() -> new RuntimeException("Clube não encontrado"));
-                    return new Jogador(
+                            .orElseThrow(() -> new NaoEncontradoException("Clube não encontrado"));
+                    Jogador jogador = new Jogador(
                             dto.nome(),
                             dto.posicao(),
                             dto.forca(),
@@ -33,6 +38,8 @@ public class CadastrarJogadoresUseCase {
                             dto.identificacaoComClube(),
                             clube
                     );
+                    jogador.setValorMercado(definirValorMercado(dto.forca()));
+                    return jogador;
                 }).toList();
 
         jogadorRepository.saveAll(jogadores);
@@ -45,7 +52,30 @@ public class CadastrarJogadoresUseCase {
                         j.getForca(),
                         j.isDiferenciado(),
                         j.isIdentificacaoComClube(),
-                        j.getClubeId().toString()
+                        j.getClubeId().toString(),
+                        j.getValorMercado()
                 )).toList();
+    }
+
+    private BigDecimal definirValorMercado(int forca) {
+
+        if (forca <= 50) {
+            return gerarValor(new BigDecimal("5000000"), new BigDecimal("20000000"));
+        }
+
+        if (forca <= 70) {
+            return gerarValor(new BigDecimal("20000000"), new BigDecimal("50000000"));
+        }
+
+        return gerarValor(new BigDecimal("50000000"), new BigDecimal("100000000"));
+    }
+
+    private BigDecimal gerarValor(BigDecimal min, BigDecimal max) {
+        double minD = min.doubleValue();
+        double maxD = max.doubleValue();
+
+        double aleatorio = minD + (Math.random() * (maxD - minD));
+
+        return BigDecimal.valueOf(aleatorio).setScale(0, RoundingMode.HALF_UP);
     }
 }
