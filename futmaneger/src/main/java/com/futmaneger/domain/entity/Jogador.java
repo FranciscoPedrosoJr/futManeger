@@ -40,7 +40,6 @@ public class Jogador {
 
     }
 
-
     public Long getId() {
         return id;
     }
