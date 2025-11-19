@@ -5,6 +5,7 @@ import com.futmaneger.domain.repository.JogadorRepository;
 import com.futmaneger.infrastructure.persistence.entity.ClubeEntity;
 import com.futmaneger.infrastructure.persistence.jpa.JogadorJpaRepository;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -23,6 +24,16 @@ public class JogadorRepositoryImpl implements JogadorRepository {
     @Override
     public List<Jogador> findByClube(ClubeEntity clube) {
         return jogadorJpaRepository.findByClube(clube);
+    }
+
+    @Override
+    public void save(Jogador jogador) {
+        jogadorJpaRepository.save(jogador);
+    }
+
+    @Override
+    public Optional<Jogador> findById(Long id) {
+        return jogadorJpaRepository.findById(id);
     }
 }
 

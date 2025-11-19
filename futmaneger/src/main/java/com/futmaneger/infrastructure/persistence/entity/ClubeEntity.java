@@ -7,6 +7,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "clubes")
@@ -21,6 +22,7 @@ public class ClubeEntity {
     private String estado;
 
     private String pais;
+    private BigDecimal saldo = BigDecimal.ZERO;
 
     @ManyToOne
     @JoinColumn(name = "tecnico_id")
@@ -34,6 +36,7 @@ public class ClubeEntity {
         this.nome = nome;
         this.estado = estado;
         this.pais = pais;
+        this.saldo = new BigDecimal("50000000");
     }
 
     public Long getId() { return id; }
@@ -55,4 +58,10 @@ public class ClubeEntity {
     public TecnicoEntity getTecnico() { return tecnico; }
 
     public void setTecnico(TecnicoEntity tecnico) { this.tecnico = tecnico; }
+
+    public void setSaldo(BigDecimal saldo) { this.saldo = saldo; }
+
+    public BigDecimal getSaldo() {
+        return saldo;
+    }
 }

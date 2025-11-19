@@ -1,5 +1,7 @@
 package com.futmaneger.application.dto;
 
+import java.math.BigDecimal;
+
 public record JogadorResponseDTO(
         Long id,
         String nome,
@@ -7,6 +9,7 @@ public record JogadorResponseDTO(
         int forca,
         boolean diferenciado,
         boolean identificacaoComClube,
-        String nomeClube
+        String nomeClube,
+        BigDecimal valorMercado
 ) {
 }

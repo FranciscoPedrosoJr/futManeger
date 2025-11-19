@@ -1,12 +1,14 @@
 package com.futmaneger.application.usecase.vinculo;
 
 import com.futmaneger.application.dto.VinculoTecnicoClubeRequestDTO;
+import com.futmaneger.application.exception.NaoEncontradoException;
 import com.futmaneger.domain.entity.Clube;
 import com.futmaneger.domain.entity.Tecnico;
 import com.futmaneger.infrastructure.persistence.entity.ClubeEntity;
 import com.futmaneger.infrastructure.persistence.entity.TecnicoEntity;
 import com.futmaneger.infrastructure.persistence.jpa.ClubeJpaRepository;
 import com.futmaneger.infrastructure.persistence.jpa.TecnicoJpaRepository;
+import java.math.BigDecimal;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -22,11 +24,12 @@ public class VincularTecnicoAoClubeUseCase {
 
     public void vincular(VinculoTecnicoClubeRequestDTO request) {
         ClubeEntity clube = clubeRepository.findById(request.clubeId())
-                .orElseThrow(() -> new RuntimeException("Clube não encontrado"));
+                .orElseThrow(() -> new NaoEncontradoException("Clube não encontrado"));
         TecnicoEntity tecnico = tecnicoRepository.findById(request.tecnicoId())
-                .orElseThrow(() -> new RuntimeException("Técnico não encontrado"));
+                .orElseThrow(() -> new NaoEncontradoException("Técnico não encontrado"));
 
         clube.setTecnico(tecnico);
+        clube.setSaldo(BigDecimal.valueOf(Long.parseLong("1")));
         clubeRepository.save(clube);
     }
 }

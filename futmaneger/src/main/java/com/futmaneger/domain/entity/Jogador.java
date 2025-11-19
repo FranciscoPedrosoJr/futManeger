@@ -8,6 +8,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "jogadores")
@@ -20,6 +21,7 @@ public class Jogador {
     private int forca;
     private boolean diferenciado;
     private boolean identificacaoComClube;
+    private BigDecimal valorMercado;
 
     @ManyToOne
     @JoinColumn(name = "clube_id", nullable = false)
@@ -37,7 +39,6 @@ public class Jogador {
     public Jogador() {
 
     }
-
 
     public Long getId() {
         return id;
@@ -91,5 +92,12 @@ public class Jogador {
     }
 
     public void setClube(ClubeEntity clube) {
+        this.clube = clube;
+    }
+
+    public void setValorMercado(BigDecimal valorMercado) { this.valorMercado = valorMercado; }
+
+    public BigDecimal getValorMercado() {
+        return valorMercado;
     }
 }
