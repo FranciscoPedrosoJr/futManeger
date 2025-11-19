@@ -23,7 +23,6 @@ public class Jogador {
     private boolean identificacaoComClube;
     private BigDecimal valorMercado;
 
-
     @ManyToOne
     @JoinColumn(name = "clube_id", nullable = false)
     private ClubeEntity clube;
