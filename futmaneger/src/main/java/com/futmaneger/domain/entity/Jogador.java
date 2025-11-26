@@ -77,20 +77,24 @@ public class Jogador {
     }
 
     public void setNome(String nome) {
+        this.nome = nome;
     }
 
     public void setPosicao(String posicao) {
+        this.posicao = posicao;
     }
 
     public void setForca(int forca) {
+        this.forca = forca;
     }
 
     public void setDiferenciado(boolean diferenciado) {
+        this.diferenciado = diferenciado;
     }
 
     public void setIdentificacaoComClube(boolean identificacaoComClube) {
+        this.identificacaoComClube = identificacaoComClube;
     }
-
     public void setClube(ClubeEntity clube) {
         this.clube = clube;
     }
