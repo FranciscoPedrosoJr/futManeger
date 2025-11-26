@@ -1,11 +1,8 @@
 package com.futmaneger.application.usecase.jogador;
 
-import static java.util.stream.Collectors.toList;
-
 import com.futmaneger.application.dto.JogadorLoteRequestDTO;
 import com.futmaneger.application.dto.JogadorResponseDTO;
 import com.futmaneger.application.exception.NaoEncontradoException;
-import com.futmaneger.domain.entity.Clube;
 import com.futmaneger.domain.entity.Jogador;
 import com.futmaneger.domain.repository.JogadorRepository;
 import com.futmaneger.infrastructure.persistence.entity.ClubeEntity;
@@ -38,7 +35,7 @@ public class CadastrarJogadoresUseCase {
                             dto.identificacaoComClube(),
                             clube
                     );
-                    jogador.setValorMercado(definirValorMercado(dto.forca()));
+                    jogador.setValorMercado(calcularValorMercado(dto.forca()));
                     return jogador;
                 }).toList();
 
@@ -57,25 +54,47 @@ public class CadastrarJogadoresUseCase {
                 )).toList();
     }
 
-    private BigDecimal definirValorMercado(int forca) {
+    private BigDecimal calcularValorMercado(int forca) {
 
-        if (forca <= 50) {
-            return gerarValor(new BigDecimal("5000000"), new BigDecimal("20000000"));
+        final double volatilidade = 0.15; // 15%
+
+        BigDecimal minimo;
+        BigDecimal maximo;
+
+        if (forca <= 20) {
+            minimo = BigDecimal.valueOf(0);
+            maximo = BigDecimal.valueOf(1_000_000);
+        } else if (forca <= 49) {
+            minimo = BigDecimal.valueOf(1_000_000);
+            maximo = BigDecimal.valueOf(10_000_000);
+        } else if (forca <= 79) {
+            minimo = BigDecimal.valueOf(10_000_000);
+            maximo = BigDecimal.valueOf(50_000_000);
+        } else {
+            minimo = BigDecimal.valueOf(50_000_000);
+            maximo = BigDecimal.valueOf(1_000_000_000);
         }
 
-        if (forca <= 70) {
-            return gerarValor(new BigDecimal("20000000"), new BigDecimal("50000000"));
-        }
+        int faixaMin = (forca <= 20 ? 0 :
+                forca <= 49 ? 21 :
+                        forca <= 79 ? 50 : 80);
 
-        return gerarValor(new BigDecimal("50000000"), new BigDecimal("100000000"));
-    }
+        int faixaMax = (forca <= 20 ? 20 :
+                forca <= 49 ? 49 :
+                        forca <= 79 ? 79 : 99);
 
-    private BigDecimal gerarValor(BigDecimal min, BigDecimal max) {
-        double minD = min.doubleValue();
-        double maxD = max.doubleValue();
+        BigDecimal proporcao = BigDecimal
+                .valueOf(forca - faixaMin)
+                .divide(BigDecimal.valueOf(faixaMax - faixaMin), 4, RoundingMode.HALF_UP);
 
-        double aleatorio = minD + (Math.random() * (maxD - minD));
+        BigDecimal range = maximo.subtract(minimo);
+        BigDecimal valorBase = minimo.add(range.multiply(proporcao));
 
-        return BigDecimal.valueOf(aleatorio).setScale(0, RoundingMode.HALF_UP);
+        double variacao = (Math.random() * 2 - 1) * volatilidade;
+        BigDecimal multiplicador = BigDecimal.valueOf(1 + variacao);
+
+        BigDecimal valorFinal = valorBase.multiply(multiplicador);
+
+        return valorFinal.setScale(0, RoundingMode.HALF_UP);
     }
 }
