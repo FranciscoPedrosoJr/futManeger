@@ -8,6 +8,8 @@ import com.futmaneger.infrastructure.persistence.entity.ClubeEntity;
 import com.futmaneger.infrastructure.persistence.jpa.ClubeJpaRepository;
 import com.futmaneger.infrastructure.persistence.jpa.JogadorJpaRepository;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import org.antlr.v4.runtime.atn.SemanticContext;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -40,8 +42,12 @@ public class AtualizarJogadorUseCase {
 
         if (request.forca() != null) {
             jogador.setForca(request.forca());
+            if(request.valorMercado() == null)
             jogador.setValorMercado(calcularValorMercado(request.forca()));
         }
+
+        if(request.valorMercado() != null)
+        jogador.setValorMercado(request.valorMercado());
 
         if (request.diferenciado() != null) {
             jogador.setDiferenciado(request.diferenciado());
@@ -62,9 +68,47 @@ public class AtualizarJogadorUseCase {
     }
 
     private BigDecimal calcularValorMercado(Integer forca) {
-        if (forca < 50) return BigDecimal.valueOf(5_000_000);
-        if (forca < 70) return BigDecimal.valueOf(20_000_000);
-        return BigDecimal.valueOf(50_000_000);
+        final double volatilidade = 0.15; // 15%
+
+        BigDecimal minimo;
+        BigDecimal maximo;
+
+        if (forca <= 20) {
+            minimo = BigDecimal.valueOf(0);
+            maximo = BigDecimal.valueOf(1_000_000);
+        } else if (forca <= 49) {
+            minimo = BigDecimal.valueOf(1_000_000);
+            maximo = BigDecimal.valueOf(10_000_000);
+        } else if (forca <= 79) {
+            minimo = BigDecimal.valueOf(10_000_000);
+            maximo = BigDecimal.valueOf(50_000_000);
+        } else {
+            minimo = BigDecimal.valueOf(50_000_000);
+            maximo = BigDecimal.valueOf(1_000_000_000);
+        }
+
+        int faixaMin = (forca <= 20 ? 0 :
+                forca <= 49 ? 21 :
+                        forca <= 79 ? 50 : 80);
+
+        int faixaMax = (forca <= 20 ? 20 :
+                forca <= 49 ? 49 :
+                        forca <= 79 ? 79 : 99);
+
+        BigDecimal proporcao = BigDecimal
+                .valueOf(forca - faixaMin)
+                .divide(BigDecimal.valueOf(faixaMax - faixaMin), 4, RoundingMode.HALF_UP);
+
+        BigDecimal range = maximo.subtract(minimo);
+        BigDecimal valorBase = minimo.add(range.multiply(proporcao));
+
+        double variacao = (Math.random() * 2 - 1) * volatilidade;
+        BigDecimal multiplicador = BigDecimal.valueOf(1 + variacao);
+
+        BigDecimal valorFinal = valorBase.multiply(multiplicador);
+
+        return valorFinal.setScale(0, RoundingMode.HALF_UP);
     }
+
 }
 
