@@ -1,0 +1,1059 @@
+{
+  "info": {
+    "_postman_id": "b36f9463-1bd8-4cbb-99fd-243467931d4b",
+    "name": "Manager",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "17218215"
+  },
+  "item": [
+    {
+      "name": "Fut/registrar",
+      "id": "60873b1e-77a9-4bcb-b196-ecd549946f19",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"nome\": \"Junior\",\r\n    \"email\": \"junior@example.com\",\r\n    \"senha\": \"123456\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:10300/api/auth/registrar",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "10300",
+          "path": [
+            "api",
+            "auth",
+            "registrar"
+          ]
+        },
+        "description": "Generated from cURL: curl -X POST http://localhost:8080/registrar \\\r\n  -H \"Content-Type: application/json\" \\\r\n  -d '{\r\n    \"nome\": \"João Técnico\",\r\n    \"email\": \"joao.tecnico@example.com\",\r\n    \"senha\": \"123456\"\r\n}'\r\n"
+      },
+      "response": []
+    },
+    {
+      "name": "Fut/login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "id": "142e634e-ddd3-4447-8da6-f22377546087",
+            "exec": [
+              "let responseBd = pm.response.json();\r",
+              "pm.collectionVariables.set(\"futToken\", responseBd.token);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "id": "d8774e96-f935-4db7-a8db-434ba416808c",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    //\"nome\": \"Junior\",\r\n    \"email\": \"junior@example.com\",\r\n    \"senha\": \"123456\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:10300/api/auth/login",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "10300",
+          "path": [
+            "api",
+            "auth",
+            "login"
+          ]
+        },
+        "description": "Generated from cURL: curl -X POST http://localhost:8080/registrar \\\r\n  -H \"Content-Type: application/json\" \\\r\n  -d '{\r\n    \"nome\": \"João Técnico\",\r\n    \"email\": \"joao.tecnico@example.com\",\r\n    \"senha\": \"123456\"\r\n}'\r\n"
+      },
+      "response": []
+    },
+    {
+      "name": "Fut/cadastrarClubes",
+      "id": "272e52f0-cebb-4927-9bd1-26495fc58769",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{futToken}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    //\"nome\": \"Junior\",\r\n    \"nome\": \"Teste2\",\r\n    \"estado\": \"Teste\",\r\n    \"pais\": \"Brasil\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:10300/cadastrar/clubes",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "10300",
+          "path": [
+            "cadastrar",
+            "clubes"
+          ]
+        },
+        "description": "Generated from cURL: curl -X POST http://localhost:8080/registrar \\\r\n  -H \"Content-Type: application/json\" \\\r\n  -d '{\r\n    \"nome\": \"João Técnico\",\r\n    \"email\": \"joao.tecnico@example.com\",\r\n    \"senha\": \"123456\"\r\n}'\r\n"
+      },
+      "response": []
+    },
+    {
+      "name": "Fut/cadastrarJogadores",
+      "id": "0fbcff4a-b1d5-4b44-8b1a-198d0c6465f0",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{futToken}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"jogadores\": [\r\n        {\r\n            \"nome\": \"Jogador20\",\r\n            \"posicao\": \"ZAGUEIRO\",\r\n            \"forca\": 88,\r\n            \"diferenciado\": true,\r\n            \"identificacaoComClube\": false,\r\n            \"clubeId\": {{clubeId}}\r\n        }\r\n    ]\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:10300/cadastrar/jogadores",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "10300",
+          "path": [
+            "cadastrar",
+            "jogadores"
+          ]
+        },
+        "description": "Generated from cURL: curl -X POST http://localhost:8080/registrar \\\r\n  -H \"Content-Type: application/json\" \\\r\n  -d '{\r\n    \"nome\": \"João Técnico\",\r\n    \"email\": \"joao.tecnico@example.com\",\r\n    \"senha\": \"123456\"\r\n}'\r\n"
+      },
+      "response": []
+    },
+    {
+      "name": "Fut/vinculaTecnicoAoClube",
+      "id": "97ee4d46-d0c9-4e80-a09b-319056c43a20",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{futToken}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"clubeId\": 2,\r\n  \"tecnicoId\": 1\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:10300/vinculo/tecnico-clube",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "10300",
+          "path": [
+            "vinculo",
+            "tecnico-clube"
+          ]
+        },
+        "description": "Generated from cURL: curl -X POST http://localhost:8080/registrar \\\r\n  -H \"Content-Type: application/json\" \\\r\n  -d '{\r\n    \"nome\": \"João Técnico\",\r\n    \"email\": \"joao.tecnico@example.com\",\r\n    \"senha\": \"123456\"\r\n}'\r\n"
+      },
+      "response": []
+    },
+    {
+      "name": "Fut/ConsultaDeJogadores",
+      "id": "2fe72847-0d51-4512-9c19-9930aaf5f837",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{futToken}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    //\"forca\": 99,\r\n    \"posicao\": \"ATACANTE\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:10300/buscar/jogadores",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "10300",
+          "path": [
+            "buscar",
+            "jogadores"
+          ]
+        },
+        "description": "Generated from cURL: curl -X POST http://localhost:8080/registrar \\\r\n  -H \"Content-Type: application/json\" \\\r\n  -d '{\r\n    \"nome\": \"João Técnico\",\r\n    \"email\": \"joao.tecnico@example.com\",\r\n    \"senha\": \"123456\"\r\n}'\r\n"
+      },
+      "response": []
+    },
+    {
+      "name": "Fut/Escalação",
+      "id": "7b930004-b15b-4b07-9ee1-eacab3cb3d1e",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{futToken}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "/*{\r\n  \"clubeId\": 1,\r\n  \"formacao\": \"4-4-2\",\r\n  \"titulares\": [18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28],\r\n  \"reservas\": [29, 30, 31, 32, 33, 34]\r\n}\r\n*/\r\n\r\n{\r\n  \"clubeId\": 1,\r\n  \"formacao\": \"4-4-2\",\r\n  \"titulares\": [4, 3, 10, 13, 9, 2, 7, 8, 1, 16, 15],\r\n  \"reservas\": [5, 6, 11, 12, 13, 14]\r\n}\r\n\r\n",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:10300/escalacao",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "10300",
+          "path": [
+            "escalacao"
+          ]
+        },
+        "description": "Generated from cURL: curl -X POST http://localhost:8080/registrar \\\r\n  -H \"Content-Type: application/json\" \\\r\n  -d '{\r\n    \"nome\": \"João Técnico\",\r\n    \"email\": \"joao.tecnico@example.com\",\r\n    \"senha\": \"123456\"\r\n}'\r\n"
+      },
+      "response": []
+    },
+    {
+      "name": "Fut/EscalaçãoTeste",
+      "id": "a181acc7-2263-408d-9fb9-cbafc29182e0",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqdW5pb3JAZXhhbXBsZS5jb20iLCJpZCI6MSwibm9tZSI6Ikp1bmlvciIsImlhdCI6MTc0OTI0MDIzNCwiZXhwIjoxNzQ5MzI2NjM0fQ.NzBztX1mCdOCHioDnkBVcZD1HjJQ43yRISm5I0CG_nw",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"formacao\": \"4-4-2\",\r\n  \"titulares\": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],\r\n  \"reservas\": [12, 13, 14, 15, 16, 17, 18]\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:10300/escalacao/teste",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "10300",
+          "path": [
+            "escalacao",
+            "teste"
+          ]
+        },
+        "description": "Generated from cURL: curl -X POST http://localhost:8080/registrar \\\r\n  -H \"Content-Type: application/json\" \\\r\n  -d '{\r\n    \"nome\": \"João Técnico\",\r\n    \"email\": \"joao.tecnico@example.com\",\r\n    \"senha\": \"123456\"\r\n}'\r\n"
+      },
+      "response": []
+    },
+    {
+      "name": "Fut/Simulação",
+      "id": "28a65ecb-9ca9-43e0-8696-9ff044ce26ec",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{futToken}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"clubeMandanteId\": 1,\r\n  \"clubeVisitanteId\": 2,\r\n  \"escalacaoMandanteId\": 1\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:10300/simulacoes",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "10300",
+          "path": [
+            "simulacoes"
+          ]
+        },
+        "description": "Generated from cURL: curl -X POST http://localhost:8080/registrar \\\r\n  -H \"Content-Type: application/json\" \\\r\n  -d '{\r\n    \"nome\": \"João Técnico\",\r\n    \"email\": \"joao.tecnico@example.com\",\r\n    \"senha\": \"123456\"\r\n}'\r\n"
+      },
+      "response": []
+    },
+    {
+      "name": "Fut/Simulação Rodada",
+      "id": "589dafd7-64fa-40fe-bea2-5b0abea6d197",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{futToken}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "/*{\r\n  \"clubeMandanteId\": 1,\r\n  \"clubeVisitanteId\": 2,\r\n  \"escalacaoMandanteId\": 1\r\n}*/",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:10300/simulacoes/:campeonatoId/rodadas/:rodadaId/simulacoes",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "10300",
+          "path": [
+            "simulacoes",
+            ":campeonatoId",
+            "rodadas",
+            ":rodadaId",
+            "simulacoes"
+          ],
+          "variable": [
+            {
+              "key": "campeonatoId",
+              "value": "1"
+            },
+            {
+              "key": "rodadaId",
+              "value": "10"
+            }
+          ]
+        },
+        "description": "Generated from cURL: curl -X POST http://localhost:8080/registrar \\\r\n  -H \"Content-Type: application/json\" \\\r\n  -d '{\r\n    \"nome\": \"João Técnico\",\r\n    \"email\": \"joao.tecnico@example.com\",\r\n    \"senha\": \"123456\"\r\n}'\r\n"
+      },
+      "response": []
+    },
+    {
+      "name": "Fut/campeonatos",
+      "id": "6a585297-1fdd-4a0c-a6ec-fc869c55563b",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{futToken}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"nome\": \"MataMata5\",\r\n  \"pais\": \"Brasil\",\r\n  \"estado\": \"Paraná\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:10300/cadastrar/campeonatos",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "10300",
+          "path": [
+            "cadastrar",
+            "campeonatos"
+          ]
+        },
+        "description": "Generated from cURL: curl -X POST http://localhost:8080/registrar \\\r\n  -H \"Content-Type: application/json\" \\\r\n  -d '{\r\n    \"nome\": \"João Técnico\",\r\n    \"email\": \"joao.tecnico@example.com\",\r\n    \"senha\": \"123456\"\r\n}'\r\n"
+      },
+      "response": []
+    },
+    {
+      "name": "Fut/campeonatos times",
+      "id": "26b75a12-b725-406c-a088-5b5556f2e60b",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{futToken}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"nome\": \"MataMata\",\r\n  \"pais\": \"Brasil\",\r\n  \"estado\": \"Paraná\",\r\n  \"clubes\": [1, 2, 3, 4]\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:10300/cadastrar/campeonatos-times",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "10300",
+          "path": [
+            "cadastrar",
+            "campeonatos-times"
+          ]
+        },
+        "description": "Generated from cURL: curl -X POST http://localhost:8080/registrar \\\r\n  -H \"Content-Type: application/json\" \\\r\n  -d '{\r\n    \"nome\": \"João Técnico\",\r\n    \"email\": \"joao.tecnico@example.com\",\r\n    \"senha\": \"123456\"\r\n}'\r\n"
+      },
+      "response": []
+    },
+    {
+      "name": "Fut/campeonatos rodadas",
+      "id": "e9a07f19-2def-45df-b41d-bb938c18728d",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{futToken}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:10300/cadastrar/campeonatos/:campeonatoId/rodadas",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "10300",
+          "path": [
+            "cadastrar",
+            "campeonatos",
+            ":campeonatoId",
+            "rodadas"
+          ],
+          "variable": [
+            {
+              "key": "campeonatoId",
+              "value": "8"
+            }
+          ]
+        },
+        "description": "Generated from cURL: curl -X POST http://localhost:8080/registrar \\\r\n  -H \"Content-Type: application/json\" \\\r\n  -d '{\r\n    \"nome\": \"João Técnico\",\r\n    \"email\": \"joao.tecnico@example.com\",\r\n    \"senha\": \"123456\"\r\n}'\r\n"
+      },
+      "response": []
+    },
+    {
+      "name": "Fut/comprar",
+      "id": "4bcc2061-384b-476b-99d2-7a033e01b185",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{futToken}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"clubeId\": 2,\r\n  \"jogadorId\": 29\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:10300/transferencias/comprar",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "10300",
+          "path": [
+            "transferencias",
+            "comprar"
+          ]
+        },
+        "description": "Generated from cURL: curl -X POST http://localhost:8080/registrar \\\r\n  -H \"Content-Type: application/json\" \\\r\n  -d '{\r\n    \"nome\": \"João Técnico\",\r\n    \"email\": \"joao.tecnico@example.com\",\r\n    \"senha\": \"123456\"\r\n}'\r\n"
+      },
+      "response": []
+    },
+    {
+      "name": "Fut/vender",
+      "id": "62bbab35-5fd3-43d8-a686-6f748fc15336",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{futToken}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"clubeId\": 1,\r\n  \"jogadorId\": 10\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:10300/transferencias/jogadores/:idJogador/vender",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "10300",
+          "path": [
+            "transferencias",
+            "jogadores",
+            ":idJogador",
+            "vender"
+          ],
+          "variable": [
+            {
+              "key": "idJogador",
+              "value": "198"
+            }
+          ]
+        },
+        "description": "Generated from cURL: curl -X POST http://localhost:8080/registrar \\\r\n  -H \"Content-Type: application/json\" \\\r\n  -d '{\r\n    \"nome\": \"João Técnico\",\r\n    \"email\": \"joao.tecnico@example.com\",\r\n    \"senha\": \"123456\"\r\n}'\r\n"
+      },
+      "response": []
+    },
+    {
+      "name": "Teste NIFI",
+      "id": "26ee1f59-d3f9-4f9f-8ed4-743d0cf48605",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{futToken}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"nome\": \"Junior\",\r\n    \"email\": \"junior@example.com\",\r\n    \"senha\": \"123456\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:10301/cadastrar",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "10301",
+          "path": [
+            "cadastrar"
+          ]
+        },
+        "description": "Generated from cURL: curl -X POST http://localhost:8080/registrar \\\r\n  -H \"Content-Type: application/json\" \\\r\n  -d '{\r\n    \"nome\": \"João Técnico\",\r\n    \"email\": \"joao.tecnico@example.com\",\r\n    \"senha\": \"123456\"\r\n}'\r\n"
+      },
+      "response": []
+    },
+    {
+      "name": "Fut/editarJogador",
+      "id": "6e7bd503-21c0-4451-afbc-389b0d0ccf3f",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{futToken}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"nome\": \"testeEditado2\",\r\n    \"posicao\": \"ATACANTE\",\r\n    \"forca\": 45,\r\n    \"diferenciado\": false,\r\n    \"identificacaoComClube\": false,\r\n    \"nomeClube\": \"34\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:10300/editar/jogador/:idJogador",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "10300",
+          "path": [
+            "editar",
+            "jogador",
+            ":idJogador"
+          ],
+          "variable": [
+            {
+              "key": "idJogador",
+              "value": "203"
+            }
+          ]
+        },
+        "description": "Generated from cURL: curl -X POST http://localhost:8080/registrar \\\r\n  -H \"Content-Type: application/json\" \\\r\n  -d '{\r\n    \"nome\": \"João Técnico\",\r\n    \"email\": \"joao.tecnico@example.com\",\r\n    \"senha\": \"123456\"\r\n}'\r\n"
+      },
+      "response": []
+    },
+    {
+      "name": "Fut/editarClube",
+      "id": "3f3b522e-a495-4687-a1fa-b38ae8e4354b",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{futToken}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"nome\": \"testeEditado2\",\r\n  \"estado\": \"Novo Estado2\",\r\n  \"pais\": \"Brasil Teste2\",\r\n  \"saldo\": 71000002500,\r\n  \"tecnicoId\": 1\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:10300/editar/clube/:idClube",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "10300",
+          "path": [
+            "editar",
+            "clube",
+            ":idClube"
+          ],
+          "variable": [
+            {
+              "key": "idClube",
+              "value": "33"
+            }
+          ]
+        },
+        "description": "Generated from cURL: curl -X POST http://localhost:8080/registrar \\\r\n  -H \"Content-Type: application/json\" \\\r\n  -d '{\r\n    \"nome\": \"João Técnico\",\r\n    \"email\": \"joao.tecnico@example.com\",\r\n    \"senha\": \"123456\"\r\n}'\r\n"
+      },
+      "response": []
+    },
+    {
+      "name": "Fut/editarTecnico",
+      "id": "2ac4ba50-f914-473d-bff8-89fb5db32e76",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{futToken}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"nome\": \"Junior\",\r\n  \"email\": \"francisco.junior@example.com\",\r\n  \"senha\": \"123456\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:10300/editar/tecnico/:idTecnico",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "10300",
+          "path": [
+            "editar",
+            "tecnico",
+            ":idTecnico"
+          ],
+          "variable": [
+            {
+              "key": "idTecnico",
+              "value": "1"
+            }
+          ]
+        },
+        "description": "Generated from cURL: curl -X POST http://localhost:8080/registrar \\\r\n  -H \"Content-Type: application/json\" \\\r\n  -d '{\r\n    \"nome\": \"João Técnico\",\r\n    \"email\": \"joao.tecnico@example.com\",\r\n    \"senha\": \"123456\"\r\n}'\r\n"
+      },
+      "response": []
+    },
+    {
+      "name": "Fut/buscarClubes",
+      "id": "e141df86-229e-459f-92eb-ee5ba798f822",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{futToken}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:10300/buscar/clubes",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "10300",
+          "path": [
+            "buscar",
+            "clubes"
+          ]
+        },
+        "description": "Generated from cURL: curl -X POST http://localhost:8080/registrar \\\r\n  -H \"Content-Type: application/json\" \\\r\n  -d '{\r\n    \"nome\": \"João Técnico\",\r\n    \"email\": \"joao.tecnico@example.com\",\r\n    \"senha\": \"123456\"\r\n}'\r\n"
+      },
+      "response": []
+    },
+    {
+      "name": "Fut/buscarMataMata",
+      "id": "e946061a-29c6-461f-80aa-5969e305e8f7",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{futToken}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:10300/buscar/campeonato/:idCampeonato/partidas-mata-mata",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "10300",
+          "path": [
+            "buscar",
+            "campeonato",
+            ":idCampeonato",
+            "partidas-mata-mata"
+          ],
+          "variable": [
+            {
+              "key": "idCampeonato",
+              "value": "6"
+            }
+          ]
+        },
+        "description": "Generated from cURL: curl -X POST http://localhost:8080/registrar \\\r\n  -H \"Content-Type: application/json\" \\\r\n  -d '{\r\n    \"nome\": \"João Técnico\",\r\n    \"email\": \"joao.tecnico@example.com\",\r\n    \"senha\": \"123456\"\r\n}'\r\n"
+      },
+      "response": []
+    },
+    {
+      "name": "Fut/buscarTecnicos",
+      "id": "651317f9-5b3e-489d-96ce-9a830ced80c2",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{futToken}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "//{\r\n    //\"nome\": \"Junior\",\r\n    //\"nome\": \"Francisco FC\",\r\n    //\"cidade\": \"Ponta Grossa\"\r\n//}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:10300/buscar/tecnicos",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "10300",
+          "path": [
+            "buscar",
+            "tecnicos"
+          ]
+        },
+        "description": "Generated from cURL: curl -X POST http://localhost:8080/registrar \\\r\n  -H \"Content-Type: application/json\" \\\r\n  -d '{\r\n    \"nome\": \"João Técnico\",\r\n    \"email\": \"joao.tecnico@example.com\",\r\n    \"senha\": \"123456\"\r\n}'\r\n"
+      },
+      "response": []
+    },
+    {
+      "name": "Fut/excluirClubes",
+      "id": "9fdcba50-6ae7-4795-a2ab-1593f75e572d",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{futToken}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "//{\r\n    //\"nome\": \"Junior\",\r\n    //\"nome\": \"Francisco FC\",\r\n    //\"cidade\": \"Ponta Grossa\"\r\n//}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:10300/excluir/clubes/:clubeId",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "10300",
+          "path": [
+            "excluir",
+            "clubes",
+            ":clubeId"
+          ],
+          "variable": [
+            {
+              "key": "clubeId",
+              "value": "5"
+            }
+          ]
+        },
+        "description": "Generated from cURL: curl -X POST http://localhost:8080/registrar \\\r\n  -H \"Content-Type: application/json\" \\\r\n  -d '{\r\n    \"nome\": \"João Técnico\",\r\n    \"email\": \"joao.tecnico@example.com\",\r\n    \"senha\": \"123456\"\r\n}'\r\n"
+      },
+      "response": []
+    },
+    {
+      "name": "Fut/excluirTecnicos",
+      "id": "7ac14ab4-7017-41ce-b8f9-e7807ec6f3a9",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{futToken}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "//{\r\n    //\"nome\": \"Junior\",\r\n    //\"nome\": \"Francisco FC\",\r\n    //\"cidade\": \"Ponta Grossa\"\r\n//}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:10300/excluir/tecnicos/1",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "10300",
+          "path": [
+            "excluir",
+            "tecnicos",
+            "1"
+          ]
+        },
+        "description": "Generated from cURL: curl -X POST http://localhost:8080/registrar \\\r\n  -H \"Content-Type: application/json\" \\\r\n  -d '{\r\n    \"nome\": \"João Técnico\",\r\n    \"email\": \"joao.tecnico@example.com\",\r\n    \"senha\": \"123456\"\r\n}'\r\n"
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "id": "b60a5610-1365-4256-becb-3cc95bf573a6",
+      "key": "futToken",
+      "value": ""
+    }
+  ]
+}
