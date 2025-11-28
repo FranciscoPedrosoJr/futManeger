@@ -3,11 +3,15 @@ package com.futmaneger.presentation.controller;
 import com.futmaneger.application.dto.AtualizarClubeRequestDTO;
 import com.futmaneger.application.dto.AtualizarClubeResponseDTO;
 import com.futmaneger.application.dto.AtualizarJogadorRequestDTO;
+import com.futmaneger.application.dto.AtualizarTecnicoRequestDTO;
+import com.futmaneger.application.dto.AtualizarTecnicoResponseDTO;
 import com.futmaneger.application.dto.JogadorResponseDTO;
 import com.futmaneger.application.usecase.clube.AtualizarClubeUseCase;
 import com.futmaneger.application.usecase.jogador.AtualizarJogadorUseCase;
+import com.futmaneger.application.usecase.tecnico.AtualizarTecnicoUseCase;
 import com.futmaneger.domain.entity.Jogador;
 import com.futmaneger.infrastructure.persistence.entity.ClubeEntity;
+import com.futmaneger.infrastructure.persistence.entity.TecnicoEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -20,10 +24,13 @@ import org.springframework.web.bind.annotation.RestController;
 public class EditarController {
     private final AtualizarJogadorUseCase atualizarJogadorUseCase;
     private final AtualizarClubeUseCase atualizarClubeUseCase;
+    private final AtualizarTecnicoUseCase atualizarTecnicoUseCase;
 
-    public EditarController(AtualizarJogadorUseCase atualizarJogadorUseCase, AtualizarClubeUseCase atualizarClubeUseCase) {
+    public EditarController(AtualizarJogadorUseCase atualizarJogadorUseCase, AtualizarClubeUseCase atualizarClubeUseCase,
+                            AtualizarTecnicoUseCase atualizarTecnicoUseCase) {
         this.atualizarJogadorUseCase = atualizarJogadorUseCase;
         this.atualizarClubeUseCase = atualizarClubeUseCase;
+        this.atualizarTecnicoUseCase = atualizarTecnicoUseCase;
     }
 
     @PutMapping("/jogador/{id}")
@@ -59,6 +66,21 @@ public class EditarController {
                 j.getPais(),
                 j.getSaldo(),
                 j.getTecnico()
+        ));
+    }
+
+    @PutMapping("/tecnico/{id}")
+    public ResponseEntity<AtualizarTecnicoResponseDTO> atualizarJogador(
+            @PathVariable Long id,
+            @RequestBody AtualizarTecnicoRequestDTO request
+    ) {
+        TecnicoEntity j = atualizarTecnicoUseCase.atualizar(id, request);
+
+        return ResponseEntity.ok(new AtualizarTecnicoResponseDTO(
+                j.getId(),
+                j.getNome(),
+                j.getEmail(),
+                j.getSenha()
         ));
     }
 }
