@@ -24,7 +24,7 @@ public class Jogador {
     private BigDecimal valorMercado;
 
     @ManyToOne
-    @JoinColumn(name = "clube_id", nullable = false)
+    @JoinColumn(name = "clube_id", nullable = true)
     private ClubeEntity clube;
 
     public Jogador(String nome, String posicao, int forca, boolean diferenciado, boolean identificacaoComClube, ClubeEntity clube) {
