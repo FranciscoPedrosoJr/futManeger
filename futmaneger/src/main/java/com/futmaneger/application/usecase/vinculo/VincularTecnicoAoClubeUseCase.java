@@ -1,6 +1,7 @@
 package com.futmaneger.application.usecase.vinculo;
 
 import com.futmaneger.application.dto.VinculoTecnicoClubeRequestDTO;
+import com.futmaneger.application.exception.DadosInvalidosException;
 import com.futmaneger.application.exception.NaoEncontradoException;
 import com.futmaneger.domain.entity.Clube;
 import com.futmaneger.domain.entity.Tecnico;
@@ -28,8 +29,12 @@ public class VincularTecnicoAoClubeUseCase {
         TecnicoEntity tecnico = tecnicoRepository.findById(request.tecnicoId())
                 .orElseThrow(() -> new NaoEncontradoException("Técnico não encontrado"));
 
+        boolean tecnicoJaVinculado = clubeRepository.existsByTecnicoId(request.tecnicoId());
+        if (tecnicoJaVinculado) {
+            throw new DadosInvalidosException("Técnico já está vinculado a um clube");
+        }
+
         clube.setTecnico(tecnico);
-        clube.setSaldo(BigDecimal.valueOf(Long.parseLong("1")));
         clubeRepository.save(clube);
     }
 }
