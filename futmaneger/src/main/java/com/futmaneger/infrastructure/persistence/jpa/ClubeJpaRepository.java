@@ -17,4 +17,6 @@ public interface ClubeJpaRepository extends JpaRepository<ClubeEntity, Long> {
         WHERE j.clube.id = :clubeId
     """)
     Double calcularMediaForca(Long clubeId);
+
+    boolean existsByTecnicoId(Long tecnicoId);
 }
