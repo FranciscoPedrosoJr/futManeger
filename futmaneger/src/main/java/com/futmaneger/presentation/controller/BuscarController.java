@@ -3,17 +3,20 @@ package com.futmaneger.presentation.controller;
 import com.futmaneger.application.dto.CampeaoResponseDTO;
 import com.futmaneger.application.dto.JogadorFiltroDTO;
 import com.futmaneger.application.dto.JogadorResponseDTO;
+import com.futmaneger.application.dto.JogadoresDoClubeResponseDTO;
 import com.futmaneger.application.dto.PartidaMataMataResponseDTO;
 import com.futmaneger.application.dto.TabelaCampeonatoResponseDTO;
 import com.futmaneger.application.usecase.campeonato.BuscarCampeoesUseCase;
 import com.futmaneger.application.usecase.campeonato.BuscarPartidasMataMataUseCase;
 import com.futmaneger.application.usecase.campeonato.BuscarTabelaCampeonatoUseCase;
 import com.futmaneger.application.usecase.clube.BuscarClubesUseCase;
+import com.futmaneger.application.usecase.clube.ListarJogadoresDoClubeUseCase;
 import com.futmaneger.application.usecase.jogador.BuscarJogadoresUseCase;
 import com.futmaneger.application.usecase.tecnico.BuscarTecnicoUseCase;
 import com.futmaneger.infrastructure.persistence.entity.ClubeEntity;
 import com.futmaneger.infrastructure.persistence.entity.TecnicoEntity;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,6 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/buscar")
+@RequiredArgsConstructor
 public class BuscarController {
     private final BuscarClubesUseCase buscarClubesUseCase;
     private final BuscarTecnicoUseCase buscarTecnicoUseCase;
@@ -32,17 +36,7 @@ public class BuscarController {
     private final BuscarPartidasMataMataUseCase buscarPartidasMataMataUseCase;
     private final BuscarTabelaCampeonatoUseCase buscarTabelaCampeonatoUseCase;
     private final BuscarCampeoesUseCase buscarCampeoesUseCase;
-
-    public BuscarController(BuscarClubesUseCase buscarClubesUseCase, BuscarTecnicoUseCase buscarTecnicoUseCase,
-                            BuscarJogadoresUseCase buscarJogadoresUseCase, BuscarPartidasMataMataUseCase buscarPartidasMataMataUseCase,
-                            BuscarTabelaCampeonatoUseCase buscarTabelaCampeonatoUseCase, BuscarCampeoesUseCase buscarCampeoesUseCase) {
-        this.buscarClubesUseCase = buscarClubesUseCase;
-        this.buscarTecnicoUseCase = buscarTecnicoUseCase;
-        this.buscarJogadoresUseCase = buscarJogadoresUseCase;
-        this.buscarPartidasMataMataUseCase = buscarPartidasMataMataUseCase;
-        this.buscarTabelaCampeonatoUseCase = buscarTabelaCampeonatoUseCase;
-        this.buscarCampeoesUseCase = buscarCampeoesUseCase;
-    }
+    private final ListarJogadoresDoClubeUseCase listarJogadoresDoClubeUseCase;
 
     @GetMapping("/clubes")
     public ResponseEntity<List<ClubeEntity>> listarClubes() {
@@ -76,5 +70,10 @@ public class BuscarController {
             @RequestParam(required = false) Long campeonatoId
     ) {
         return ResponseEntity.ok(buscarCampeoesUseCase.buscarCampeoes(campeonatoId));
+    }
+
+    @GetMapping("clube/{clubeId}/jogadores")
+    public ResponseEntity<JogadoresDoClubeResponseDTO> listar(@PathVariable Long clubeId) {
+        return ResponseEntity.ok(listarJogadoresDoClubeUseCase.executar(clubeId));
     }
 }
