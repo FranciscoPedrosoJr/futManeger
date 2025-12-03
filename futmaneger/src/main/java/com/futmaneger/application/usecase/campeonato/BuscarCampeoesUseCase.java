@@ -26,15 +26,21 @@ public class BuscarCampeoesUseCase {
     public List<CampeaoResponseDTO> buscarCampeoes(Long campeonatoId) {
 
         if (campeonatoId != null) {
+
             var campeonato = campeonatoRepository.findById(campeonatoId)
                     .orElseThrow(() -> new NaoEncontradoException("Campeonato não encontrado"));
 
-            var tabela = tabelaCampeonatoRepository.findByCampeonatoIdOrderByPontosDesc(campeonatoId);
-
-            var campeao = tabela.get(0);
-            if(campeonato.getEmAndamento()){
+            if (Boolean.TRUE.equals(campeonato.getEmAndamento())) {
                 throw new DadosInvalidosException("Este campeonato ainda não finalizou.");
             }
+
+            var tabela = tabelaCampeonatoRepository.findByCampeonatoIdOrderByPontosDesc(campeonatoId);
+
+            if (tabela.isEmpty()) {
+                throw new DadosInvalidosException("Este campeonato não possui tabela registrada.");
+            }
+
+            var campeao = tabela.get(0);
 
             var clube = clubeRepository.findById(campeao.getClube().getId())
                     .orElseThrow(() -> new NaoEncontradoException("Clube não encontrado"));
@@ -57,6 +63,11 @@ public class BuscarCampeoesUseCase {
         List<CampeaoResponseDTO> response = new ArrayList<>();
 
         for (var camp : campeonatos) {
+
+            if (Boolean.TRUE.equals(camp.getEmAndamento())) {
+                continue;
+            }
+
             var tabela = tabelaCampeonatoRepository.findByCampeonatoIdOrderByPontosDesc(camp.getId());
 
             if (tabela.isEmpty()) continue;
@@ -79,7 +90,10 @@ public class BuscarCampeoesUseCase {
             ));
         }
 
+        if (response.isEmpty()) {
+            throw new NaoEncontradoException("Nenhum campeonato finalizado encontrado.");
+        }
+
         return response;
     }
-
 }
