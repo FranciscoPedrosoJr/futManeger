@@ -1,16 +1,17 @@
 package com.futmaneger.presentation.controller;
 
+import com.futmaneger.application.dto.CampeaoResponseDTO;
 import com.futmaneger.application.dto.JogadorFiltroDTO;
 import com.futmaneger.application.dto.JogadorResponseDTO;
 import com.futmaneger.application.dto.PartidaMataMataResponseDTO;
 import com.futmaneger.application.dto.TabelaCampeonatoResponseDTO;
+import com.futmaneger.application.usecase.campeonato.BuscarCampeoesUseCase;
 import com.futmaneger.application.usecase.campeonato.BuscarPartidasMataMataUseCase;
 import com.futmaneger.application.usecase.campeonato.BuscarTabelaCampeonatoUseCase;
 import com.futmaneger.application.usecase.clube.BuscarClubesUseCase;
 import com.futmaneger.application.usecase.jogador.BuscarJogadoresUseCase;
 import com.futmaneger.application.usecase.tecnico.BuscarTecnicoUseCase;
 import com.futmaneger.infrastructure.persistence.entity.ClubeEntity;
-import com.futmaneger.infrastructure.persistence.entity.TabelaCampeonatoEntity;
 import com.futmaneger.infrastructure.persistence.entity.TecnicoEntity;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
@@ -19,28 +20,28 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/buscar")
 public class BuscarController {
     private final BuscarClubesUseCase buscarClubesUseCase;
-
     private final BuscarTecnicoUseCase buscarTecnicoUseCase;
-
     private final BuscarJogadoresUseCase buscarJogadoresUseCase;
-
     private final BuscarPartidasMataMataUseCase buscarPartidasMataMataUseCase;
     private final BuscarTabelaCampeonatoUseCase buscarTabelaCampeonatoUseCase;
+    private final BuscarCampeoesUseCase buscarCampeoesUseCase;
 
     public BuscarController(BuscarClubesUseCase buscarClubesUseCase, BuscarTecnicoUseCase buscarTecnicoUseCase,
                             BuscarJogadoresUseCase buscarJogadoresUseCase, BuscarPartidasMataMataUseCase buscarPartidasMataMataUseCase,
-                            BuscarTabelaCampeonatoUseCase buscarTabelaCampeonatoUseCase) {
+                            BuscarTabelaCampeonatoUseCase buscarTabelaCampeonatoUseCase, BuscarCampeoesUseCase buscarCampeoesUseCase) {
         this.buscarClubesUseCase = buscarClubesUseCase;
         this.buscarTecnicoUseCase = buscarTecnicoUseCase;
         this.buscarJogadoresUseCase = buscarJogadoresUseCase;
         this.buscarPartidasMataMataUseCase = buscarPartidasMataMataUseCase;
         this.buscarTabelaCampeonatoUseCase = buscarTabelaCampeonatoUseCase;
+        this.buscarCampeoesUseCase = buscarCampeoesUseCase;
     }
 
     @GetMapping("/clubes")
@@ -68,5 +69,12 @@ public class BuscarController {
     @GetMapping("/buscar-tabela/campeonato/{idCampeonato}")
     public ResponseEntity<List<TabelaCampeonatoResponseDTO>> buscar(@PathVariable Long idCampeonato) {
         return ResponseEntity.ok(buscarTabelaCampeonatoUseCase.executar(idCampeonato));
+    }
+
+    @GetMapping("/campeoes")
+    public ResponseEntity<List<CampeaoResponseDTO>> listarCampeoes(
+            @RequestParam(required = false) Long campeonatoId
+    ) {
+        return ResponseEntity.ok(buscarCampeoesUseCase.buscarCampeoes(campeonatoId));
     }
 }
