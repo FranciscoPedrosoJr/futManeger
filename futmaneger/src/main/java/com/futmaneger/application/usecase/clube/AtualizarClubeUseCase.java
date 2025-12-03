@@ -8,17 +8,14 @@ import com.futmaneger.infrastructure.persistence.entity.TecnicoEntity;
 import com.futmaneger.infrastructure.persistence.jpa.ClubeJpaRepository;
 import com.futmaneger.infrastructure.persistence.jpa.TecnicoJpaRepository;
 import java.util.Optional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class AtualizarClubeUseCase {
     private final ClubeJpaRepository clubeJpaRepository;
     private final TecnicoJpaRepository tecnicoJpaRepository;
-
-    public AtualizarClubeUseCase(ClubeJpaRepository clubeJpaRepository, TecnicoJpaRepository tecnicoJpaRepository) {
-        this.clubeJpaRepository = clubeJpaRepository;
-        this.tecnicoJpaRepository = tecnicoJpaRepository;
-    }
 
     public ClubeEntity atualizar (Long clubeId, AtualizarClubeRequestDTO request){
         ClubeEntity clube = clubeJpaRepository.findById(clubeId)

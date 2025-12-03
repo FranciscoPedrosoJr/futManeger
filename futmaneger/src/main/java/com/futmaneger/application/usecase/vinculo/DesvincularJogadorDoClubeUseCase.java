@@ -6,17 +6,14 @@ import com.futmaneger.domain.entity.Jogador;
 import com.futmaneger.infrastructure.persistence.entity.ClubeEntity;
 import com.futmaneger.infrastructure.persistence.jpa.ClubeJpaRepository;
 import com.futmaneger.infrastructure.persistence.jpa.JogadorJpaRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class DesvincularJogadorDoClubeUseCase {
     private final ClubeJpaRepository clubeJpaRepository;
     private final JogadorJpaRepository jogadorJpaRepository;
-
-    public DesvincularJogadorDoClubeUseCase(ClubeJpaRepository clubeJpaRepository, JogadorJpaRepository jogadorJpaRepository) {
-        this.clubeJpaRepository = clubeJpaRepository;
-        this.jogadorJpaRepository = jogadorJpaRepository;
-    }
 
     public void desvincular(Long clubeId, Long jogadorId) {
         ClubeEntity clube = clubeJpaRepository.findById(clubeId)
