@@ -4,6 +4,7 @@ import com.futmaneger.application.dto.AtualizarClubeRequestDTO;
 import com.futmaneger.application.dto.AtualizarClubeResponseDTO;
 import com.futmaneger.application.dto.AtualizarJogadorRequestDTO;
 import com.futmaneger.application.dto.AtualizarSaldoRequestDTO;
+import com.futmaneger.application.dto.AtualizarSaldoResponseDTO;
 import com.futmaneger.application.dto.AtualizarTecnicoRequestDTO;
 import com.futmaneger.application.dto.AtualizarTecnicoResponseDTO;
 import com.futmaneger.application.dto.JogadorResponseDTO;
@@ -84,7 +85,7 @@ public class EditarController {
     }
 
     @PatchMapping("/clube-saldo")
-    public ResponseEntity<?> atualizarSaldo(@RequestBody AtualizarSaldoRequestDTO request) {
+    public ResponseEntity<AtualizarSaldoResponseDTO> atualizarSaldo(@RequestBody AtualizarSaldoRequestDTO request) {
         var clubeAtualizado = atualizarSaldoClubeUseCase.executar(request);
         return ResponseEntity.ok(clubeAtualizado);
     }
