@@ -112,6 +112,10 @@ public class CampeonatoEntity {
         this.faseAtualMataMata = fase;
     }
 
+    public boolean getEmAndamento() {
+        return emAndamento;
+    }
+
     public enum TipoCampeonato {
         PONTOS_CORRIDOS, MATA_MATA
     }
