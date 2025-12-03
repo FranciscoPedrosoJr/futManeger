@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class BuscarTabelaCampeonatoUseCase {
-
     private final TabelaCampeonatoRepository tabelaRepository;
     private final ClubeJpaRepository clubeRepository;
     private final CampeonatoRepository campeonatoRepository;
