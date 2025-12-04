@@ -2,7 +2,7 @@
   "openapi": "3.0.0",
   "info": {
     "title": "futManager",
-    "version": "v1.0.0"
+    "version": "v1.0.2"
   },
   "servers": [
     {
@@ -11,31 +11,39 @@
   ],
   "tags": [
     {
-      "name": "CadastrarController",
+      "name": "Cadastrar",
       "description": "Realizar cadastros"
     },
     {
-      "name": "SimulacaoController",
-      "description": "Simular partidas"
+      "name": "Simulacao",
+      "description": "Simulação de partidas"
     },
     {
-      "name": "ExcluirController",
+      "name": "Transferencias",
+      "description": "Controle de transferencias"
+    },
+    {
+      "name": "Excluir",
       "description": "Excluir cadastros"
     },
     {
-      "name": "VinculoController",
+      "name": "Vinculo",
       "description": "Vincular técnico à um clube"
     },
     {
-      "name": "BuscarController",
+      "name": "Buscar",
       "description": "Realizar buscas"
     },
     {
-      "name": "EscalacaoController",
+      "name": "Escalacao",
       "description": "Criar uma escalação"
     },
     {
-      "name": "AuthController",
+      "name": "Editar",
+      "description": "Editar informações"
+    },
+    {
+      "name": "Auth",
       "description": "Se cadastrar e realizar o login"
     }
   ],
@@ -46,7 +54,7 @@
         "deprecated": false,
         "description": "",
         "tags": [
-          "EscalacaoController"
+          "Escalacao"
         ],
         "requestBody": {
           "content": {
@@ -79,7 +87,7 @@
         "deprecated": false,
         "description": "",
         "tags": [
-          "EscalacaoController"
+          "Escalacao"
         ],
         "requestBody": {
           "content": {
@@ -112,7 +120,7 @@
         "deprecated": false,
         "description": "",
         "tags": [
-          "VinculoController"
+          "Vinculo"
         ],
         "requestBody": {
           "content": {
@@ -139,13 +147,107 @@
         "parameters": []
       }
     },
+    "/vinculo/clube/{clubeId}/tecnico/{tecnicoId}/desvincular": {
+      "delete": {
+        "summary": "desvincularTecnico",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Vinculo"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/f6f6f805c908a189ab7500898f369054"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "desvincularTecnico",
+        "parameters": [
+          {
+            "schema": {
+              "format": "int64",
+              "type": "number"
+            },
+            "in": "path",
+            "description": "No comments found.",
+            "required": true,
+            "example": 0,
+            "name": "clubeId"
+          },
+          {
+            "schema": {
+              "format": "int64",
+              "type": "number"
+            },
+            "in": "path",
+            "description": "No comments found.",
+            "required": true,
+            "example": 0,
+            "name": "tecnicoId"
+          }
+        ]
+      }
+    },
+    "/vinculo/clube/{clubeId}/jogador/{jogadorId}/desvincular": {
+      "delete": {
+        "summary": "desvincularJogador",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Vinculo"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/f6f6f805c908a189ab7500898f369054"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "desvincularJogador",
+        "parameters": [
+          {
+            "schema": {
+              "format": "int64",
+              "type": "number"
+            },
+            "in": "path",
+            "description": "No comments found.",
+            "required": true,
+            "example": 0,
+            "name": "clubeId"
+          },
+          {
+            "schema": {
+              "format": "int64",
+              "type": "number"
+            },
+            "in": "path",
+            "description": "No comments found.",
+            "required": true,
+            "example": 0,
+            "name": "jogadorId"
+          }
+        ]
+      }
+    },
     "/api/auth/registrar": {
       "post": {
         "summary": "registrar",
         "deprecated": false,
         "description": "",
         "tags": [
-          "AuthController"
+          "Auth"
         ],
         "requestBody": {
           "content": {
@@ -178,7 +280,7 @@
         "deprecated": false,
         "description": "",
         "tags": [
-          "AuthController"
+          "Auth"
         ],
         "requestBody": {
           "content": {
@@ -211,7 +313,7 @@
         "deprecated": false,
         "description": "",
         "tags": [
-          "SimulacaoController"
+          "Simulacao"
         ],
         "requestBody": {
           "content": {
@@ -244,8 +346,23 @@
         "deprecated": false,
         "description": "",
         "tags": [
-          "SimulacaoController"
+          "Simulacao"
         ],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object"
+              },
+              "examples": {
+                "json": {
+                  "summary": "test data",
+                  "value": "curl -X POST -i 'localhost:10300/simulacoes/{campeonatoId}/rodadas/{rodadaId}/simulacoes'"
+                }
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "OK",
@@ -291,7 +408,7 @@
         "deprecated": false,
         "description": "",
         "tags": [
-          "BuscarController"
+          "Buscar"
         ],
         "responses": {
           "200": {
@@ -299,7 +416,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/b5534beab1e1a24e9479404ac8e06859"
+                  "$ref": "#/components/schemas/b219e8dc608e87b51676c94beaa79d6e"
                 }
               }
             }
@@ -315,7 +432,7 @@
         "deprecated": false,
         "description": "",
         "tags": [
-          "BuscarController"
+          "Buscar"
         ],
         "responses": {
           "200": {
@@ -339,13 +456,13 @@
         "deprecated": false,
         "description": "",
         "tags": [
-          "BuscarController"
+          "Buscar"
         ],
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/requestBuscarJogadores"
+                "$ref": "#/components/schemas/e824f635f6f1be93aa867f30c11c24b1"
               }
             }
           }
@@ -372,7 +489,7 @@
         "deprecated": false,
         "description": "",
         "tags": [
-          "BuscarController"
+          "Buscar"
         ],
         "responses": {
           "200": {
@@ -402,19 +519,127 @@
         ]
       }
     },
+    "/buscar/buscar-tabela/campeonato/{idCampeonato}": {
+      "get": {
+        "summary": "buscar",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Buscar"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/1f292db1f758b24e4a31eafdc9e79316"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "buscar_1",
+        "parameters": [
+          {
+            "schema": {
+              "format": "int64",
+              "type": "number"
+            },
+            "in": "path",
+            "description": "No comments found.",
+            "required": true,
+            "example": 0,
+            "name": "idCampeonato"
+          }
+        ]
+      }
+    },
+    "/buscar/campeoes": {
+      "get": {
+        "summary": "listarCampeoes",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Buscar"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/1589c7726c8f7f81716ca65a0514f672"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "listarCampeoes",
+        "parameters": [
+          {
+            "schema": {
+              "format": "int64",
+              "type": "number"
+            },
+            "in": "query",
+            "description": "No comments found.",
+            "required": false,
+            "example": 0,
+            "name": "campeonatoId"
+          }
+        ]
+      }
+    },
+    "/buscar/clube/{clubeId}/jogadores": {
+      "get": {
+        "summary": "listar",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Buscar"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/589122a929297936467bf5e6c078b976"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "listar",
+        "parameters": [
+          {
+            "schema": {
+              "format": "int64",
+              "type": "number"
+            },
+            "in": "path",
+            "description": "No comments found.",
+            "required": true,
+            "example": 0,
+            "name": "clubeId"
+          }
+        ]
+      }
+    },
     "/cadastrar/clubes": {
       "post": {
         "summary": "cadastrar clubes",
         "deprecated": false,
         "description": "",
         "tags": [
-          "CadastrarController"
+          "Cadastrar"
         ],
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/requestCadastrarClubes"
+                "$ref": "#/components/schemas/c66f59469914eb1a5571a6efa9b418b8"
               }
             }
           }
@@ -425,7 +650,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/responseSucessoCadastrarClubes"
+                  "$ref": "#/components/schemas/ab5ba9ace1cec917a1cc9e04f36ec7e9"
                 }
               }
             }
@@ -441,13 +666,13 @@
         "deprecated": false,
         "description": "",
         "tags": [
-          "CadastrarController"
+          "Cadastrar"
         ],
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/requestCadastrarJogadores"
+                "$ref": "#/components/schemas/806ffdea1d3521775ef20bb9699e956c"
               }
             }
           }
@@ -458,7 +683,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/responseSucessoCadastrarJogadores"
+                  "$ref": "#/components/schemas/1d715f82115b926ab45b5187ba29316d"
                 }
               }
             }
@@ -474,15 +699,24 @@
         "deprecated": false,
         "description": "",
         "tags": [
-          "CadastrarController"
+          "Cadastrar"
         ],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/responseSucessoGerarRodadas"
+                  "$ref": "#/components/schemas/a3ee1ec5383e9ae84e9941fa46512116"
                 }
               }
             }
@@ -510,13 +744,13 @@
         "deprecated": false,
         "description": "",
         "tags": [
-          "CadastrarController"
+          "Cadastrar"
         ],
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/requestCadastrarCampeonatos"
+                "$ref": "#/components/schemas/7b7d7bc9e4d09651eecbfcb8efc0f682"
               }
             }
           }
@@ -527,7 +761,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/responseCadastrarCampeonato"
+                  "$ref": "#/components/schemas/c9b9bdc5c80e186a9ada584a467e4833"
                 }
               }
             }
@@ -543,13 +777,13 @@
         "deprecated": false,
         "description": "",
         "tags": [
-          "CadastrarController"
+          "Cadastrar"
         ],
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/requestCadastrarCampeonatos"
+                "$ref": "#/components/schemas/7b7d7bc9e4d09651eecbfcb8efc0f682"
               }
             }
           }
@@ -560,7 +794,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/responseCadastrarCampeonato"
+                  "$ref": "#/components/schemas/c9b9bdc5c80e186a9ada584a467e4833"
                 }
               }
             }
@@ -576,7 +810,7 @@
         "deprecated": false,
         "description": "",
         "tags": [
-          "ExcluirController"
+          "Excluir"
         ],
         "responses": {
           "200": {
@@ -612,7 +846,7 @@
         "deprecated": false,
         "description": "",
         "tags": [
-          "ExcluirController"
+          "Excluir"
         ],
         "responses": {
           "200": {
@@ -641,71 +875,338 @@
           }
         ]
       }
+    },
+    "/excluir/jogador/{jogadorId}": {
+      "delete": {
+        "summary": "excluir",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Excluir"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/f6f6f805c908a189ab7500898f369054"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "excluir",
+        "parameters": [
+          {
+            "schema": {
+              "format": "int64",
+              "type": "number"
+            },
+            "in": "path",
+            "description": "No comments found.",
+            "required": true,
+            "example": 0,
+            "name": "jogadorId"
+          }
+        ]
+      }
+    },
+    "/transferencias/comprar": {
+      "post": {
+        "summary": "comprar",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Transferencias"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/6f8149f0965b3541ac2942e9075c295b"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/b0023033b9abc16c46509ecbccaddc39"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "comprar",
+        "parameters": []
+      }
+    },
+    "/transferencias/jogadores/{id}/vender": {
+      "post": {
+        "summary": "venderJogador",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Transferencias"
+        ],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/e705e029ece685afa5c92bee2004e11a"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "venderJogador",
+        "parameters": [
+          {
+            "schema": {
+              "format": "int64",
+              "type": "number"
+            },
+            "in": "path",
+            "description": "No comments found.",
+            "required": true,
+            "example": 0,
+            "name": "id"
+          }
+        ]
+      }
+    },
+    "/editar/jogador/{id}": {
+      "put": {
+        "summary": "atualizarJogador",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Editar"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/responseSucessoCadastrarJogadores"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/1d715f82115b926ab45b5187ba29316d"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "atualizarJogador",
+        "parameters": [
+          {
+            "schema": {
+              "format": "int64",
+              "type": "number"
+            },
+            "in": "path",
+            "description": "No comments found.",
+            "required": true,
+            "example": 0,
+            "name": "id"
+          }
+        ]
+      }
+    },
+    "/editar/clube/{id}": {
+      "put": {
+        "summary": "atualizarJogador",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Editar"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/99b787b1e79ba6f5be275dc1c3cdf6cd"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/7d23e12261da9ae9173ce6080b956f9d"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "atualizarJogador_1",
+        "parameters": [
+          {
+            "schema": {
+              "format": "int64",
+              "type": "number"
+            },
+            "in": "path",
+            "description": "No comments found.",
+            "required": true,
+            "example": 0,
+            "name": "id"
+          }
+        ]
+      }
+    },
+    "/editar/tecnico/{id}": {
+      "put": {
+        "summary": "atualizarJogador",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Editar"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/17c7951b660284b204bf08f4d765140e"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/5d87b470ccea941c0f4eb0c8fe7ef0e7"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "atualizarJogador_2",
+        "parameters": [
+          {
+            "schema": {
+              "format": "int64",
+              "type": "number"
+            },
+            "in": "path",
+            "description": "No comments found.",
+            "required": true,
+            "example": 0,
+            "name": "id"
+          }
+        ]
+      }
+    },
+    "/editar/clube-saldo": {
+      "patch": {
+        "summary": "atualizarSaldo",
+        "deprecated": false,
+        "description": "",
+        "tags": [
+          "Editar"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/5c015c59316d04446a6d43c940cacce1"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/d5adf57cf04660fcd90e4230157a2a7c"
+                }
+              }
+            }
+          }
+        },
+        "operationId": "atualizarSaldo",
+        "parameters": []
+      }
     }
   },
   "components": {
     "schemas": {
-      "tecnico": {
+      "ab5ba9ace1cec917a1cc9e04f36ec7e9": {
         "type": "object",
         "properties": {
           "id": {
             "format": "int64",
-            "description": "id do tecnico.",
+            "description": "No comments found.",
             "type": "number",
             "example": 0
           },
           "nome": {
             "format": "string",
-            "description": "nome do tecnico.",
-            "type": "string"
-          },
-          "email": {
-            "format": "string",
-            "description": "email do cadastro.",
-            "type": "string"
-          },
-          "senha": {
-            "format": "string",
-            "description": "senha de acesso.",
-            "type": "string"
-          }
-        }
-      },
-      "responseSucessoCadastrarClubes": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "format": "int64",
-            "description": "id do clube",
-            "type": "number",
-            "example": 0
-          },
-          "nome": {
-            "format": "string",
-            "description": "nome do clube",
+            "description": "No comments found.",
             "type": "string"
           },
           "estado": {
             "format": "string",
-            "description": "estado do clube",
+            "description": "No comments found.",
             "type": "string"
           },
           "pais": {
             "format": "string",
-            "description": "pais do clube",
+            "description": "No comments found.",
             "type": "string"
           }
         }
       },
       "d751713988987e9331980363e24189ce": {},
-      "requestCadastrarJogadores": {
+      "1f292db1f758b24e4a31eafdc9e79316": {
         "type": "object",
         "properties": {
-          "jogadores": {
-            "description": "lista de jogadores",
+          "campeonatoId": {
+            "format": "int64",
+            "description": "No comments found.",
+            "type": "number",
+            "example": 0
+          },
+          "nomeCampeonato": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "tabela": {
+            "description": "No comments found.",
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/listaDeJogadores"
+              "$ref": "#/components/schemas/0dbfa4997ff84dcdd8e0a1be47d7faac"
             }
           }
         }
@@ -713,12 +1214,6 @@
       "responseSucessoCadastrarJogadores": {
         "type": "object",
         "properties": {
-          "id": {
-            "format": "int64",
-            "description": "id do jogador",
-            "type": "number",
-            "example": 0
-          },
           "nome": {
             "format": "string",
             "description": "nome do jogador",
@@ -747,29 +1242,109 @@
             "type": "boolean",
             "example": true
           },
-          "nomeClube": {
-            "format": "string",
-            "description": "clube onde o jogador joga",
-            "type": "string"
+          "valorMercado": {
+            "format": "number",
+            "description": "Valor para compra do passe do jogador",
+            "type": "number",
+            "example": "0"
+          },
+          "clubeId": {
+            "format": "int64",
+            "description": "Clube que esta vinculado",
+            "type": "number",
+            "example": 0
           }
         }
       },
-      "requestCadastrarClubes": {
+      "806ffdea1d3521775ef20bb9699e956c": {
         "type": "object",
         "properties": {
+          "jogadores": {
+            "description": "No comments found.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/bbfb15d0c78726223ddbc8d57b98e463"
+            }
+          }
+        }
+      },
+      "7d23e12261da9ae9173ce6080b956f9d": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "format": "int64",
+            "description": "No comments found.",
+            "type": "number",
+            "example": 0
+          },
           "nome": {
             "format": "string",
-            "description": "nome do clube",
-            "type": "string"
-          },
-          "pais": {
-            "format": "string",
-            "description": "pais do clube",
+            "description": "No comments found.",
             "type": "string"
           },
           "estado": {
             "format": "string",
-            "description": "estado do clube",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "pais": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "saldo": {
+            "format": "number",
+            "description": "No comments found.",
+            "type": "number",
+            "example": "0"
+          },
+          "tecnicoId": {
+            "$ref": "#/components/schemas/aa7c9c3e69d7020c1873894b611404f0"
+          }
+        }
+      },
+      "c66f59469914eb1a5571a6efa9b418b8": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "pais": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "estado": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          }
+        }
+      },
+      "5d87b470ccea941c0f4eb0c8fe7ef0e7": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "format": "int64",
+            "description": "No comments found.",
+            "type": "number",
+            "example": 0
+          },
+          "nome": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "email": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "senha": {
+            "format": "string",
+            "description": "No comments found.",
             "type": "string"
           }
         }
@@ -786,6 +1361,45 @@
             "format": "string",
             "description": "No comments found.",
             "type": "string"
+          }
+        }
+      },
+      "9053efd5c83fc09e1a12df778daf3cde": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "format": "int64",
+            "description": "No comments found.",
+            "type": "number",
+            "example": 0
+          },
+          "nome": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "posicao": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "forca": {
+            "format": "int32",
+            "description": "No comments found.",
+            "type": "integer",
+            "example": 0
+          },
+          "diferenciado": {
+            "format": "boolean",
+            "description": "No comments found.",
+            "type": "boolean",
+            "example": true
+          },
+          "identificacaoComClube": {
+            "format": "boolean",
+            "description": "No comments found.",
+            "type": "boolean",
+            "example": true
           }
         }
       },
@@ -812,6 +1426,91 @@
           }
         }
       },
+      "1d715f82115b926ab45b5187ba29316d": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "format": "int64",
+            "description": "No comments found.",
+            "type": "number",
+            "example": 0
+          },
+          "nome": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "posicao": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "forca": {
+            "format": "int32",
+            "description": "No comments found.",
+            "type": "integer",
+            "example": 0
+          },
+          "diferenciado": {
+            "format": "boolean",
+            "description": "No comments found.",
+            "type": "boolean",
+            "example": true
+          },
+          "identificacaoComClube": {
+            "format": "boolean",
+            "description": "No comments found.",
+            "type": "boolean",
+            "example": true
+          },
+          "nomeClube": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "valorMercado": {
+            "format": "number",
+            "description": "No comments found.",
+            "type": "number",
+            "example": "0"
+          }
+        }
+      },
+      "b219e8dc608e87b51676c94beaa79d6e": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "format": "int64",
+            "description": "No comments found.",
+            "type": "number",
+            "example": 0
+          },
+          "nome": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "estado": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "pais": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "saldo": {
+            "format": "number",
+            "description": "No comments found.",
+            "type": "number",
+            "example": "0"
+          },
+          "tecnico": {
+            "$ref": "#/components/schemas/aa7c9c3e69d7020c1873894b611404f0"
+          }
+        }
+      },
       "f6f6f805c908a189ab7500898f369054": {
         "type": "object",
         "properties": {
@@ -819,6 +1518,23 @@
             "format": "string",
             "description": "No comments found.",
             "type": "string"
+          }
+        }
+      },
+      "6f8149f0965b3541ac2942e9075c295b": {
+        "type": "object",
+        "properties": {
+          "clubeId": {
+            "format": "int64",
+            "description": "No comments found.",
+            "type": "number",
+            "example": 0
+          },
+          "jogadorId": {
+            "format": "int64",
+            "description": "No comments found.",
+            "type": "number",
+            "example": 0
           }
         }
       },
@@ -834,6 +1550,98 @@
             "format": "string",
             "description": "No comments found.",
             "type": "string"
+          }
+        }
+      },
+      "d5adf57cf04660fcd90e4230157a2a7c": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "format": "int64",
+            "description": "No comments found.",
+            "type": "number",
+            "example": 0
+          },
+          "nome": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "estado": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "pais": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "saldoAtualizado": {
+            "format": "number",
+            "description": "No comments found.",
+            "type": "number",
+            "example": "0"
+          },
+          "tecnico": {
+            "$ref": "#/components/schemas/fa5100ef06c29a3e8e2af994f2626563"
+          }
+        }
+      },
+      "1589c7726c8f7f81716ca65a0514f672": {
+        "type": "object",
+        "properties": {
+          "campeonatoId": {
+            "format": "int64",
+            "description": "No comments found.",
+            "type": "number",
+            "example": 0
+          },
+          "nomeCampeonato": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "clubeCampeaoId": {
+            "format": "int64",
+            "description": "No comments found.",
+            "type": "number",
+            "example": 0
+          },
+          "nomeClubeCampeao": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "pontos": {
+            "format": "int32",
+            "description": "No comments found.",
+            "type": "integer",
+            "example": 0
+          },
+          "vitorias": {
+            "format": "int32",
+            "description": "No comments found.",
+            "type": "integer",
+            "example": 0
+          },
+          "empates": {
+            "format": "int32",
+            "description": "No comments found.",
+            "type": "integer",
+            "example": 0
+          },
+          "derrotas": {
+            "format": "int32",
+            "description": "No comments found.",
+            "type": "integer",
+            "example": 0
+          },
+          "saldoGols": {
+            "format": "int32",
+            "description": "No comments found.",
+            "type": "integer",
+            "example": 0
           }
         }
       },
@@ -895,23 +1703,23 @@
           }
         }
       },
-      "requestBuscarJogadores": {
+      "e824f635f6f1be93aa867f30c11c24b1": {
         "type": "object",
         "properties": {
           "nome": {
             "format": "string",
-            "description": "nome jogador",
+            "description": "No comments found.",
             "type": "string"
           },
           "forca": {
             "format": "int32",
-            "description": "força",
+            "description": "No comments found.",
             "type": "integer",
             "example": 0
           },
           "posicao": {
             "format": "string",
-            "description": "posição em que atua",
+            "description": "No comments found.",
             "type": "string"
           }
         }
@@ -959,6 +1767,36 @@
             "items": {
               "$ref": "#/components/schemas/b856f47a90a32ee8b3daa733bd4962ba"
             }
+          }
+        }
+      },
+      "17c7951b660284b204bf08f4d765140e": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "email": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "senha": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          }
+        }
+      },
+      "fa5100ef06c29a3e8e2af994f2626563": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
           }
         }
       },
@@ -1020,6 +1858,131 @@
           }
         }
       },
+      "5c015c59316d04446a6d43c940cacce1": {
+        "type": "object",
+        "properties": {
+          "clubeId": {
+            "format": "int64",
+            "description": "No comments found.",
+            "type": "number",
+            "example": 0
+          },
+          "valor": {
+            "format": "number",
+            "description": "No comments found.",
+            "type": "number",
+            "example": "0"
+          }
+        }
+      },
+      "99b787b1e79ba6f5be275dc1c3cdf6cd": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "estado": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "pais": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "saldo": {
+            "format": "number",
+            "description": "No comments found.",
+            "type": "number",
+            "example": "0"
+          },
+          "tecnicoId": {
+            "format": "int64",
+            "description": "No comments found.",
+            "type": "number",
+            "example": 0
+          }
+        }
+      },
+      "b0023033b9abc16c46509ecbccaddc39": {
+        "type": "object",
+        "properties": {
+          "idTransacao": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "clubeId": {
+            "format": "int64",
+            "description": "No comments found.",
+            "type": "number",
+            "example": 0
+          },
+          "jogadorId": {
+            "format": "int64",
+            "description": "No comments found.",
+            "type": "number",
+            "example": 0
+          },
+          "descricao": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "valorTransacao": {
+            "format": "number",
+            "description": "No comments found.",
+            "type": "number",
+            "example": "0"
+          },
+          "data": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string",
+            "example": "yyyy-MM-dd HH:mm:ss"
+          }
+        }
+      },
+      "e705e029ece685afa5c92bee2004e11a": {
+        "type": "object",
+        "properties": {
+          "jogadorId": {
+            "format": "int64",
+            "description": "No comments found.",
+            "type": "number",
+            "example": 0
+          },
+          "nomeJogador": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "clubeAnterior": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "clubeComprador": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "valorTransacao": {
+            "format": "number",
+            "description": "No comments found.",
+            "type": "number",
+            "example": "0"
+          },
+          "motivoEscolhaComprador": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          }
+        }
+      },
       "6fe317de4779be43f75c49e466fb4960": {
         "type": "object",
         "properties": {
@@ -1041,129 +2004,191 @@
           }
         }
       },
-      "b5534beab1e1a24e9479404ac8e06859": {
+      "defaultPrimitive": {
+        "format": "string",
+        "type": "string"
+      },
+      "589122a929297936467bf5e6c078b976": {
         "type": "object",
         "properties": {
-          "id": {
+          "clubeId": {
             "format": "int64",
             "description": "No comments found.",
             "type": "number",
             "example": 0
           },
-          "nome": {
+          "nomeClube": {
             "format": "string",
             "description": "No comments found.",
             "type": "string"
           },
-          "estado": {
-            "format": "string",
+          "jogadores": {
             "description": "No comments found.",
-            "type": "string"
-          },
-          "pais": {
-            "format": "string",
-            "description": "No comments found.",
-            "type": "string"
-          },
-          "tecnico": {
-            "$ref": "#/components/schemas/tecnico"
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/9053efd5c83fc09e1a12df778daf3cde"
+            }
           }
         }
       },
-      "listaDeJogadores": {
+      "0dbfa4997ff84dcdd8e0a1be47d7faac": {
+        "type": "object",
+        "properties": {
+          "posicao": {
+            "format": "int32",
+            "description": "No comments found.",
+            "type": "integer",
+            "example": 0
+          },
+          "clubeId": {
+            "format": "int64",
+            "description": "No comments found.",
+            "type": "number",
+            "example": 0
+          },
+          "nomeClube": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "pontos": {
+            "format": "int32",
+            "description": "No comments found.",
+            "type": "integer",
+            "example": 0
+          },
+          "vitorias": {
+            "format": "int32",
+            "description": "No comments found.",
+            "type": "integer",
+            "example": 0
+          },
+          "empates": {
+            "format": "int32",
+            "description": "No comments found.",
+            "type": "integer",
+            "example": 0
+          },
+          "derrotas": {
+            "format": "int32",
+            "description": "No comments found.",
+            "type": "integer",
+            "example": 0
+          },
+          "golsMarcados": {
+            "format": "int32",
+            "description": "No comments found.",
+            "type": "integer",
+            "example": 0
+          },
+          "golsSofridos": {
+            "format": "int32",
+            "description": "No comments found.",
+            "type": "integer",
+            "example": 0
+          },
+          "saldoGols": {
+            "format": "int32",
+            "description": "No comments found.",
+            "type": "integer",
+            "example": 0
+          }
+        }
+      },
+      "bbfb15d0c78726223ddbc8d57b98e463": {
         "type": "object",
         "properties": {
           "nome": {
             "format": "string",
-            "description": "nome do jogador",
+            "description": "No comments found.",
             "type": "string"
           },
           "posicao": {
             "format": "string",
-            "description": "posição em que atua",
+            "description": "No comments found.",
             "type": "string"
           },
           "forca": {
             "format": "int32",
-            "description": "força do jogador",
+            "description": "No comments found.",
             "type": "integer",
             "example": 0
           },
           "diferenciado": {
             "format": "boolean",
-            "description": "possui habilidades extras",
+            "description": "No comments found.",
             "type": "boolean",
             "example": true
           },
           "identificacaoComClube": {
             "format": "boolean",
-            "description": "jogador com identificação com o clube em que atua",
+            "description": "No comments found.",
             "type": "boolean",
             "example": true
           },
           "clubeId": {
             "format": "int64",
-            "description": "clube onde o jogador joga",
+            "description": "No comments found.",
             "type": "number",
             "example": 0
           }
         }
       },
-      "responseSucessoGerarRodadas": {
+      "a3ee1ec5383e9ae84e9941fa46512116": {
         "type": "object",
         "properties": {
           "campeonatoId": {
             "format": "int64",
-            "description": "id do campeonato",
+            "description": "No comments found.",
             "type": "number",
             "example": 0
           },
           "totalRodadas": {
             "format": "int32",
-            "description": "quantidade de rodadas geradas",
+            "description": "No comments found.",
             "type": "integer",
             "example": 0
           },
           "totalPartidas": {
             "format": "int32",
-            "description": "quantidade total de partidas",
+            "description": "No comments found.",
             "type": "integer",
             "example": 0
           },
           "grupos": {
-            "description": "grupos gerados",
+            "description": "No comments found.",
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/gruposGerados"
+              "$ref": "#/components/schemas/5e0f4b549a19a9aac202c99ecf1a4c03"
             }
           }
         }
       },
-      "requestCadastrarCampeonatos": {
+      "7b7d7bc9e4d09651eecbfcb8efc0f682": {
         "type": "object",
         "properties": {
           "nome": {
             "format": "string",
-            "description": "nome do campeonato",
+            "description": "No comments found.",
             "type": "string"
           },
           "pais": {
             "format": "string",
-            "description": "pais onde será jogado",
+            "description": "No comments found.",
             "type": "string"
           },
           "estado": {
             "format": "string",
-            "description": "estado, caso seja estadual",
+            "description": "No comments found.",
             "type": "string"
           },
           "clubes": {
-            "description": "clubes que jogaram o campeonato",
+            "description": "No comments found.",
             "type": "array",
             "items": {
               "type": "string"
             },
-            "example": "1, 2"
+            "example": "\"0,0\""
           }
         }
       },
@@ -1187,12 +2212,12 @@
         "properties": {
           "campeonato": {
             "format": "string",
-            "description": "nome campeonato",
+            "description": "No comments found.",
             "type": "string"
           },
           "fase": {
             "format": "enum",
-            "description": "fase.",
+            "description": "No comments found.",
             "type": "string",
             "enum": [
               "OITAVAS",
@@ -1220,32 +2245,32 @@
           }
         }
       },
-      "responseCadastrarCampeonato": {
+      "c9b9bdc5c80e186a9ada584a467e4833": {
         "type": "object",
         "properties": {
           "id": {
             "format": "int64",
-            "description": "id do campeonato",
+            "description": "No comments found.",
             "type": "number",
             "example": 0
           },
           "nome": {
             "format": "string",
-            "description": "nome do campeonato",
+            "description": "No comments found.",
             "type": "string"
           },
           "tipo": {
             "format": "string",
-            "description": "tipo do campeonato",
+            "description": "No comments found.",
             "type": "string"
           },
           "clubes": {
-            "description": "clubes participantes",
+            "description": "No comments found.",
             "type": "array",
             "items": {
               "type": "string"
             },
-            "example": "1, 2"
+            "example": "\"\"\",\"\"\""
           }
         }
       },
@@ -1269,21 +2294,47 @@
           }
         }
       },
-      "gruposGerados": {
+      "5e0f4b549a19a9aac202c99ecf1a4c03": {
         "type": "object",
         "properties": {
           "nome": {
             "format": "string",
-            "description": "nome do grupo",
+            "description": "No comments found.",
             "type": "string"
           },
           "clubes": {
-            "description": "clubes que formam o grupo",
+            "description": "No comments found.",
             "type": "array",
             "items": {
               "type": "string"
             },
-            "example": "1,2,3,4"
+            "example": "\"\"\",\"\"\""
+          }
+        }
+      },
+      "aa7c9c3e69d7020c1873894b611404f0": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "format": "int64",
+            "description": "No comments found.",
+            "type": "number",
+            "example": 0
+          },
+          "nome": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "email": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
+          },
+          "senha": {
+            "format": "string",
+            "description": "No comments found.",
+            "type": "string"
           }
         }
       }
