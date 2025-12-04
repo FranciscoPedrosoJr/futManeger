@@ -54,9 +54,7 @@
               "let responseBd = pm.response.json();\r",
               "pm.collectionVariables.set(\"futToken\", responseBd.token);"
             ],
-            "type": "text/javascript",
-            "packages": {},
-            "requests": {}
+            "type": "text/javascript"
           }
         }
       ],
@@ -1047,11 +1045,279 @@
         "description": "Generated from cURL: curl -X POST http://localhost:8080/registrar \\\r\n  -H \"Content-Type: application/json\" \\\r\n  -d '{\r\n    \"nome\": \"João Técnico\",\r\n    \"email\": \"joao.tecnico@example.com\",\r\n    \"senha\": \"123456\"\r\n}'\r\n"
       },
       "response": []
+    },
+    {
+      "name": "Fut/add-saldo",
+      "id": "80f51adc-dfab-42e7-a7cd-f4f189193315",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{futToken}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"clubeId\": 2,\r\n  \"valor\": 5000000.0\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:10300/editar/clube-saldo",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "10300",
+          "path": [
+            "editar",
+            "clube-saldo"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Fut/buscar-tabela",
+      "id": "fc497b05-4d03-48f4-a9b2-e8366fe3f13f",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{futToken}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:10300/buscar/buscar-tabela/campeonato/:idCampeonato",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "10300",
+          "path": [
+            "buscar",
+            "buscar-tabela",
+            "campeonato",
+            ":idCampeonato"
+          ],
+          "variable": [
+            {
+              "key": "idCampeonato",
+              "value": "33"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Fut/buscar-campeoes",
+      "id": "453564ea-77b0-460f-8f6c-ef84f1be82b9",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{futToken}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"campeonatoId\": 33\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:10300/buscar/campeoes?campeonatoId=",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "10300",
+          "path": [
+            "buscar",
+            "campeoes"
+          ],
+          "query": [
+            {
+              "key": "campeonatoId",
+              "value": ""
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Fut/desvincular-jogador",
+      "id": "3ba1de50-9e62-4c6d-b6e7-c9faebaf22b1",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{futToken}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:10300/vinculo/clube/:clubeId/jogador/:jogadorId/desvincular",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "10300",
+          "path": [
+            "vinculo",
+            "clube",
+            ":clubeId",
+            "jogador",
+            ":jogadorId",
+            "desvincular"
+          ],
+          "variable": [
+            {
+              "key": "clubeId",
+              "value": "34"
+            },
+            {
+              "key": "jogadorId",
+              "value": "194"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Fut/excluir-jogador",
+      "id": "b09a0a89-a233-4f1f-b60d-26d115ade6c4",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{futToken}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "//{\r\n    //\"nome\": \"Junior\",\r\n    //\"nome\": \"Francisco FC\",\r\n    //\"cidade\": \"Ponta Grossa\"\r\n//}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:10300/excluir/jogador/:jogadorId",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "10300",
+          "path": [
+            "excluir",
+            "jogador",
+            ":jogadorId"
+          ],
+          "variable": [
+            {
+              "key": "jogadorId",
+              "value": "194"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Fut/desvincular-tecnico",
+      "id": "c42eff0a-c937-4828-998c-4acef3cd9774",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{futToken}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:10300/vinculo/clube/:clubeId/tecnico/:tecnicoId/desvincular",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "10300",
+          "path": [
+            "vinculo",
+            "clube",
+            ":clubeId",
+            "tecnico",
+            ":tecnicoId",
+            "desvincular"
+          ],
+          "variable": [
+            {
+              "key": "clubeId",
+              "value": "34"
+            },
+            {
+              "key": "tecnicoId",
+              "value": "1"
+            }
+          ]
+        }
+      },
+      "response": []
     }
   ],
   "variable": [
     {
-      "id": "b60a5610-1365-4256-becb-3cc95bf573a6",
+      "id": "63a5f3f7-d24a-404a-9a32-2bde4e425e76",
       "key": "futToken",
       "value": ""
     }
