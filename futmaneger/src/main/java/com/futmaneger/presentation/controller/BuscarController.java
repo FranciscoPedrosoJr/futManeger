@@ -1,12 +1,14 @@
 package com.futmaneger.presentation.controller;
 
 import com.futmaneger.application.dto.CampeaoResponseDTO;
+import com.futmaneger.application.dto.CampeonatoBuscaResponseDTO;
 import com.futmaneger.application.dto.JogadorFiltroDTO;
 import com.futmaneger.application.dto.JogadorResponseDTO;
 import com.futmaneger.application.dto.JogadoresDoClubeResponseDTO;
 import com.futmaneger.application.dto.PartidaMataMataResponseDTO;
 import com.futmaneger.application.dto.TabelaCampeonatoResponseDTO;
 import com.futmaneger.application.usecase.campeonato.BuscarCampeoesUseCase;
+import com.futmaneger.application.usecase.campeonato.BuscarCampeonatosUseCase;
 import com.futmaneger.application.usecase.campeonato.BuscarPartidasMataMataUseCase;
 import com.futmaneger.application.usecase.campeonato.BuscarTabelaCampeonatoUseCase;
 import com.futmaneger.application.usecase.clube.BuscarClubesUseCase;
@@ -37,6 +39,7 @@ public class BuscarController {
     private final BuscarTabelaCampeonatoUseCase buscarTabelaCampeonatoUseCase;
     private final BuscarCampeoesUseCase buscarCampeoesUseCase;
     private final ListarJogadoresDoClubeUseCase listarJogadoresDoClubeUseCase;
+    private final BuscarCampeonatosUseCase buscarCampeonatosUseCase;
 
     @GetMapping("/clubes")
     public ResponseEntity<List<ClubeEntity>> listarClubes() {
@@ -75,5 +78,11 @@ public class BuscarController {
     @GetMapping("clube/{clubeId}/jogadores")
     public ResponseEntity<JogadoresDoClubeResponseDTO> listar(@PathVariable Long clubeId) {
         return ResponseEntity.ok(listarJogadoresDoClubeUseCase.executar(clubeId));
+    }
+
+    @GetMapping("/campeonatos")
+    public ResponseEntity<List<CampeonatoBuscaResponseDTO>> buscarTodos() {
+        var campeonatos = buscarCampeonatosUseCase.executar();
+        return ResponseEntity.ok(campeonatos);
     }
 }
