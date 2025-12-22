@@ -116,6 +116,14 @@ public class CampeonatoEntity {
         return emAndamento;
     }
 
+    public int getQuantidadeClubes() {
+        return quantidadeClubes;
+    }
+
+    public String getPais() {
+        return pais;
+    }
+
     public enum TipoCampeonato {
         PONTOS_CORRIDOS, MATA_MATA
     }
