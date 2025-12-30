@@ -7,4 +7,6 @@ public interface TecnicoRepository {
     Tecnico salvar(Tecnico tecnico);
 
     Optional<Tecnico> buscarPorEmail(String email);
+
+    Optional<Tecnico> buscaPorId(Long tecnicoId);
 }

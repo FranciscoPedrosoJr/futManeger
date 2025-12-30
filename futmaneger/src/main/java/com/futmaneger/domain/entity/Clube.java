@@ -10,6 +10,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.math.BigDecimal;
 
 public class Clube {
 
@@ -28,6 +29,9 @@ public class Clube {
     private TecnicoEntity tecnico;
 
     public Clube() {}
+
+    public Clube(Long id, String nome, String estado, String pais, BigDecimal saldo, Long tecnicoId) {
+    }
 
     public Long getId() {
         return id;

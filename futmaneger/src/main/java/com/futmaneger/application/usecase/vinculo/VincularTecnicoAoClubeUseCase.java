@@ -29,7 +29,7 @@ public class VincularTecnicoAoClubeUseCase {
         TecnicoEntity tecnico = tecnicoRepository.findById(request.tecnicoId())
                 .orElseThrow(() -> new NaoEncontradoException("Técnico não encontrado"));
 
-        boolean tecnicoJaVinculado = clubeRepository.existsByTecnicoId(request.tecnicoId());
+        boolean tecnicoJaVinculado = clubeRepository.existsByTecnico_Id(request.tecnicoId());
         if (tecnicoJaVinculado) {
             throw new DadosInvalidosException("Técnico já está vinculado a um clube");
         }

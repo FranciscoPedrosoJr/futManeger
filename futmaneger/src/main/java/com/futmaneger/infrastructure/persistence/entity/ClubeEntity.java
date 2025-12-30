@@ -39,6 +39,19 @@ public class ClubeEntity {
         this.saldo = new BigDecimal("50000000");
     }
 
+    public ClubeEntity(Long id, String nome, String estado, String pais, BigDecimal saldo, Long tecnicoId) {
+        this.id = id;
+        this.nome = nome;
+        this.estado = estado;
+        this.pais = pais;
+        this.saldo = saldo;
+
+        if (tecnicoId != null) {
+            this.tecnico = new TecnicoEntity();
+            this.tecnico.setId(tecnicoId);
+        }
+    }
+
     public Long getId() { return id; }
 
     public void setId(Long id) { this.id = id; }
@@ -63,5 +76,9 @@ public class ClubeEntity {
 
     public BigDecimal getSaldo() {
         return saldo;
+    }
+
+    public Long getTecnicoId() {
+        return tecnico != null ? tecnico.getId() : null;
     }
 }
