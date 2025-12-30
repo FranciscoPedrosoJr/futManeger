@@ -7,4 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface TecnicoJpaRepository extends JpaRepository<TecnicoEntity, Long> {
 
     Optional<TecnicoEntity> findByEmail(String email);
+
+    Optional<TecnicoEntity> findById(Long tecnicoId);
 }
