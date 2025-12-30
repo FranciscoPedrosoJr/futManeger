@@ -1,7 +1,9 @@
 package com.futmaneger.infrastructure.persistence.jpa;
 
+
 import com.futmaneger.infrastructure.persistence.entity.ClubeEntity;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -18,5 +20,7 @@ public interface ClubeJpaRepository extends JpaRepository<ClubeEntity, Long> {
     """)
     Double calcularMediaForca(Long clubeId);
 
-    boolean existsByTecnicoId(Long tecnicoId);
+    Optional<ClubeEntity> findByTecnico_Id(Long tecnicoId);
+
+    boolean existsByTecnico_Id(Long tecnicoId);
 }

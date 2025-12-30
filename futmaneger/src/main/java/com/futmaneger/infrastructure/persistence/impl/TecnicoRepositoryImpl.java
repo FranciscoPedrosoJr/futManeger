@@ -5,16 +5,14 @@ import com.futmaneger.domain.repository.TecnicoRepository;
 import com.futmaneger.infrastructure.persistence.entity.TecnicoEntity;
 import com.futmaneger.infrastructure.persistence.jpa.TecnicoJpaRepository;
 import java.util.Optional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 @Repository
+@RequiredArgsConstructor
 public class TecnicoRepositoryImpl implements TecnicoRepository {
 
     private final TecnicoJpaRepository tecnicoJpaRepository;
-
-    public TecnicoRepositoryImpl(TecnicoJpaRepository tecnicoJpaRepository) {
-        this.tecnicoJpaRepository = tecnicoJpaRepository;
-    }
 
     @Override
     public Tecnico salvar(Tecnico tecnico) {
@@ -36,6 +34,17 @@ public class TecnicoRepositoryImpl implements TecnicoRepository {
     @Override
     public Optional<Tecnico> buscarPorEmail(String email) {
         return tecnicoJpaRepository.findByEmail(email)
+                .map(entity -> new Tecnico(
+                        entity.getId(),
+                        entity.getNome(),
+                        entity.getEmail(),
+                        entity.getSenha()
+                ));
+    }
+
+    @Override
+    public Optional<Tecnico> buscaPorId(Long tecnicoId) {
+        return tecnicoJpaRepository.findById(tecnicoId)
                 .map(entity -> new Tecnico(
                         entity.getId(),
                         entity.getNome(),
