@@ -53,4 +53,6 @@ public class RodadaEntity {
     public int getNumero() { return numero;}
 
     public Long getId() { return id;}
+
+    public Boolean isFinalizada() { return  finalizada;}
 }
