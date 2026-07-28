@@ -2,7 +2,8 @@ package com.futmaneger.infrastructure.persistence.jpa;
 
 import com.futmaneger.infrastructure.persistence.entity.CampeonatoEntity;
 import com.futmaneger.infrastructure.persistence.entity.RodadaEntity;
-import com.futmaneger.infrastructure.persistence.entity.TabelaCampeonatoEntity;
+
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -26,4 +27,8 @@ public interface RodadaRepository extends JpaRepository<RodadaEntity, Long> {
             @Param("rodadaId") Long rodadaId,
             @Param("campeonatoId") Long campeonatoId
     );
+
+    List<RodadaEntity> findByFinalizadaFalse();
+
+    List<RodadaEntity> findByCampeonatoIdAndFinalizadaFalseOrderByNumero(Long campeonatoId);
 }

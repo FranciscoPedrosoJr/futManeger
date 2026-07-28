@@ -1,12 +1,6 @@
 package com.futmaneger.presentation.controller;
 
-import com.futmaneger.application.dto.CampeaoResponseDTO;
-import com.futmaneger.application.dto.CampeonatoBuscaResponseDTO;
-import com.futmaneger.application.dto.JogadorFiltroDTO;
-import com.futmaneger.application.dto.JogadorResponseDTO;
-import com.futmaneger.application.dto.JogadoresDoClubeResponseDTO;
-import com.futmaneger.application.dto.PartidaMataMataResponseDTO;
-import com.futmaneger.application.dto.TabelaCampeonatoResponseDTO;
+import com.futmaneger.application.dto.*;
 import com.futmaneger.application.usecase.campeonato.BuscarCampeoesUseCase;
 import com.futmaneger.application.usecase.campeonato.BuscarCampeonatosUseCase;
 import com.futmaneger.application.usecase.campeonato.BuscarPartidasMataMataUseCase;
@@ -14,6 +8,8 @@ import com.futmaneger.application.usecase.campeonato.BuscarTabelaCampeonatoUseCa
 import com.futmaneger.application.usecase.clube.BuscarClubesUseCase;
 import com.futmaneger.application.usecase.clube.ListarJogadoresDoClubeUseCase;
 import com.futmaneger.application.usecase.jogador.BuscarJogadoresUseCase;
+import com.futmaneger.application.usecase.rodadas.BuscarRodadasNaoFinalizadasUseCase;
+import com.futmaneger.application.usecase.rodadas.BuscarRodadasPorCampeonatoUseCase;
 import com.futmaneger.application.usecase.tecnico.BuscarTecnicoUseCase;
 import com.futmaneger.infrastructure.persistence.entity.ClubeEntity;
 import com.futmaneger.infrastructure.persistence.entity.TecnicoEntity;
@@ -40,6 +36,8 @@ public class BuscarController {
     private final BuscarCampeoesUseCase buscarCampeoesUseCase;
     private final ListarJogadoresDoClubeUseCase listarJogadoresDoClubeUseCase;
     private final BuscarCampeonatosUseCase buscarCampeonatosUseCase;
+    private final BuscarRodadasNaoFinalizadasUseCase buscarRodadasNaoFinalizadasUseCase;
+    private final BuscarRodadasPorCampeonatoUseCase  buscarRodadasPorCampeonatoUseCase;
 
     @GetMapping("/clubes")
     public ResponseEntity<List<ClubeEntity>> listarClubes() {
@@ -84,5 +82,19 @@ public class BuscarController {
     public ResponseEntity<List<CampeonatoBuscaResponseDTO>> buscarTodos() {
         var campeonatos = buscarCampeonatosUseCase.executar();
         return ResponseEntity.ok(campeonatos);
+    }
+
+    @GetMapping("/rodadas-nao-finalizadas")
+    public ResponseEntity<List<RodadaResponseDTO>> buscarRodadasNaoFinalizadas() {
+        return ResponseEntity.ok(buscarRodadasNaoFinalizadasUseCase.executar());
+    }
+
+    @GetMapping("/campeonatos/{campeonatoId}/rodadas")
+    public ResponseEntity<List<RodadaResponseDTO>> buscarRodadasPorCampeonato(
+            @PathVariable Long campeonatoId) {
+
+        return ResponseEntity.ok(
+                buscarRodadasPorCampeonatoUseCase.executar(campeonatoId)
+        );
     }
 }
