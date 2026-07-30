@@ -7,6 +7,7 @@ import com.futmaneger.application.usecase.vinculo.BuscarClubeDoTecnicoUseCase;
 import com.futmaneger.application.usecase.vinculo.DesvincularJogadorDoClubeUseCase;
 import com.futmaneger.application.usecase.vinculo.DesvincularTecnicoDoClubeUseCase;
 import com.futmaneger.application.usecase.vinculo.VincularTecnicoAoClubeUseCase;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/vinculo")
+@SecurityRequirement(name = "bearerAuth")
 public class VinculoController {
     private final VincularTecnicoAoClubeUseCase useCase;
     private final DesvincularTecnicoDoClubeUseCase desvincularTecnicoDoClubeUseCase;

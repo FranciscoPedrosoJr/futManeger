@@ -13,6 +13,8 @@ import com.futmaneger.application.usecase.rodadas.GerarRodadasUseCase;
 import com.futmaneger.presentation.request.CadastrarClubeRequest;
 import com.futmaneger.presentation.response.ClubeResponse;
 import java.util.List;
+
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/cadastrar")
+@SecurityRequirement(name = "bearerAuth")
 public class CadastrarController {
     private final CadastrarClubeUseCase cadastrarClubeUseCase;
 

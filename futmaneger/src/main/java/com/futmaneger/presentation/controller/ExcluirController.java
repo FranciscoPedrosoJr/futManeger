@@ -4,6 +4,7 @@ import com.futmaneger.application.dto.MensagemResponseDTO;
 import com.futmaneger.application.usecase.clube.ExcluirClubeUseCase;
 import com.futmaneger.application.usecase.jogador.ExcluirJogadorUseCase;
 import com.futmaneger.application.usecase.tecnico.ExcluirTecnicoUseCase;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/excluir")
+@SecurityRequirement(name = "bearerAuth")
 public class ExcluirController {
     private final ExcluirClubeUseCase excluirClubeUseCase;
     private final ExcluirTecnicoUseCase excluirTecnicoUseCase;
