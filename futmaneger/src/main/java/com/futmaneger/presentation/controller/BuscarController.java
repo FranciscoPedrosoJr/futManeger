@@ -14,6 +14,8 @@ import com.futmaneger.application.usecase.tecnico.BuscarTecnicoUseCase;
 import com.futmaneger.infrastructure.persistence.entity.ClubeEntity;
 import com.futmaneger.infrastructure.persistence.entity.TecnicoEntity;
 import java.util.List;
+
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,6 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/buscar")
+@SecurityRequirement(name = "bearerAuth")
 @RequiredArgsConstructor
 public class BuscarController {
     private final BuscarClubesUseCase buscarClubesUseCase;

@@ -5,6 +5,8 @@ import com.futmaneger.application.dto.SimulacaoResponseDTO;
 import com.futmaneger.application.usecase.simulacao.SimulacaoUseCase;
 import com.futmaneger.application.usecase.simulacao.SimularRodadaUseCase;
 import java.util.List;
+
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/simulacoes")
+@SecurityRequirement(name = "bearerAuth")
 public class SimulacaoController {
 
     private final SimulacaoUseCase simulacaoUseCase;
