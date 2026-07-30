@@ -15,6 +15,7 @@ import com.futmaneger.application.usecase.tecnico.AtualizarTecnicoUseCase;
 import com.futmaneger.domain.entity.Jogador;
 import com.futmaneger.infrastructure.persistence.entity.ClubeEntity;
 import com.futmaneger.infrastructure.persistence.entity.TecnicoEntity;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/editar")
+@SecurityRequirement(name = "bearerAuth")
 @RequiredArgsConstructor
 public class EditarController {
     private final AtualizarJogadorUseCase atualizarJogadorUseCase;

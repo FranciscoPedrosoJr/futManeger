@@ -43,10 +43,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        // Token válido → extrai email (subject)
         String email = jwtService.getSubject(token);
 
-        // Se ainda não estiver autenticado, define no contexto
         if (SecurityContextHolder.getContext().getAuthentication() == null) {
             var userDetails = new User(email, "", Collections.emptyList());
 
@@ -58,6 +56,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authToken);
+        }
+
+        String path = request.getServletPath();
+
+        if (path.startsWith("/swagger")
+                || path.startsWith("/swagger-ui")
+                || path.startsWith("/v3/api-docs")
+                || path.startsWith("/api-docs")
+                || path.startsWith("/h2-console")
+                || path.startsWith("/api/auth")) {
+
+            filterChain.doFilter(request, response);
+            return;
         }
 
         filterChain.doFilter(request, response);

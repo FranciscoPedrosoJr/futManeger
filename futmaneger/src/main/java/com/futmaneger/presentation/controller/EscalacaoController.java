@@ -3,6 +3,7 @@ package com.futmaneger.presentation.controller;
 import com.futmaneger.application.dto.EscalacaoRequestDTO;
 import com.futmaneger.application.dto.EscalacaoResponseDTO;
 import com.futmaneger.application.usecase.escalacao.EscalacaoUseCase;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/escalacao")
+@SecurityRequirement(name = "bearerAuth")
 public class EscalacaoController {
 
     private final EscalacaoUseCase useCase;

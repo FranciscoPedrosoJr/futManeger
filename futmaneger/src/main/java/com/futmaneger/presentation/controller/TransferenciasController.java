@@ -5,6 +5,7 @@ import com.futmaneger.application.usecase.transferencias.ComprarJogadorUseCase;
 import com.futmaneger.application.usecase.transferencias.VenderJogadorUseCase;
 import com.futmaneger.presentation.request.ComprarJogadorRequest;
 import com.futmaneger.presentation.response.ComprarJogadorResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/transferencias")
+@SecurityRequirement(name = "bearerAuth")
 public class TransferenciasController {
     private final ComprarJogadorUseCase comprarJogadorUseCase;
     private final VenderJogadorUseCase venderJogadorUseCase;
