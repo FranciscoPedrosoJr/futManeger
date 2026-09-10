@@ -21,8 +21,11 @@ public class BuscarClubeDoTecnicoUseCase {
         return clubeRepository.buscarPorTecnicoId(tecnicoId)
                 .map(clube -> new TecnicoClubeResponseDTO(
                         clube.getId(),
-                        clube.getNome()
+                        clube.getNome(),
+                        clube.getEstado(),
+                        clube.getPais(),
+                        clube.getSaldo()
                 ))
-                .orElse(new TecnicoClubeResponseDTO(null, null));
+                .orElse(new TecnicoClubeResponseDTO(null, null,null,null,null));
     }
 }
