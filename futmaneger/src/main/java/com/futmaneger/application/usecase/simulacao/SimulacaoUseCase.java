@@ -57,7 +57,8 @@ public class SimulacaoUseCase {
                 golsMandante,
                 visitante.getNome(),
                 golsVisitante,
-                resultado.name()
+                resultado.name(),
+                List.of(), List.of(), List.of(), null, List.of(), List.of()
         );
     }
 
