@@ -104,7 +104,7 @@ public class PartidaEntity implements PartidaSimulavel {
 
     @Override
     public boolean isFinalizada() {
-        return false;
+        return finalizada;
     }
 
     public CampeonatoEntity setCampeonato(CampeonatoEntity campeonato) {
@@ -117,7 +117,11 @@ public class PartidaEntity implements PartidaSimulavel {
 
     @Override
     public void aplicarResultado(int golsMandante, int golsVisitante, String resultado) {
-
+        this.golsMandante = golsMandante;
+        this.golsVisitante = golsVisitante;
+        this.resultado = Resultado.valueOf(resultado);
+        this.dataHora = LocalDateTime.now();
+        this.finalizada = true;
     }
 
     @Override

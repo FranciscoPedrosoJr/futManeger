@@ -4,6 +4,7 @@ import static com.futmaneger.infrastructure.persistence.entity.CampeonatoEntity.
 import static com.futmaneger.infrastructure.persistence.entity.CampeonatoEntity.TipoCampeonato.PONTOS_CORRIDOS;
 
 import com.futmaneger.application.dto.SimulacaoResponseDTO;
+import com.futmaneger.application.dto.JogadorPartidaResponseDTO;
 import com.futmaneger.application.exception.DadosInvalidosException;
 import com.futmaneger.application.exception.NaoEncontradoException;
 import com.futmaneger.application.usecase.rodadas.GerarRodadasMataMataUseCase;
@@ -15,6 +16,7 @@ import com.futmaneger.infrastructure.persistence.jpa.CampeonatoRepository;
 import com.futmaneger.infrastructure.persistence.jpa.ClubeParticipanteRepository;
 import com.futmaneger.infrastructure.persistence.jpa.EscalacaoRepository;
 import com.futmaneger.infrastructure.persistence.jpa.GrupoRepository;
+import com.futmaneger.infrastructure.persistence.jpa.EstatisticaJogadorPartidaRepository;
 import com.futmaneger.infrastructure.persistence.jpa.PartidaMataMataRepository;
 import com.futmaneger.infrastructure.persistence.jpa.PartidaRepository;
 import com.futmaneger.infrastructure.persistence.jpa.RodadaRepository;
@@ -38,6 +40,7 @@ public class SimularRodadaUseCase {
     private final ClubeParticipanteRepository clubeParticipanteRepository;
     private final GrupoRepository grupoRepository;
     private final PartidaMataMataRepository partidaMataMataRepository;
+    private final EstatisticaJogadorPartidaRepository estatisticaJogadorPartidaRepository;
 
     public SimularRodadaUseCase(
             RodadaRepository rodadaRepository,
@@ -49,7 +52,8 @@ public class SimularRodadaUseCase {
             GerarRodadasMataMataUseCase gerarRodadasMataMataUseCase,
             ClubeParticipanteRepository clubeParticipanteRepository,
             GrupoRepository grupoRepository,
-            PartidaMataMataRepository partidaMataMataRepository
+            PartidaMataMataRepository partidaMataMataRepository,
+            EstatisticaJogadorPartidaRepository estatisticaJogadorPartidaRepository
     ) {
         this.rodadaRepository = rodadaRepository;
         this.partidaRepository = partidaRepository;
@@ -61,6 +65,7 @@ public class SimularRodadaUseCase {
         this.clubeParticipanteRepository = clubeParticipanteRepository;
         this.grupoRepository = grupoRepository;
         this.partidaMataMataRepository = partidaMataMataRepository;
+        this.estatisticaJogadorPartidaRepository = estatisticaJogadorPartidaRepository;
     }
 
     @Transactional
@@ -108,6 +113,7 @@ public class SimularRodadaUseCase {
                 }
             }
 
+            DetalhesPartida detalhes = gerarDetalhes(escalacaoMandante, escalacaoVisitante, golsMandante, golsVisitante);
             String resultado = determinarResultado(golsMandante, golsVisitante).name();
 
             partida.aplicarResultado(golsMandante, golsVisitante, resultado);
@@ -117,6 +123,8 @@ public class SimularRodadaUseCase {
             } else if (partida instanceof PartidaMataMataEntity partidaMataMata) {
                 partidaMataMataRepository.save(partidaMataMata);
             }
+
+            salvarEstatisticas(partida, detalhes);
 
             Long grupoDefinido = null;
 
@@ -157,7 +165,9 @@ public class SimularRodadaUseCase {
                     golsMandante,
                     partida.getVisitante().getNome(),
                     golsVisitante,
-                    resultado
+                    resultado,
+                    detalhes.golsMandante(), detalhes.golsVisitante(), detalhes.jogadores(), detalhes.melhorJogador(),
+                    detalhes.cartoesAmarelos(), detalhes.cartoesVermelhos()
             ));
         }
 
@@ -177,6 +187,20 @@ public class SimularRodadaUseCase {
         return resultados;
     }
 
+    private DetalhesPartida gerarDetalhes(EscalacaoEntity mandante, EscalacaoEntity visitante, int golsMandante, int golsVisitante) {
+        List<Jogador> casa = titulares(mandante), fora = titulares(visitante);
+        if (casa.isEmpty() || fora.isEmpty()) throw new DadosInvalidosException("Cada clube precisa ter ao menos um titular");
+        Map<Jogador, int[]> eventos = new LinkedHashMap<>(); casa.forEach(j -> eventos.put(j, new int[3])); fora.forEach(j -> eventos.put(j, new int[3]));
+        distribuirGols(casa, golsMandante, eventos); distribuirGols(fora, golsVisitante, eventos); Random random = new Random();
+        List<JogadorPartidaResponseDTO> jogadores = eventos.entrySet().stream().map(entry -> { Jogador j = entry.getKey(); int[] e = entry.getValue(); e[1] = random.nextDouble() < .18 ? 1 : 0; e[2] = random.nextDouble() < .03 ? 1 : 0; double nota = Math.round(Math.min(10, Math.max(3, 5.5 + random.nextDouble() * 2.5 + e[0] * 1.25 - e[1] * .35 - e[2] * 1.5)) * 10.0) / 10.0; return new JogadorPartidaResponseDTO(j.getId(), j.getNome(), nota, e[0], e[1], e[2]); }).toList();
+        return new DetalhesPartida(nomesPorGols(jogadores, casa), nomesPorGols(jogadores, fora), jogadores, jogadores.stream().max(Comparator.comparingDouble(JogadorPartidaResponseDTO::nota).thenComparingInt(JogadorPartidaResponseDTO::gols)).orElseThrow(), nomesPorCartao(jogadores, false), nomesPorCartao(jogadores, true));
+    }
+    private List<Jogador> titulares(EscalacaoEntity e) { return e.getJogadores().stream().filter(j -> j.getTipo() == EscalacaoJogadorEntity.TipoJogador.TITULAR).map(EscalacaoJogadorEntity::getJogador).toList(); }
+    private void distribuirGols(List<Jogador> jogadores, int gols, Map<Jogador, int[]> eventos) { Random r = new Random(); for (int i = 0; i < gols; i++) eventos.get(jogadores.get(r.nextInt(jogadores.size())))[0]++; }
+    private List<String> nomesPorGols(List<JogadorPartidaResponseDTO> jogadores, List<Jogador> elenco) { return jogadores.stream().filter(j -> elenco.stream().anyMatch(e -> e.getId().equals(j.jogadorId()))).flatMap(j -> java.util.stream.Stream.generate(j::nome).limit(j.gols())).toList(); }
+    private List<String> nomesPorCartao(List<JogadorPartidaResponseDTO> jogadores, boolean vermelho) { return jogadores.stream().flatMap(j -> java.util.stream.Stream.generate(j::nome).limit(vermelho ? j.cartoesVermelhos() : j.cartoesAmarelos())).toList(); }
+    private void salvarEstatisticas(PartidaSimulavel partida, DetalhesPartida d) { boolean mataMata = partida instanceof PartidaMataMataEntity; estatisticaJogadorPartidaRepository.saveAll(d.jogadores().stream().map(j -> { EstatisticaJogadorPartidaEntity e = new EstatisticaJogadorPartidaEntity(); e.setPartidaId(partida.getId()); e.setPartidaMataMata(mataMata); e.setJogadorId(j.jogadorId()); e.setNomeJogador(j.nome()); e.setNota(j.nota()); e.setGols(j.gols()); e.setCartoesAmarelos(j.cartoesAmarelos()); e.setCartoesVermelhos(j.cartoesVermelhos()); return e; }).toList()); }
+    private record DetalhesPartida(List<String> golsMandante, List<String> golsVisitante, List<JogadorPartidaResponseDTO> jogadores, JogadorPartidaResponseDTO melhorJogador, List<String> cartoesAmarelos, List<String> cartoesVermelhos) {}
     private EscalacaoEntity buscarOuGerarEscalacao(ClubeEntity clube) {
         if (clube.getTecnico() != null) {
             return escalacaoRepository.findTopByClubeOrderByDataHoraDesc(clube)
