@@ -45,6 +45,10 @@ public class CampeonatoEntity {
     @JoinColumn(name = "campeao_id")
     private ClubeEntity campeao;
 
+    @ManyToOne
+    @JoinColumn(name = "temporada_id")
+    private TemporadaEntity temporada;
+
     @OneToMany(mappedBy = "campeonato", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RodadaEntity> rodadas = new ArrayList<>();
     private boolean mataMataIniciado;
@@ -129,5 +133,13 @@ public class CampeonatoEntity {
     }
 
     public void setMataMataIniciado(boolean mataMataIniciado){this.mataMataIniciado = mataMataIniciado;}
+
+    public TemporadaEntity getTemporada() {
+        return temporada;
+    }
+
+    public void setTemporada(TemporadaEntity temporada) {
+        this.temporada = temporada;
+    }
 
 }
