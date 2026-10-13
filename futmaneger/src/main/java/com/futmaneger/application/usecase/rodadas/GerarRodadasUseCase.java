@@ -7,10 +7,11 @@ import com.futmaneger.application.exception.NaoEncontradoException;
 import com.futmaneger.infrastructure.persistence.entity.CampeonatoEntity;
 import com.futmaneger.infrastructure.persistence.entity.ClubeEntity;
 import com.futmaneger.infrastructure.persistence.entity.ClubeParticipanteEntity;
+import com.futmaneger.infrastructure.persistence.entity.EdicaoCampeonatoEntity;
 import com.futmaneger.infrastructure.persistence.entity.PartidaEntity;
 import com.futmaneger.infrastructure.persistence.entity.RodadaEntity;
-import com.futmaneger.infrastructure.persistence.jpa.CampeonatoRepository;
 import com.futmaneger.infrastructure.persistence.jpa.ClubeParticipanteRepository;
+import com.futmaneger.infrastructure.persistence.jpa.EdicaoCampeonatoRepository;
 import com.futmaneger.infrastructure.persistence.jpa.PartidaRepository;
 import com.futmaneger.infrastructure.persistence.jpa.RodadaRepository;
 import java.util.ArrayList;
@@ -21,20 +22,20 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class GerarRodadasUseCase {
 
-    private final CampeonatoRepository campeonatoRepository;
+    private final EdicaoCampeonatoRepository edicaoRepository;
     private final ClubeParticipanteRepository participanteRepository;
     private final RodadaRepository rodadaRepository;
     private final PartidaRepository partidaRepository;
     private final GerarRodadasMataMataUseCase gerarRodadasMataMataUseCase;
 
     public GerarRodadasUseCase(
-            CampeonatoRepository campeonatoRepository,
+            EdicaoCampeonatoRepository edicaoRepository,
             ClubeParticipanteRepository participanteRepository,
             RodadaRepository rodadaRepository,
             PartidaRepository partidaRepository,
             GerarRodadasMataMataUseCase gerarRodadasMataMataUseCase
     ) {
-        this.campeonatoRepository = campeonatoRepository;
+        this.edicaoRepository = edicaoRepository;
         this.participanteRepository = participanteRepository;
         this.rodadaRepository = rodadaRepository;
         this.partidaRepository = partidaRepository;
@@ -43,18 +44,24 @@ public class GerarRodadasUseCase {
 
     @Transactional
     public GerarRodadasResponseDTO executar(GerarRodadasRequestDTO request) {
-        CampeonatoEntity campeonato = campeonatoRepository.findById(request.campeonatoId())
-                .orElseThrow(() -> new NaoEncontradoException("Campeonato não encontrado"));
+        EdicaoCampeonatoEntity edicao = edicaoRepository.findById(request.edicaoId())
+                .orElseThrow(() -> new NaoEncontradoException("Edição de campeonato não encontrada"));
 
-        if (!campeonato.getRodadas().isEmpty()) {
-            throw new DadosInvalidosException("Rodadas já foram geradas para este campeonato");
+        CampeonatoEntity campeonato = edicao.getCampeonato();
+
+        if (!edicao.getRodadas().isEmpty()) {
+            throw new DadosInvalidosException("Rodadas já foram geradas para esta edição do campeonato");
         }
 
-        if (campeonato.getTipo() != null && CampeonatoEntity.TipoCampeonato.MATA_MATA.name().equals(campeonato.getTipo().name())) {
-            return gerarRodadasMataMataUseCase.gerarRodadas(campeonato);
+        if (campeonato.getTipo() == null) {
+            throw new DadosInvalidosException("O campeonato não possui um tipo definido");
         }
 
-        List<ClubeParticipanteEntity> participantes = participanteRepository.findByCampeonato(campeonato);
+        if (CampeonatoEntity.TipoCampeonato.MATA_MATA.equals(campeonato.getTipo())) {
+            return gerarRodadasMataMataUseCase.gerarRodadas(edicao);
+        }
+
+        List<ClubeParticipanteEntity> participantes = participanteRepository.findByEdicao(edicao);
         List<ClubeEntity> clubes = participantes.stream().map(ClubeParticipanteEntity::getClube).toList();
 
         if (clubes.size() < 2) {
@@ -71,12 +78,12 @@ public class GerarRodadasUseCase {
         for (List<PartidaEntity> partidas : partidasPorRodadaIda) {
             RodadaEntity rodada = new RodadaEntity();
             rodada.setNumero(rodadaIndex++);
-            rodada.setCampeonato(campeonato);
+            rodada.setEdicao(edicao);
             rodada = rodadaRepository.save(rodada);
 
             for (PartidaEntity partida : partidas) {
                 partida.setRodada(rodada.getNumero());
-                partida.setCampeonato(campeonato);
+                partida.setEdicao(edicao);
                 todasPartidas.add(partidaRepository.save(partida));
             }
             rodadas.add(rodada);
@@ -87,19 +94,19 @@ public class GerarRodadasUseCase {
         for (List<PartidaEntity> partidas : partidasPorRodadaVolta) {
             RodadaEntity rodada = new RodadaEntity();
             rodada.setNumero(rodadaIndex++);
-            rodada.setCampeonato(campeonato);
+            rodada.setEdicao(edicao);
             rodada = rodadaRepository.save(rodada);
 
             for (PartidaEntity partida : partidas) {
                 partida.setRodada(rodada.getNumero());
-                partida.setCampeonato(campeonato);
+                partida.setEdicao(edicao);
                 todasPartidas.add(partidaRepository.save(partida));
             }
             rodadas.add(rodada);
         }
 
         return new GerarRodadasResponseDTO(
-                campeonato.getId(),
+                edicao.getId(),
                 rodadas.size(),
                 todasPartidas.size(),
                 null

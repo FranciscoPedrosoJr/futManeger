@@ -18,8 +18,8 @@ public class PartidaMataMataEntity implements PartidaSimulavel {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "campeonato_id")
-    private CampeonatoEntity campeonato;
+    @JoinColumn(name = "edicao_id")
+    private EdicaoCampeonatoEntity edicao;
 
     @Enumerated(EnumType.STRING)
     private FaseMataMata fase;
@@ -86,13 +86,13 @@ public class PartidaMataMataEntity implements PartidaSimulavel {
         this.id = id;
     }
 
-    public CampeonatoEntity getCampeonato() {
-        return campeonato;
+    public EdicaoCampeonatoEntity getEdicao() {
+        return edicao;
     }
 
-    public CampeonatoEntity setCampeonato(CampeonatoEntity campeonato) {
-        this.campeonato = campeonato;
-        return campeonato;
+    public EdicaoCampeonatoEntity setEdicao(EdicaoCampeonatoEntity edicao) {
+        this.edicao = edicao;
+        return edicao;
     }
 
     public FaseMataMata getFase() {

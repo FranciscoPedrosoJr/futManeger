@@ -3,41 +3,46 @@ package com.futmaneger.application.usecase.campeonato;
 import com.futmaneger.application.dto.CampeaoResponseDTO;
 import com.futmaneger.application.exception.DadosInvalidosException;
 import com.futmaneger.application.exception.NaoEncontradoException;
-import com.futmaneger.infrastructure.persistence.jpa.CampeonatoRepository;
+import com.futmaneger.infrastructure.persistence.entity.EdicaoCampeonatoEntity;
 import com.futmaneger.infrastructure.persistence.jpa.ClubeJpaRepository;
+import com.futmaneger.infrastructure.persistence.jpa.EdicaoCampeonatoRepository;
 import com.futmaneger.infrastructure.persistence.jpa.TabelaCampeonatoRepository;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.stereotype.Service;
 
+/**
+ * Busca os campeões por edição. Como o mesmo campeonato pode ser disputado em
+ * várias temporadas, o campeão é determinado por edição (disputa concreta).
+ */
 @Service
 public class BuscarCampeoesUseCase {
     private final ClubeJpaRepository clubeRepository;
     private final TabelaCampeonatoRepository tabelaCampeonatoRepository;
-    private final CampeonatoRepository campeonatoRepository;
+    private final EdicaoCampeonatoRepository edicaoRepository;
 
     public BuscarCampeoesUseCase(ClubeJpaRepository clubeRepository, TabelaCampeonatoRepository tabelaCampeonatoRepository,
-                                 CampeonatoRepository campeonatoRepository) {
+                                 EdicaoCampeonatoRepository edicaoRepository) {
         this.clubeRepository = clubeRepository;
         this.tabelaCampeonatoRepository = tabelaCampeonatoRepository;
-        this.campeonatoRepository = campeonatoRepository;
+        this.edicaoRepository = edicaoRepository;
     }
 
-    public List<CampeaoResponseDTO> buscarCampeoes(Long campeonatoId) {
+    public List<CampeaoResponseDTO> buscarCampeoes(Long edicaoId) {
 
-        if (campeonatoId != null) {
+        if (edicaoId != null) {
 
-            var campeonato = campeonatoRepository.findById(campeonatoId)
-                    .orElseThrow(() -> new NaoEncontradoException("Campeonato não encontrado"));
+            EdicaoCampeonatoEntity edicao = edicaoRepository.findById(edicaoId)
+                    .orElseThrow(() -> new NaoEncontradoException("Edição de campeonato não encontrada"));
 
-            if (Boolean.TRUE.equals(campeonato.getEmAndamento())) {
-                throw new DadosInvalidosException("Este campeonato ainda não finalizou.");
+            if (edicao.getEmAndamento()) {
+                throw new DadosInvalidosException("Esta edição ainda não finalizou.");
             }
 
-            var tabela = tabelaCampeonatoRepository.findByCampeonatoIdOrderByPontosDesc(campeonatoId);
+            var tabela = tabelaCampeonatoRepository.findByEdicaoIdOrderByPontosDesc(edicaoId);
 
             if (tabela.isEmpty()) {
-                throw new DadosInvalidosException("Este campeonato não possui tabela registrada.");
+                throw new DadosInvalidosException("Esta edição não possui tabela registrada.");
             }
 
             var campeao = tabela.get(0);
@@ -46,8 +51,8 @@ public class BuscarCampeoesUseCase {
                     .orElseThrow(() -> new NaoEncontradoException("Clube não encontrado"));
 
             return List.of(new CampeaoResponseDTO(
-                    campeonato.getId(),
-                    campeonato.getNome(),
+                    edicao.getId(),
+                    edicao.getCampeonato().getNome(),
                     clube.getId(),
                     clube.getNome(),
                     campeao.getPontos(),
@@ -58,17 +63,17 @@ public class BuscarCampeoesUseCase {
             ));
         }
 
-        var campeonatos = campeonatoRepository.findAll();
+        var edicoes = edicaoRepository.findAll();
 
         List<CampeaoResponseDTO> response = new ArrayList<>();
 
-        for (var camp : campeonatos) {
+        for (var edicao : edicoes) {
 
-            if (Boolean.TRUE.equals(camp.getEmAndamento())) {
+            if (edicao.getEmAndamento()) {
                 continue;
             }
 
-            var tabela = tabelaCampeonatoRepository.findByCampeonatoIdOrderByPontosDesc(camp.getId());
+            var tabela = tabelaCampeonatoRepository.findByEdicaoIdOrderByPontosDesc(edicao.getId());
 
             if (tabela.isEmpty()) continue;
 
@@ -78,8 +83,8 @@ public class BuscarCampeoesUseCase {
                     .orElseThrow(() -> new NaoEncontradoException("Clube não encontrado"));
 
             response.add(new CampeaoResponseDTO(
-                    camp.getId(),
-                    camp.getNome(),
+                    edicao.getId(),
+                    edicao.getCampeonato().getNome(),
                     clube.getId(),
                     clube.getNome(),
                     campeao.getPontos(),
@@ -91,7 +96,7 @@ public class BuscarCampeoesUseCase {
         }
 
         if (response.isEmpty()) {
-            throw new NaoEncontradoException("Nenhum campeonato finalizado encontrado.");
+            throw new NaoEncontradoException("Nenhuma edição de campeonato finalizada encontrada.");
         }
 
         return response;

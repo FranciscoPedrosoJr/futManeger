@@ -5,27 +5,28 @@ import com.futmaneger.application.dto.CriarCampeonatoRequestDTO;
 import com.futmaneger.application.exception.DadosInvalidosException;
 import com.futmaneger.infrastructure.persistence.entity.CampeonatoEntity;
 import com.futmaneger.infrastructure.persistence.entity.ClubeEntity;
-import com.futmaneger.infrastructure.persistence.entity.ClubeParticipanteEntity;
 import com.futmaneger.infrastructure.persistence.jpa.CampeonatoRepository;
 import com.futmaneger.infrastructure.persistence.jpa.ClubeJpaRepository;
-import com.futmaneger.infrastructure.persistence.jpa.ClubeParticipanteRepository;
 import java.util.List;
 import org.springframework.stereotype.Service;
 
+/**
+ * Cria o molde reutilizável de um campeonato ({@link CampeonatoEntity}). O molde
+ * guarda apenas a definição da competição (nome, país, estado, tipo e quantidade
+ * de clubes). Os participantes, rodadas e resultados pertencem a cada edição e
+ * são criados quando o campeonato é associado a uma temporada.
+ */
 @Service
 public class CriarCampeonatoUseCase {
     private final ClubeJpaRepository clubeRepository;
     private final CampeonatoRepository campeonatoRepository;
-    private final ClubeParticipanteRepository participanteRepository;
 
     public CriarCampeonatoUseCase(
             ClubeJpaRepository clubeRepository,
-            CampeonatoRepository campeonatoRepository,
-            ClubeParticipanteRepository participanteRepository
+            CampeonatoRepository campeonatoRepository
     ) {
         this.clubeRepository = clubeRepository;
         this.campeonatoRepository = campeonatoRepository;
-        this.participanteRepository = participanteRepository;
     }
 
     public CampeonatoResponseDTO executar(CriarCampeonatoRequestDTO request) {
@@ -51,16 +52,8 @@ public class CriarCampeonatoUseCase {
         campeonato.setEstado(request.estado());
         campeonato.setPais(request.pais());
         campeonato.setTipo(tipo);
-        campeonato.setEmAndamento(true);
         campeonato.setQuantidadeClubes(clubes.size());
         campeonato = campeonatoRepository.save(campeonato);
-
-        for (ClubeEntity clube : clubes) {
-            ClubeParticipanteEntity participante = new ClubeParticipanteEntity();
-            participante.setCampeonato(campeonato);
-            participante.setClube(clube);
-            participanteRepository.save(participante);
-        }
 
         List<String> nomesClubes = clubes.stream()
                 .map(ClubeEntity::getNome)

@@ -44,7 +44,7 @@ public class PartidaEntity implements PartidaSimulavel {
     private int rodada;
 
     @ManyToOne
-    private CampeonatoEntity campeonato;
+    private EdicaoCampeonatoEntity edicao;
 
 
     private boolean finalizada;
@@ -107,8 +107,12 @@ public class PartidaEntity implements PartidaSimulavel {
         return finalizada;
     }
 
-    public CampeonatoEntity setCampeonato(CampeonatoEntity campeonato) {
-        return this.campeonato = campeonato;
+    public EdicaoCampeonatoEntity setEdicao(EdicaoCampeonatoEntity edicao) {
+        return this.edicao = edicao;
+    }
+
+    public EdicaoCampeonatoEntity getEdicao() {
+        return edicao;
     }
 
     public void setFinalizada(boolean finalizada) {

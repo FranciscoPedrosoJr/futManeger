@@ -1,6 +1,5 @@
 package com.futmaneger.infrastructure.persistence.entity;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -8,14 +7,16 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
+/**
+ * Molde reutilizável de um campeonato. Descreve a competição em si (nome, país,
+ * tipo e quantidade de clubes) e pode ser disputado em várias temporadas.
+ *
+ * <p>Os dados específicos de cada disputa (temporada, participantes, rodadas,
+ * partidas, tabela, grupos, resultados, estado e campeão) ficam em
+ * {@link EdicaoCampeonatoEntity}.</p>
+ */
 @Entity
 @Table(name = "campeonatos")
 public class CampeonatoEntity {
@@ -36,32 +37,7 @@ public class CampeonatoEntity {
 
     private int quantidadeClubes;
 
-    private boolean emAndamento;
-
-    private LocalDateTime dataInicio;
-    private LocalDateTime dataFim;
-
-    @ManyToOne
-    @JoinColumn(name = "campeao_id")
-    private ClubeEntity campeao;
-
-    @ManyToOne
-    @JoinColumn(name = "temporada_id")
-    private TemporadaEntity temporada;
-
-    @OneToMany(mappedBy = "campeonato", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<RodadaEntity> rodadas = new ArrayList<>();
-    private boolean mataMataIniciado;
-
-    @Enumerated(EnumType.STRING)
-    private PartidaMataMataEntity.FaseMataMata faseAtualMataMata;
-
-    public List<RodadaEntity> getRodadas() {
-        return rodadas;
-    }
-
-    public void setRodadas(List<RodadaEntity> rodadas) {
-        this.rodadas = rodadas;
+    public CampeonatoEntity() {
     }
 
     public void setNome(String nome) {
@@ -76,11 +52,7 @@ public class CampeonatoEntity {
         this.estado = estado;
     }
 
-    public void setEmAndamento(boolean emAndamento) {
-        this.emAndamento = emAndamento;
-    }
-
-    public void setQuantidadeClubes (int quantidadeClubes){
+    public void setQuantidadeClubes(int quantidadeClubes) {
         this.quantidadeClubes = quantidadeClubes;
     }
 
@@ -96,28 +68,12 @@ public class CampeonatoEntity {
         return nome;
     }
 
-    public <E extends Enum<E>> Enum<E> getTipo() {
-        return (Enum<E>) tipo;
+    public String getEstado() {
+        return estado;
     }
 
-    public void setCampeao(ClubeEntity campeao) {
-        this.campeao = campeao;
-    }
-
-    public boolean getMataMataIniciado() {
-        return mataMataIniciado;
-    }
-
-    public PartidaMataMataEntity.FaseMataMata getFaseAtualMataMata() {
-        return faseAtualMataMata;
-    }
-
-    public void setFaseAtualMataMata(PartidaMataMataEntity.FaseMataMata fase) {
-        this.faseAtualMataMata = fase;
-    }
-
-    public boolean getEmAndamento() {
-        return emAndamento;
+    public TipoCampeonato getTipo() {
+        return tipo;
     }
 
     public int getQuantidadeClubes() {
@@ -131,15 +87,4 @@ public class CampeonatoEntity {
     public enum TipoCampeonato {
         PONTOS_CORRIDOS, MATA_MATA
     }
-
-    public void setMataMataIniciado(boolean mataMataIniciado){this.mataMataIniciado = mataMataIniciado;}
-
-    public TemporadaEntity getTemporada() {
-        return temporada;
-    }
-
-    public void setTemporada(TemporadaEntity temporada) {
-        this.temporada = temporada;
-    }
-
 }

@@ -58,22 +58,22 @@ public class BuscarController {
         return ResponseEntity.ok(jogadores);
     }
 
-    @GetMapping("campeonato/{id}/partidas-mata-mata")
+    @GetMapping("edicao/{id}/partidas-mata-mata")
     public ResponseEntity<List<PartidaMataMataResponseDTO>> listarPartidasMataMata(@PathVariable Long id) {
-        List<PartidaMataMataResponseDTO> response = buscarPartidasMataMataUseCase.buscarPorCampeonato(id);
+        List<PartidaMataMataResponseDTO> response = buscarPartidasMataMataUseCase.buscarPorEdicao(id);
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/buscar-tabela/campeonato/{idCampeonato}")
-    public ResponseEntity<List<TabelaCampeonatoResponseDTO>> buscar(@PathVariable Long idCampeonato) {
-        return ResponseEntity.ok(buscarTabelaCampeonatoUseCase.executar(idCampeonato));
+    @GetMapping("/buscar-tabela/edicao/{idEdicao}")
+    public ResponseEntity<List<TabelaCampeonatoResponseDTO>> buscar(@PathVariable Long idEdicao) {
+        return ResponseEntity.ok(buscarTabelaCampeonatoUseCase.executar(idEdicao));
     }
 
     @GetMapping("/campeoes")
     public ResponseEntity<List<CampeaoResponseDTO>> listarCampeoes(
-            @RequestParam(required = false) Long campeonatoId
+            @RequestParam(required = false) Long edicaoId
     ) {
-        return ResponseEntity.ok(buscarCampeoesUseCase.buscarCampeoes(campeonatoId));
+        return ResponseEntity.ok(buscarCampeoesUseCase.buscarCampeoes(edicaoId));
     }
 
     @GetMapping("clube/{clubeId}/jogadores")
@@ -92,12 +92,12 @@ public class BuscarController {
         return ResponseEntity.ok(buscarRodadasNaoFinalizadasUseCase.executar());
     }
 
-    @GetMapping("/campeonatos/{campeonatoId}/rodadas")
-    public ResponseEntity<List<RodadaResponseDTO>> buscarRodadasPorCampeonato(
-            @PathVariable Long campeonatoId) {
+    @GetMapping("/edicoes/{edicaoId}/rodadas")
+    public ResponseEntity<List<RodadaResponseDTO>> buscarRodadasPorEdicao(
+            @PathVariable Long edicaoId) {
 
         return ResponseEntity.ok(
-                buscarRodadasPorCampeonatoUseCase.executar(campeonatoId)
+                buscarRodadasPorCampeonatoUseCase.executar(edicaoId)
         );
     }
 }

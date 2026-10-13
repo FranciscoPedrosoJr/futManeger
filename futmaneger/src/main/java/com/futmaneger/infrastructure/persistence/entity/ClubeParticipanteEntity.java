@@ -17,8 +17,8 @@ public class ClubeParticipanteEntity {
     private Long id;
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "campeonato_id")
-    private CampeonatoEntity campeonato;
+    @JoinColumn(name = "edicao_id")
+    private EdicaoCampeonatoEntity edicao;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "clube_id")
@@ -33,12 +33,12 @@ public class ClubeParticipanteEntity {
         return id;
     }
 
-    public CampeonatoEntity getCampeonato() {
-        return campeonato;
+    public EdicaoCampeonatoEntity getEdicao() {
+        return edicao;
     }
 
-    public void setCampeonato(CampeonatoEntity campeonato) {
-        this.campeonato = campeonato;
+    public void setEdicao(EdicaoCampeonatoEntity edicao) {
+        this.edicao = edicao;
     }
 
     public ClubeEntity getClube() {

@@ -15,8 +15,8 @@ public class GrupoEntity {
     private String nome;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "campeonato_id", nullable = false)
-    private CampeonatoEntity campeonato;
+    @JoinColumn(name = "edicao_id", nullable = false)
+    private EdicaoCampeonatoEntity edicao;
 
     @ManyToMany(cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     @JoinTable(
@@ -42,12 +42,12 @@ public class GrupoEntity {
         this.nome = nome;
     }
 
-    public CampeonatoEntity getCampeonato() {
-        return campeonato;
+    public EdicaoCampeonatoEntity getEdicao() {
+        return edicao;
     }
 
-    public void setCampeonato(CampeonatoEntity campeonato) {
-        this.campeonato = campeonato;
+    public void setEdicao(EdicaoCampeonatoEntity edicao) {
+        this.edicao = edicao;
     }
 
     public Set<ClubeEntity> getClubes() {
