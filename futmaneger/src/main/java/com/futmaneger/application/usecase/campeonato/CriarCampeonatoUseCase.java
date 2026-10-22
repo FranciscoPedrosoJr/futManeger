@@ -12,46 +12,50 @@ import org.springframework.stereotype.Service;
 
 /**
  * Cria o molde reutilizável de um campeonato ({@link CampeonatoEntity}). O molde
- * guarda apenas a definição da competição (nome, país, estado, tipo e quantidade
- * de clubes). Os participantes, rodadas e resultados pertencem a cada edição e
- * são criados quando o campeonato é associado a uma temporada.
+ * guarda a definição da competição (nome, país, estado, abrangência, formato de
+ * disputa e quantidade de clubes). Os participantes, rodadas e resultados
+ * pertencem a cada edição e são criados quando o campeonato é associado a uma
+ * temporada.
  */
 @Service
 public class CriarCampeonatoUseCase {
     private final ClubeJpaRepository clubeRepository;
     private final CampeonatoRepository campeonatoRepository;
+    private final ResolverParticipantesPorAbrangenciaService resolverParticipantes;
 
     public CriarCampeonatoUseCase(
             ClubeJpaRepository clubeRepository,
-            CampeonatoRepository campeonatoRepository
+            CampeonatoRepository campeonatoRepository,
+            ResolverParticipantesPorAbrangenciaService resolverParticipantes
     ) {
         this.clubeRepository = clubeRepository;
         this.campeonatoRepository = campeonatoRepository;
+        this.resolverParticipantes = resolverParticipantes;
     }
 
     public CampeonatoResponseDTO executar(CriarCampeonatoRequestDTO request) {
-        List<ClubeEntity> clubes;
-
-        if (request.clubes() != null && !request.clubes().isEmpty()) {
-            clubes = clubeRepository.findAllById(request.clubes());
-        } else {
-            clubes = buscarClubesPorLocalidade(request);
+        if (request.abrangencia() == null) {
+            throw new DadosInvalidosException("É necessário informar a abrangência do campeonato");
         }
-
-        if (clubes.size() < 2) {
-            throw new DadosInvalidosException("Número insuficiente de clubes para criar um campeonato");
-        }
-
-        CampeonatoEntity.TipoCampeonato tipo =
-                isPotenciaDeDois(clubes.size())
-                        ? CampeonatoEntity.TipoCampeonato.MATA_MATA
-                        : CampeonatoEntity.TipoCampeonato.PONTOS_CORRIDOS;
 
         CampeonatoEntity campeonato = new CampeonatoEntity();
         campeonato.setNome(request.nome());
         campeonato.setEstado(request.estado());
         campeonato.setPais(request.pais());
-        campeonato.setTipo(tipo);
+        campeonato.setAbrangencia(request.abrangencia());
+
+        List<ClubeEntity> clubes = resolverClubes(request, campeonato);
+
+        if (clubes.size() < 2) {
+            throw new DadosInvalidosException("Número insuficiente de clubes para criar um campeonato");
+        }
+
+        CampeonatoEntity.TipoCampeonato formato =
+                isPotenciaDeDois(clubes.size())
+                        ? CampeonatoEntity.TipoCampeonato.MATA_MATA
+                        : CampeonatoEntity.TipoCampeonato.PONTOS_CORRIDOS;
+
+        campeonato.setTipo(formato);
         campeonato.setQuantidadeClubes(clubes.size());
         campeonato = campeonatoRepository.save(campeonato);
 
@@ -67,13 +71,20 @@ public class CriarCampeonatoUseCase {
         );
     }
 
-    private List<ClubeEntity> buscarClubesPorLocalidade(CriarCampeonatoRequestDTO request) {
-        if (request.estado() != null && !request.estado().isBlank()) {
-            return clubeRepository.findByEstado(request.estado());
-        } else if (request.pais() != null && !request.pais().isBlank()) {
-            return clubeRepository.findByPais(request.pais());
+    /**
+     * Quando o request informa clubes explicitamente, usa-os; caso contrário,
+     * resolve automaticamente pelos critérios da abrangência do campeonato.
+     */
+    private List<ClubeEntity> resolverClubes(CriarCampeonatoRequestDTO request, CampeonatoEntity campeonato) {
+        if (request.clubes() != null && !request.clubes().isEmpty()) {
+            List<Long> ids = request.clubes().stream().distinct().toList();
+            List<ClubeEntity> clubes = clubeRepository.findAllById(ids);
+            if (clubes.size() != ids.size()) {
+                throw new DadosInvalidosException("Um ou mais clubes informados não foram encontrados");
+            }
+            return clubes;
         }
-        throw new DadosInvalidosException("É necessário informar país ou estado para criar o campeonato");
+        return resolverParticipantes.resolver(campeonato);
     }
 
     private boolean isPotenciaDeDois(int numero) {

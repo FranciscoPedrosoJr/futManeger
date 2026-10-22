@@ -1,5 +1,6 @@
 package com.futmaneger.infrastructure.persistence.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -22,6 +23,10 @@ public class ClubeEntity {
     private String estado;
 
     private String pais;
+
+    @Column(name = "eh_selecao", nullable = false, columnDefinition = "boolean default false")
+    private boolean ehSelecao;
+
     private BigDecimal saldo = BigDecimal.ZERO;
 
     @ManyToOne
@@ -33,9 +38,14 @@ public class ClubeEntity {
     }
 
     public ClubeEntity(String nome, String estado, String pais) {
+        this(nome, estado, pais, false);
+    }
+
+    public ClubeEntity(String nome, String estado, String pais, boolean ehSelecao) {
         this.nome = nome;
         this.estado = estado;
         this.pais = pais;
+        this.ehSelecao = ehSelecao;
         this.saldo = new BigDecimal("50000000");
     }
 
@@ -67,6 +77,10 @@ public class ClubeEntity {
     public String getPais() { return pais; }
 
     public void setPais(String pais) { this.pais = pais; }
+
+    public boolean isEhSelecao() { return ehSelecao; }
+
+    public void setEhSelecao(boolean ehSelecao) { this.ehSelecao = ehSelecao; }
 
     public TecnicoEntity getTecnico() { return tecnico; }
 

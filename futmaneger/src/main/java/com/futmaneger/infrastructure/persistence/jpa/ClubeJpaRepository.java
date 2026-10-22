@@ -12,6 +12,12 @@ public interface ClubeJpaRepository extends JpaRepository<ClubeEntity, Long> {
 
     List<ClubeEntity> findByPais(String pais);
 
+    List<ClubeEntity> findByEhSelecao(boolean ehSelecao);
+
+    List<ClubeEntity> findByPaisAndEstado(String pais, String estado);
+
+    List<ClubeEntity> findByPaisInAndEhSelecao(List<String> paises, boolean ehSelecao);
+
 
     @Query("""
         SELECT AVG(j.forca)

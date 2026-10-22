@@ -35,6 +35,9 @@ public class CampeonatoEntity {
     @Enumerated(EnumType.STRING)
     private TipoCampeonato tipo;
 
+    @Enumerated(EnumType.STRING)
+    private AbrangenciaCampeonato abrangencia;
+
     private int quantidadeClubes;
 
     public CampeonatoEntity() {
@@ -46,6 +49,10 @@ public class CampeonatoEntity {
 
     public void setTipo(TipoCampeonato tipo) {
         this.tipo = tipo;
+    }
+
+    public void setAbrangencia(AbrangenciaCampeonato abrangencia) {
+        this.abrangencia = abrangencia;
     }
 
     public void setEstado(String estado) {
@@ -74,6 +81,10 @@ public class CampeonatoEntity {
 
     public TipoCampeonato getTipo() {
         return tipo;
+    }
+
+    public AbrangenciaCampeonato getAbrangencia() {
+        return abrangencia;
     }
 
     public int getQuantidadeClubes() {

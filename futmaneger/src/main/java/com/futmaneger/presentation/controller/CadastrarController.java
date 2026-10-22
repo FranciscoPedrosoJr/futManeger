@@ -45,7 +45,7 @@ public class CadastrarController {
 
     @PostMapping("/clubes")
     public ResponseEntity<ClubeResponse> cadastrar(@RequestBody CadastrarClubeRequest request) {
-        var clube = cadastrarClubeUseCase.executar(request.nome(), request.estado(), request.pais());
+        var clube = cadastrarClubeUseCase.executar(request.nome(), request.estado(), request.pais(), request.ehSelecao());
         return ResponseEntity.ok(new ClubeResponse(clube));
     }
 
