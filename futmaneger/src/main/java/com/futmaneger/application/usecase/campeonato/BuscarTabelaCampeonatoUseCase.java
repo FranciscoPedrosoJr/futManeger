@@ -3,9 +3,9 @@ package com.futmaneger.application.usecase.campeonato;
 import com.futmaneger.application.dto.TabelaCampeonatoResponseDTO;
 import com.futmaneger.application.dto.TabelaItemResponseDTO;
 import com.futmaneger.application.exception.NaoEncontradoException;
-import com.futmaneger.infrastructure.persistence.entity.TabelaCampeonatoEntity;
-import com.futmaneger.infrastructure.persistence.jpa.CampeonatoRepository;
+import com.futmaneger.infrastructure.persistence.entity.EdicaoCampeonatoEntity;
 import com.futmaneger.infrastructure.persistence.jpa.ClubeJpaRepository;
+import com.futmaneger.infrastructure.persistence.jpa.EdicaoCampeonatoRepository;
 import com.futmaneger.infrastructure.persistence.jpa.TabelaCampeonatoRepository;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,23 +16,23 @@ import org.springframework.stereotype.Service;
 public class BuscarTabelaCampeonatoUseCase {
     private final TabelaCampeonatoRepository tabelaRepository;
     private final ClubeJpaRepository clubeRepository;
-    private final CampeonatoRepository campeonatoRepository;
+    private final EdicaoCampeonatoRepository edicaoRepository;
 
     public BuscarTabelaCampeonatoUseCase(
             TabelaCampeonatoRepository tabelaRepository,
             ClubeJpaRepository clubeRepository,
-            CampeonatoRepository campeonatoRepository) {
+            EdicaoCampeonatoRepository edicaoRepository) {
         this.tabelaRepository = tabelaRepository;
         this.clubeRepository = clubeRepository;
-        this.campeonatoRepository = campeonatoRepository;
+        this.edicaoRepository = edicaoRepository;
     }
 
-    public List<TabelaCampeonatoResponseDTO> executar(Long campeonatoId) {
+    public List<TabelaCampeonatoResponseDTO> executar(Long edicaoId) {
 
-        var campeonato = campeonatoRepository.findById(campeonatoId)
-                .orElseThrow(() -> new NaoEncontradoException("Campeonato não encontrado"));
+        EdicaoCampeonatoEntity edicao = edicaoRepository.findById(edicaoId)
+                .orElseThrow(() -> new NaoEncontradoException("Edição de campeonato não encontrada"));
 
-        var tabelaOrdenada = tabelaRepository.findByCampeonatoIdOrderByPontosDesc(campeonatoId);
+        var tabelaOrdenada = tabelaRepository.findByEdicaoIdOrderByPontosDesc(edicaoId);
 
         List<TabelaItemResponseDTO> itens = new ArrayList<>();
 
@@ -57,8 +57,8 @@ public class BuscarTabelaCampeonatoUseCase {
         }
 
         return Collections.singletonList(new TabelaCampeonatoResponseDTO(
-                campeonato.getId(),
-                campeonato.getNome(),
+                edicao.getId(),
+                edicao.getCampeonato().getNome(),
                 itens
         ));
     }

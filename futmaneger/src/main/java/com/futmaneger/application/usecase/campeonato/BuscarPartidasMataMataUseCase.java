@@ -13,10 +13,10 @@ public class BuscarPartidasMataMataUseCase {
         this.partidaMataMataRepository = partidaMataMataRepository;
     }
 
-    public List<PartidaMataMataResponseDTO> buscarPorCampeonato(Long campeonatoId) {
-        return partidaMataMataRepository.findByCampeonatoId(campeonatoId).stream()
+    public List<PartidaMataMataResponseDTO> buscarPorEdicao(Long edicaoId) {
+        return partidaMataMataRepository.findByEdicaoId(edicaoId).stream()
                 .map(partida -> new PartidaMataMataResponseDTO(
-                        partida.getCampeonato().getNome(),
+                        partida.getEdicao().getCampeonato().getNome(),
                         partida.getFase(),
                         partida.getClubeA().getNome(),
                         partida.getClubeB().getNome(),

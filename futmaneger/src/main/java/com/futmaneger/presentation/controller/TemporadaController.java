@@ -1,5 +1,6 @@
 package com.futmaneger.presentation.controller;
 
+import com.futmaneger.application.dto.AdicionarCampeonatoComClubesRequestDTO;
 import com.futmaneger.application.dto.CriarTemporadaRequestDTO;
 import com.futmaneger.application.dto.TemporadaResponseDTO;
 import com.futmaneger.application.usecase.temporada.AdicionarCampeonatoNaTemporadaUseCase;
@@ -59,6 +60,17 @@ public class TemporadaController {
                                                                     @PathVariable Long campeonatoId) {
         TemporadaResponseDTO response =
                 adicionarCampeonatoNaTemporadaUseCase.executar(temporadaId, campeonatoId);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/{temporadaId}/campeonatos/{campeonatoId}/clubes")
+    public ResponseEntity<TemporadaResponseDTO> adicionarCampeonatoComClubes(
+            @PathVariable Long temporadaId,
+            @PathVariable Long campeonatoId,
+            @RequestBody AdicionarCampeonatoComClubesRequestDTO request) {
+        TemporadaResponseDTO response =
+                adicionarCampeonatoNaTemporadaUseCase.executar(
+                        temporadaId, campeonatoId, request.clubesIds());
         return ResponseEntity.ok(response);
     }
 

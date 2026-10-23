@@ -45,7 +45,7 @@ public class CadastrarController {
 
     @PostMapping("/clubes")
     public ResponseEntity<ClubeResponse> cadastrar(@RequestBody CadastrarClubeRequest request) {
-        var clube = cadastrarClubeUseCase.executar(request.nome(), request.estado(), request.pais());
+        var clube = cadastrarClubeUseCase.executar(request.nome(), request.estado(), request.pais(), request.ehSelecao());
         return ResponseEntity.ok(new ClubeResponse(clube));
     }
 
@@ -55,7 +55,7 @@ public class CadastrarController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @PostMapping("/campeonatos/{id}/rodadas")
+    @PostMapping("/edicoes/{id}/rodadas")
     public ResponseEntity<GerarRodadasResponseDTO> gerarRodadas(@PathVariable Long id) {
         var response = gerarRodadasUseCase.executar(new GerarRodadasRequestDTO(id));
         return ResponseEntity.ok(response);

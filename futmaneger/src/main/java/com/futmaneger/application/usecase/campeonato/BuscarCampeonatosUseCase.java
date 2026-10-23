@@ -1,7 +1,6 @@
 package com.futmaneger.application.usecase.campeonato;
 
 import com.futmaneger.application.dto.CampeonatoBuscaResponseDTO;
-import com.futmaneger.application.dto.CampeonatoResponseDTO;
 import com.futmaneger.infrastructure.persistence.jpa.CampeonatoRepository;
 import java.util.List;
 import org.springframework.stereotype.Service;
@@ -21,7 +20,6 @@ public class BuscarCampeonatosUseCase {
                 .map(campeonato -> new CampeonatoBuscaResponseDTO(
                         campeonato.getId(),
                         campeonato.getNome(),
-                        campeonato.getEmAndamento(),
                         campeonato.getTipo(),
                         campeonato.getQuantidadeClubes(),
                         campeonato.getPais()
@@ -29,4 +27,3 @@ public class BuscarCampeonatosUseCase {
                 .toList();
     }
 }
-

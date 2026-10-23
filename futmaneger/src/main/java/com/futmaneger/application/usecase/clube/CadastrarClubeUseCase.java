@@ -14,7 +14,11 @@ public class CadastrarClubeUseCase {
     }
 
     public ClubeEntity executar(String nome, String estado, String pais) {
-        ClubeEntity clube = new ClubeEntity(nome, estado, pais);
+        return executar(nome, estado, pais, false);
+    }
+
+    public ClubeEntity executar(String nome, String estado, String pais, boolean ehSelecao) {
+        ClubeEntity clube = new ClubeEntity(nome, estado, pais, ehSelecao);
         return clubeJpaRepository.save(clube);
     }
 }
