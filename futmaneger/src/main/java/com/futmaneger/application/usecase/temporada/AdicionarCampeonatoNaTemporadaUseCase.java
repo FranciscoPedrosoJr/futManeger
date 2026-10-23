@@ -11,6 +11,10 @@ import com.futmaneger.application.dto.TemporadaResponseDTO;
 import com.futmaneger.application.exception.DadosInvalidosException;
 import com.futmaneger.application.exception.NaoEncontradoException;
 import com.futmaneger.application.usecase.campeonato.ResolverParticipantesPorAbrangenciaService;
+import com.futmaneger.infrastructure.persistence.entity.PreClassificadoEntity;
+import com.futmaneger.infrastructure.persistence.jpa.PreClassificadoRepository;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import com.futmaneger.infrastructure.persistence.entity.CampeonatoEntity;
 import com.futmaneger.infrastructure.persistence.entity.ClubeEntity;
 import com.futmaneger.infrastructure.persistence.entity.ClubeParticipanteEntity;
@@ -31,19 +35,22 @@ public class AdicionarCampeonatoNaTemporadaUseCase {
     private final ClubeJpaRepository clubeRepository;
     private final ClubeParticipanteRepository participanteRepository;
     private final ResolverParticipantesPorAbrangenciaService resolverParticipantes;
+    private final PreClassificadoRepository preClassificadoRepository;
 
     public AdicionarCampeonatoNaTemporadaUseCase(TemporadaJpaRepository temporadaRepository,
                                                  CampeonatoRepository campeonatoRepository,
                                                  EdicaoCampeonatoRepository edicaoRepository,
                                                  ClubeJpaRepository clubeRepository,
                                                  ClubeParticipanteRepository participanteRepository,
-                                                 ResolverParticipantesPorAbrangenciaService resolverParticipantes) {
+                                                 ResolverParticipantesPorAbrangenciaService resolverParticipantes,
+                                                 PreClassificadoRepository preClassificadoRepository) {
         this.temporadaRepository = temporadaRepository;
         this.campeonatoRepository = campeonatoRepository;
         this.edicaoRepository = edicaoRepository;
         this.clubeRepository = clubeRepository;
         this.participanteRepository = participanteRepository;
         this.resolverParticipantes = resolverParticipantes;
+        this.preClassificadoRepository = preClassificadoRepository;
     }
 
     /**
@@ -111,21 +118,38 @@ public class AdicionarCampeonatoNaTemporadaUseCase {
         }
     }
 
-    /**
-     * Seleciona automaticamente os clubes elegíveis segundo a abrangência do
-     * campeonato, limitando à quantidade de clubes definida no cadastro.
-     */
     private List<ClubeEntity> resolverClubesAutomaticamente(CampeonatoEntity campeonato) {
-        List<ClubeEntity> disponiveis = resolverParticipantes.resolver(campeonato);
-
         int quantidade = campeonato.getQuantidadeClubes();
-        if (disponiveis.size() < quantidade) {
-            throw new DadosInvalidosException(
-                    "A abrangência do campeonato disponibiliza apenas " + disponiveis.size()
-                            + " clube(s), mas o campeonato exige " + quantidade + ".");
+
+        List<PreClassificadoEntity> preClassificados =
+                preClassificadoRepository.findByCampeonatoDestinoAndConsumidoFalse(campeonato);
+
+        LinkedHashSet<ClubeEntity> selecionados = new LinkedHashSet<>();
+        for (PreClassificadoEntity pre : preClassificados) {
+            if (selecionados.size() >= quantidade) {
+                break;
+            }
+            selecionados.add(pre.getClube());
+            pre.setConsumido(true);
+        }
+        preClassificadoRepository.saveAll(preClassificados);
+
+        if (selecionados.size() < quantidade) {
+            for (ClubeEntity clube : resolverParticipantes.resolver(campeonato)) {
+                if (selecionados.size() >= quantidade) {
+                    break;
+                }
+                selecionados.add(clube);
+            }
         }
 
-        return disponiveis.subList(0, quantidade);
+        if (selecionados.size() < quantidade) {
+            throw new DadosInvalidosException(
+                    "Não há clubes suficientes para preencher o campeonato: disponíveis "
+                            + selecionados.size() + ", exigidos " + quantidade + ".");
+        }
+
+        return new ArrayList<>(selecionados);
     }
 
     /**
