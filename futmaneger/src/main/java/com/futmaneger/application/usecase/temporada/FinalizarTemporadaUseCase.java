@@ -3,6 +3,7 @@ package com.futmaneger.application.usecase.temporada;
 import com.futmaneger.application.dto.TemporadaResponseDTO;
 import com.futmaneger.application.exception.DadosInvalidosException;
 import com.futmaneger.application.exception.NaoEncontradoException;
+import com.futmaneger.application.usecase.classificacao.GerarPreClassificadosService;
 import com.futmaneger.infrastructure.persistence.entity.TemporadaEntity;
 import com.futmaneger.infrastructure.persistence.jpa.TemporadaJpaRepository;
 import org.springframework.stereotype.Service;
@@ -12,9 +13,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class FinalizarTemporadaUseCase {
 
     private final TemporadaJpaRepository temporadaRepository;
+    private final GerarPreClassificadosService gerarPreClassificadosService;
 
-    public FinalizarTemporadaUseCase(TemporadaJpaRepository temporadaRepository) {
+    public FinalizarTemporadaUseCase(TemporadaJpaRepository temporadaRepository,
+                                     GerarPreClassificadosService gerarPreClassificadosService) {
         this.temporadaRepository = temporadaRepository;
+        this.gerarPreClassificadosService = gerarPreClassificadosService;
     }
 
     /**
@@ -31,6 +35,8 @@ public class FinalizarTemporadaUseCase {
             throw new DadosInvalidosException(
                     "A temporada só pode ser finalizada quando todos os campeonatos estiverem concluídos");
         }
+
+        gerarPreClassificadosService.gerar(temporada);
 
         TemporadaEntity salva = temporadaRepository.save(temporada);
         return TemporadaMapper.toResponse(salva);
