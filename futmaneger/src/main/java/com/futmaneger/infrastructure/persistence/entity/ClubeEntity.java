@@ -29,6 +29,8 @@ public class ClubeEntity {
 
     private BigDecimal saldo = BigDecimal.ZERO;
 
+    private BigDecimal precoIngresso = BigDecimal.ZERO;
+
     @ManyToOne
     @JoinColumn(name = "tecnico_id")
     private TecnicoEntity tecnico;
@@ -90,6 +92,14 @@ public class ClubeEntity {
 
     public BigDecimal getSaldo() {
         return saldo;
+    }
+
+    public BigDecimal getPrecoIngresso() {
+        return precoIngresso;
+    }
+
+    public void setPrecoIngresso(BigDecimal precoIngresso) {
+        this.precoIngresso = precoIngresso;
     }
 
     public Long getTecnicoId() {

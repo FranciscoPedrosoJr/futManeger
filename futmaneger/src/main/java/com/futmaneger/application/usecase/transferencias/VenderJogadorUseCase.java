@@ -3,39 +3,41 @@ package com.futmaneger.application.usecase.transferencias;
 import com.futmaneger.application.dto.VendaJogadorResponseDTO;
 import com.futmaneger.application.exception.DadosInvalidosException;
 import com.futmaneger.application.exception.NaoEncontradoException;
+import com.futmaneger.application.usecase.financeiro.MovimentacaoFinanceiraService;
 import com.futmaneger.domain.entity.Jogador;
 import com.futmaneger.domain.repository.JogadorRepository;
+import com.futmaneger.infrastructure.persistence.entity.CategoriaTransacao;
 import com.futmaneger.infrastructure.persistence.entity.ClubeEntity;
 import com.futmaneger.infrastructure.persistence.entity.HistoricoTransferenciaEntity;
-import com.futmaneger.infrastructure.persistence.entity.TransacaoFinanceiraEntity;
 import com.futmaneger.infrastructure.persistence.jpa.ClubeJpaRepository;
 import com.futmaneger.infrastructure.persistence.jpa.HistoricoTransferenciaRepository;
-import com.futmaneger.infrastructure.persistence.jpa.TransacaoFinanceiraRepository;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class VenderJogadorUseCase {
     private final JogadorRepository jogadorRepository;
     private final ClubeJpaRepository clubeRepository;
     private final HistoricoTransferenciaRepository historicoRepository;
-    private final TransacaoFinanceiraRepository transacaoFinanceiraRepository;
+    private final MovimentacaoFinanceiraService movimentacaoFinanceira;
 
     public VenderJogadorUseCase(
             JogadorRepository jogadorRepository,
             ClubeJpaRepository clubeRepository,
             HistoricoTransferenciaRepository historicoRepository,
-            TransacaoFinanceiraRepository transacaoFinanceiraRepository
+            MovimentacaoFinanceiraService movimentacaoFinanceira
     ) {
         this.jogadorRepository = jogadorRepository;
         this.clubeRepository = clubeRepository;
         this.historicoRepository = historicoRepository;
-        this.transacaoFinanceiraRepository = transacaoFinanceiraRepository;
+        this.movimentacaoFinanceira = movimentacaoFinanceira;
     }
 
+    @Transactional
     public VendaJogadorResponseDTO executar(Long jogadorId) {
 
         Jogador jogador = jogadorRepository.findById(jogadorId)
@@ -48,7 +50,7 @@ public class VenderJogadorUseCase {
 
         List<ClubeEntity> clubesPossiveis = clubeRepository.findAll().stream()
                 .filter(c -> !c.getId().equals(clubeVendedor.getId()))
-                .filter(c -> c.getSaldo().compareTo(precoJogador) >= 0)
+                .filter(c -> c.getSaldo() != null && c.getSaldo().compareTo(precoJogador) >= 0)
                 .filter(c -> mediaProxima(jogador, c))
                 .toList();
 
@@ -62,11 +64,10 @@ public class VenderJogadorUseCase {
 
         String motivo = "Jogador se enquadra no perfil do clube";
 
-        clubeComprador.setSaldo(clubeComprador.getSaldo().subtract(precoJogador));
-        clubeVendedor.setSaldo(clubeVendedor.getSaldo().add(precoJogador));
-
-        clubeRepository.save(clubeComprador);
-        clubeRepository.save(clubeVendedor);
+        movimentacaoFinanceira.debitar(clubeComprador, precoJogador, CategoriaTransacao.TRANSFERENCIA,
+                "Compra do jogador: " + jogador.getNome(), jogador.getId());
+        movimentacaoFinanceira.creditar(clubeVendedor, precoJogador, CategoriaTransacao.TRANSFERENCIA,
+                "Venda do jogador: " + jogador.getNome(), jogador.getId());
 
         jogador.setClube(clubeComprador);
         jogadorRepository.save(jogador);
@@ -78,8 +79,6 @@ public class VenderJogadorUseCase {
         h.setValor(precoJogador);
         h.setData(LocalDateTime.now());
         historicoRepository.save(h);
-
-        registrarTransacoesTransferencia(jogador, clubeComprador, clubeVendedor, precoJogador);
 
         return new VendaJogadorResponseDTO(
                 jogador.getId(),
@@ -108,28 +107,6 @@ public class VenderJogadorUseCase {
 
     private double necessidade(Jogador jogador, ClubeEntity clube) {
         return jogador.getForca() - mediaElenco(clube);
-    }
-
-    private void registrarTransacoesTransferencia(Jogador jogador,
-                                                  ClubeEntity clubeComprador,
-                                                  ClubeEntity clubeVendedor,
-                                                  BigDecimal precoJogador) {
-
-        TransacaoFinanceiraEntity compra = new TransacaoFinanceiraEntity();
-        compra.setJogadorId(jogador.getId());
-        compra.setClubeId(clubeComprador.getId());
-        compra.setValor(precoJogador.negate());
-        compra.setDescricao("Compra do jogador: " + jogador.getNome());
-        compra.setData(LocalDateTime.now());
-        transacaoFinanceiraRepository.save(compra);
-
-        TransacaoFinanceiraEntity venda = new TransacaoFinanceiraEntity();
-        venda.setJogadorId(jogador.getId());
-        venda.setClubeId(clubeVendedor.getId());
-        venda.setValor(precoJogador);
-        venda.setDescricao("Venda do jogador: " + jogador.getNome());
-        venda.setData(LocalDateTime.now());
-        transacaoFinanceiraRepository.save(venda);
     }
 
 }
