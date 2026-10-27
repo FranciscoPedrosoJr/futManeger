@@ -49,7 +49,8 @@ public class ResolverParticipantesPorAbrangenciaService {
             case ESTADUAL -> resolverEstadual(campeonato);
             case NACIONAL, COPA_NACIONAL -> resolverNacional(campeonato);
             case CONTINENTAL -> resolverContinental(campeonato);
-            case MUNDIAL, COPA_INTERNACIONAL -> clubeRepository.findByEhSelecao(false);
+            case COPA_INTERNACIONAL -> clubeRepository.findByEhSelecao(false);
+            case MUNDIAL -> List.of();
             default -> throw new DadosInvalidosException(
                     "Abrangência não suportada para resolução automática: " + abrangencia);
         };

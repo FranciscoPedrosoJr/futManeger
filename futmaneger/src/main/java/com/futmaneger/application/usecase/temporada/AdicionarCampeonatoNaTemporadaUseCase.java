@@ -8,10 +8,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.futmaneger.application.dto.TemporadaResponseDTO;
+import com.futmaneger.application.exception.CampeonatoNaoRealizadoException;
 import com.futmaneger.application.exception.DadosInvalidosException;
 import com.futmaneger.application.exception.NaoEncontradoException;
+import com.futmaneger.application.usecase.campeonato.AtribuirFasesDeEntradaService;
 import com.futmaneger.application.usecase.campeonato.ResolverParticipantesPorAbrangenciaService;
+import com.futmaneger.application.usecase.campeonato.ResolverParticipantesPorCotasService;
 import com.futmaneger.infrastructure.persistence.entity.PreClassificadoEntity;
+import com.futmaneger.infrastructure.persistence.jpa.FaseCampeonatoRepository;
 import com.futmaneger.infrastructure.persistence.jpa.PreClassificadoRepository;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -35,7 +39,10 @@ public class AdicionarCampeonatoNaTemporadaUseCase {
     private final ClubeJpaRepository clubeRepository;
     private final ClubeParticipanteRepository participanteRepository;
     private final ResolverParticipantesPorAbrangenciaService resolverParticipantes;
+    private final ResolverParticipantesPorCotasService resolverPorCotas;
     private final PreClassificadoRepository preClassificadoRepository;
+    private final FaseCampeonatoRepository faseCampeonatoRepository;
+    private final AtribuirFasesDeEntradaService atribuirFasesDeEntrada;
 
     public AdicionarCampeonatoNaTemporadaUseCase(TemporadaJpaRepository temporadaRepository,
                                                  CampeonatoRepository campeonatoRepository,
@@ -43,14 +50,20 @@ public class AdicionarCampeonatoNaTemporadaUseCase {
                                                  ClubeJpaRepository clubeRepository,
                                                  ClubeParticipanteRepository participanteRepository,
                                                  ResolverParticipantesPorAbrangenciaService resolverParticipantes,
-                                                 PreClassificadoRepository preClassificadoRepository) {
+                                                 ResolverParticipantesPorCotasService resolverPorCotas,
+                                                 PreClassificadoRepository preClassificadoRepository,
+                                                 FaseCampeonatoRepository faseCampeonatoRepository,
+                                                 AtribuirFasesDeEntradaService atribuirFasesDeEntrada) {
         this.temporadaRepository = temporadaRepository;
         this.campeonatoRepository = campeonatoRepository;
         this.edicaoRepository = edicaoRepository;
         this.clubeRepository = clubeRepository;
         this.participanteRepository = participanteRepository;
         this.resolverParticipantes = resolverParticipantes;
+        this.resolverPorCotas = resolverPorCotas;
         this.preClassificadoRepository = preClassificadoRepository;
+        this.faseCampeonatoRepository = faseCampeonatoRepository;
+        this.atribuirFasesDeEntrada = atribuirFasesDeEntrada;
     }
 
     /**
@@ -90,7 +103,7 @@ public class AdicionarCampeonatoNaTemporadaUseCase {
         }
 
         List<ClubeEntity> clubes = (clubesIds == null || clubesIds.isEmpty())
-                ? resolverClubesAutomaticamente(campeonato)
+                ? resolverClubesAutomaticamente(campeonato, temporada)
                 : resolverClubesPorIds(clubesIds);
 
         validarQuantidade(campeonato, clubes);
@@ -100,6 +113,10 @@ public class AdicionarCampeonatoNaTemporadaUseCase {
         edicao = edicaoRepository.save(edicao);
 
         criarParticipantes(edicao, clubes);
+
+        if (!faseCampeonatoRepository.findByCampeonatoOrderByOrdem(campeonato).isEmpty()) {
+            atribuirFasesDeEntrada.atribuir(edicao, clubes);
+        }
 
         TemporadaEntity salva = temporadaRepository.save(temporada);
         return TemporadaMapper.toResponse(salva);
@@ -118,7 +135,7 @@ public class AdicionarCampeonatoNaTemporadaUseCase {
         }
     }
 
-    private List<ClubeEntity> resolverClubesAutomaticamente(CampeonatoEntity campeonato) {
+    private List<ClubeEntity> resolverClubesAutomaticamente(CampeonatoEntity campeonato, TemporadaEntity temporada) {
         int quantidade = campeonato.getQuantidadeClubes();
 
         List<PreClassificadoEntity> preClassificados =
@@ -134,6 +151,18 @@ public class AdicionarCampeonatoNaTemporadaUseCase {
         }
         preClassificadoRepository.saveAll(preClassificados);
 
+        if (selecionados.size() < quantidade && resolverPorCotas.possuiCotas(campeonato)) {
+            Set<Long> jaClassificadosIds = selecionados.stream()
+                    .map(ClubeEntity::getId)
+                    .collect(Collectors.toSet());
+            for (ClubeEntity clube : resolverPorCotas.resolver(campeonato, jaClassificadosIds)) {
+                if (selecionados.size() >= quantidade) {
+                    break;
+                }
+                selecionados.add(clube);
+            }
+        }
+
         if (selecionados.size() < quantidade) {
             for (ClubeEntity clube : resolverParticipantes.resolver(campeonato)) {
                 if (selecionados.size() >= quantidade) {
@@ -144,9 +173,10 @@ public class AdicionarCampeonatoNaTemporadaUseCase {
         }
 
         if (selecionados.size() < quantidade) {
-            throw new DadosInvalidosException(
-                    "Não há clubes suficientes para preencher o campeonato: disponíveis "
-                            + selecionados.size() + ", exigidos " + quantidade + ".");
+            throw new CampeonatoNaoRealizadoException(
+                    "O campeonato '" + campeonato.getNome() + "' não foi realizado na "
+                            + temporada.getNome() + ": há apenas " + selecionados.size()
+                            + " clube(s) elegível(is), mas são exigidos " + quantidade + ".");
         }
 
         return new ArrayList<>(selecionados);
