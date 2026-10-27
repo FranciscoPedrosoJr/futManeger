@@ -11,5 +11,6 @@ public record VinculoClassificacaoResponseDTO(
         String campeonatoDestinoNome,
         int quantidade,
         SentidoClassificacao sentido,
-        CriterioClassificacao criterio
+        CriterioClassificacao criterio,
+        Integer faseDeEntradaOrdem
 ) {}

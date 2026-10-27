@@ -38,16 +38,25 @@ public class VinculoClassificacaoEntity {
     @Column(nullable = false)
     private CriterioClassificacao criterio;
 
+    private Integer faseDeEntradaOrdem;
+
     public VinculoClassificacaoEntity() {
     }
 
     public VinculoClassificacaoEntity(CampeonatoEntity campeonatoOrigem, CampeonatoEntity campeonatoDestino,
                                       int quantidade, SentidoClassificacao sentido, CriterioClassificacao criterio) {
+        this(campeonatoOrigem, campeonatoDestino, quantidade, sentido, criterio, null);
+    }
+
+    public VinculoClassificacaoEntity(CampeonatoEntity campeonatoOrigem, CampeonatoEntity campeonatoDestino,
+                                      int quantidade, SentidoClassificacao sentido, CriterioClassificacao criterio,
+                                      Integer faseDeEntradaOrdem) {
         this.campeonatoOrigem = campeonatoOrigem;
         this.campeonatoDestino = campeonatoDestino;
         this.quantidade = quantidade;
         this.sentido = sentido;
         this.criterio = criterio;
+        this.faseDeEntradaOrdem = faseDeEntradaOrdem;
     }
 
     public Long getId() {
@@ -92,5 +101,13 @@ public class VinculoClassificacaoEntity {
 
     public void setCriterio(CriterioClassificacao criterio) {
         this.criterio = criterio;
+    }
+
+    public Integer getFaseDeEntradaOrdem() {
+        return faseDeEntradaOrdem;
+    }
+
+    public void setFaseDeEntradaOrdem(Integer faseDeEntradaOrdem) {
+        this.faseDeEntradaOrdem = faseDeEntradaOrdem;
     }
 }

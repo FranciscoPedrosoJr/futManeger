@@ -8,5 +8,6 @@ public record CadastrarVinculoClassificacaoRequestDTO(
         Long campeonatoDestinoId,
         int quantidade,
         SentidoClassificacao sentido,
-        CriterioClassificacao criterio
+        CriterioClassificacao criterio,
+        Integer faseDeEntradaOrdem
 ) {}

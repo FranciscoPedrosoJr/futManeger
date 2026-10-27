@@ -19,4 +19,7 @@ public interface PartidaMataMataRepository extends JpaRepository<PartidaMataMata
     @Query("SELECT p FROM PartidaMataMataEntity p WHERE p.rodada.id = :rodadaId")
     List<PartidaMataMataEntity> findByRodadaId(@Param("rodadaId") Long rodadaId);
 
+    List<PartidaMataMataEntity> findByEdicaoAndOrdemFase(EdicaoCampeonatoEntity edicao, Integer ordemFase);
+
+    boolean existsByEdicaoAndOrdemFase(EdicaoCampeonatoEntity edicao, Integer ordemFase);
 }

@@ -59,7 +59,7 @@ public class GerenciarVinculoClassificacaoUseCase {
 
         VinculoClassificacaoEntity vinculo = vinculoRepository.save(
                 new VinculoClassificacaoEntity(origem, destino, request.quantidade(),
-                        request.sentido(), request.criterio()));
+                        request.sentido(), request.criterio(), request.faseDeEntradaOrdem()));
 
         return toResponse(vinculo);
     }
@@ -91,7 +91,8 @@ public class GerenciarVinculoClassificacaoUseCase {
                 vinculo.getCampeonatoDestino().getNome(),
                 vinculo.getQuantidade(),
                 vinculo.getSentido(),
-                vinculo.getCriterio()
+                vinculo.getCriterio(),
+                vinculo.getFaseDeEntradaOrdem()
         );
     }
 }

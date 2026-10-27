@@ -32,6 +32,9 @@ public class PartidaMataMataEntity implements PartidaSimulavel {
     @JoinColumn(name = "clube_b_id")
     private ClubeEntity clubeB;
 
+    private Integer ordemFase;
+    private Integer confronto;
+
     private int golsClubeA;
     private int golsClubeB;
     private boolean jogoDeVolta;
@@ -101,6 +104,22 @@ public class PartidaMataMataEntity implements PartidaSimulavel {
 
     public void setFase(FaseMataMata fase) {
         this.fase = fase;
+    }
+
+    public Integer getOrdemFase() {
+        return ordemFase;
+    }
+
+    public void setOrdemFase(Integer ordemFase) {
+        this.ordemFase = ordemFase;
+    }
+
+    public Integer getConfronto() {
+        return confronto;
+    }
+
+    public void setConfronto(Integer confronto) {
+        this.confronto = confronto;
     }
 
     public ClubeEntity getClubeA() {

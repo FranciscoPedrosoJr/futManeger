@@ -27,19 +27,22 @@ public class GerarRodadasUseCase {
     private final RodadaRepository rodadaRepository;
     private final PartidaRepository partidaRepository;
     private final GerarRodadasMataMataUseCase gerarRodadasMataMataUseCase;
+    private final GerarMataMataConfiguravelUseCase gerarMataMataConfiguravelUseCase;
 
     public GerarRodadasUseCase(
             EdicaoCampeonatoRepository edicaoRepository,
             ClubeParticipanteRepository participanteRepository,
             RodadaRepository rodadaRepository,
             PartidaRepository partidaRepository,
-            GerarRodadasMataMataUseCase gerarRodadasMataMataUseCase
+            GerarRodadasMataMataUseCase gerarRodadasMataMataUseCase,
+            GerarMataMataConfiguravelUseCase gerarMataMataConfiguravelUseCase
     ) {
         this.edicaoRepository = edicaoRepository;
         this.participanteRepository = participanteRepository;
         this.rodadaRepository = rodadaRepository;
         this.partidaRepository = partidaRepository;
         this.gerarRodadasMataMataUseCase = gerarRodadasMataMataUseCase;
+        this.gerarMataMataConfiguravelUseCase = gerarMataMataConfiguravelUseCase;
     }
 
     @Transactional
@@ -51,6 +54,11 @@ public class GerarRodadasUseCase {
 
         if (!edicao.getRodadas().isEmpty()) {
             throw new DadosInvalidosException("Rodadas já foram geradas para esta edição do campeonato");
+        }
+
+        if (gerarMataMataConfiguravelUseCase.possuiFasesConfiguradas(campeonato)) {
+            gerarMataMataConfiguravelUseCase.gerarPrimeiraFase(edicao);
+            return new GerarRodadasResponseDTO(edicao.getId(), 1, 0, null);
         }
 
         if (campeonato.getTipo() == null) {
