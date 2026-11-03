@@ -20,7 +20,7 @@ public class BuscarRodadasNaoFinalizadasUseCase {
                         rodada.getId(),
                         rodada.getNumero(),
                         rodada.isFinalizada(),
-                        rodada.getCampeonato().getId()
+                        rodada.getEdicao().getId()
                 ))
                 .toList();
     }

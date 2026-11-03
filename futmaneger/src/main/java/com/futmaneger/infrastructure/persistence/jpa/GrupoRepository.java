@@ -1,6 +1,6 @@
 package com.futmaneger.infrastructure.persistence.jpa;
 
-import com.futmaneger.infrastructure.persistence.entity.CampeonatoEntity;
+import com.futmaneger.infrastructure.persistence.entity.EdicaoCampeonatoEntity;
 import com.futmaneger.infrastructure.persistence.entity.GrupoEntity;
 import java.util.List;
 import java.util.Optional;
@@ -8,9 +8,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface GrupoRepository extends JpaRepository<GrupoEntity, Long> {
 
-    List<GrupoEntity> findByCampeonato(CampeonatoEntity campeonato);
+    List<GrupoEntity> findByEdicao(EdicaoCampeonatoEntity edicao);
 
-    boolean existsByCampeonato(CampeonatoEntity campeonato);
+    boolean existsByEdicao(EdicaoCampeonatoEntity edicao);
 
-    Optional<GrupoEntity> findByClubes_IdAndCampeonato_Id(Long clubeId, Long campeonatoId);
+    Optional<GrupoEntity> findByClubes_IdAndEdicao_Id(Long clubeId, Long edicaoId);
 }

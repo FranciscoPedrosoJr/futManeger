@@ -7,12 +7,16 @@ import com.futmaneger.application.dto.SimulacaoResponseDTO;
 import com.futmaneger.application.dto.JogadorPartidaResponseDTO;
 import com.futmaneger.application.exception.DadosInvalidosException;
 import com.futmaneger.application.exception.NaoEncontradoException;
+import com.futmaneger.application.usecase.financeiro.BilheteriaService;
+import com.futmaneger.application.usecase.financeiro.PremiacaoService;
+import com.futmaneger.application.usecase.financeiro.SalarioService;
+import com.futmaneger.application.usecase.rodadas.GerarMataMataConfiguravelUseCase;
 import com.futmaneger.application.usecase.rodadas.GerarRodadasMataMataUseCase;
 import com.futmaneger.domain.entity.Jogador;
 import com.futmaneger.domain.entity.PartidaSimulavel;
 import com.futmaneger.domain.repository.JogadorRepository;
 import com.futmaneger.infrastructure.persistence.entity.*;
-import com.futmaneger.infrastructure.persistence.jpa.CampeonatoRepository;
+import com.futmaneger.infrastructure.persistence.jpa.EdicaoCampeonatoRepository;
 import com.futmaneger.infrastructure.persistence.jpa.ClubeParticipanteRepository;
 import com.futmaneger.infrastructure.persistence.jpa.EscalacaoRepository;
 import com.futmaneger.infrastructure.persistence.jpa.GrupoRepository;
@@ -35,12 +39,16 @@ public class SimularRodadaUseCase {
     private final EscalacaoRepository escalacaoRepository;
     private final JogadorRepository jogadorRepository;
     private final TabelaCampeonatoRepository tabelaCampeonato;
-    private final CampeonatoRepository campeonatoRepository;
+    private final EdicaoCampeonatoRepository edicaoRepository;
     private final GerarRodadasMataMataUseCase gerarRodadasMataMataUseCase;
     private final ClubeParticipanteRepository clubeParticipanteRepository;
     private final GrupoRepository grupoRepository;
     private final PartidaMataMataRepository partidaMataMataRepository;
     private final EstatisticaJogadorPartidaRepository estatisticaJogadorPartidaRepository;
+    private final GerarMataMataConfiguravelUseCase gerarMataMataConfiguravelUseCase;
+    private final PremiacaoService premiacaoService;
+    private final BilheteriaService bilheteriaService;
+    private final SalarioService salarioService;
 
     public SimularRodadaUseCase(
             RodadaRepository rodadaRepository,
@@ -48,44 +56,57 @@ public class SimularRodadaUseCase {
             EscalacaoRepository escalacaoRepository,
             JogadorRepository jogadorRepository,
             TabelaCampeonatoRepository tabelaCampeonato,
-            CampeonatoRepository campeonatoRepository,
+            EdicaoCampeonatoRepository edicaoRepository,
             GerarRodadasMataMataUseCase gerarRodadasMataMataUseCase,
             ClubeParticipanteRepository clubeParticipanteRepository,
             GrupoRepository grupoRepository,
             PartidaMataMataRepository partidaMataMataRepository,
-            EstatisticaJogadorPartidaRepository estatisticaJogadorPartidaRepository
+            EstatisticaJogadorPartidaRepository estatisticaJogadorPartidaRepository,
+            GerarMataMataConfiguravelUseCase gerarMataMataConfiguravelUseCase,
+            PremiacaoService premiacaoService,
+            BilheteriaService bilheteriaService,
+            SalarioService salarioService
     ) {
         this.rodadaRepository = rodadaRepository;
         this.partidaRepository = partidaRepository;
         this.escalacaoRepository = escalacaoRepository;
         this.jogadorRepository = jogadorRepository;
         this.tabelaCampeonato = tabelaCampeonato;
-        this.campeonatoRepository = campeonatoRepository;
+        this.edicaoRepository = edicaoRepository;
         this.gerarRodadasMataMataUseCase = gerarRodadasMataMataUseCase;
         this.clubeParticipanteRepository = clubeParticipanteRepository;
         this.grupoRepository = grupoRepository;
         this.partidaMataMataRepository = partidaMataMataRepository;
         this.estatisticaJogadorPartidaRepository = estatisticaJogadorPartidaRepository;
+        this.gerarMataMataConfiguravelUseCase = gerarMataMataConfiguravelUseCase;
+        this.premiacaoService = premiacaoService;
+        this.bilheteriaService = bilheteriaService;
+        this.salarioService = salarioService;
     }
 
     @Transactional
-    public List<SimulacaoResponseDTO> executar(Long campeonatoId, Long rodadaId) {
-        CampeonatoEntity campeonato = campeonatoRepository.findById(campeonatoId)
-                .orElseThrow(() -> new NaoEncontradoException("Campeonato não encontrado"));
+    public List<SimulacaoResponseDTO> executar(Long edicaoId, Long rodadaId) {
+        EdicaoCampeonatoEntity edicao = edicaoRepository.findById(edicaoId)
+                .orElseThrow(() -> new NaoEncontradoException("Edição de campeonato não encontrada"));
 
-        RodadaEntity rodada = rodadaRepository.findByIdAndCampeonatoIdWithFetch(rodadaId, campeonatoId)
+        CampeonatoEntity campeonato = edicao.getCampeonato();
+
+        if (gerarMataMataConfiguravelUseCase.possuiFasesConfiguradas(campeonato)) {
+            return executarFaseConfiguravel(edicao, rodadaId);
+        }
+
+        RodadaEntity rodada = rodadaRepository.findByIdAndEdicaoIdWithFetch(rodadaId, edicaoId)
                 .orElseThrow(() -> new NaoEncontradoException("Rodada não encontrada com id: " + rodadaId));
 
         List<? extends PartidaSimulavel> partidas;
-        partidas = partidaRepository.buscarPorCampeonatoERodada(campeonato, Math.toIntExact(rodadaId));
-        List<GrupoEntity> grupo = grupoRepository.findByCampeonato(campeonato);
+        partidas = partidaRepository.buscarPorEdicaoERodada(edicao, Math.toIntExact(rodadaId));
 
-        if (Boolean.TRUE.equals(campeonato.getMataMataIniciado())) {
+        if (Boolean.TRUE.equals(edicao.getMataMataIniciado())) {
             partidas = partidaMataMataRepository.findByRodada(rodada);
         } else if (partidas.isEmpty()){
             partidas = rodada.getPartidas();
         } if (partidas.isEmpty()) {
-            partidas = partidaRepository.buscarPorCampeonatoERodada(campeonato, Math.toIntExact(rodadaId));
+            partidas = partidaRepository.buscarPorEdicaoERodada(edicao, Math.toIntExact(rodadaId));
         } if (partidas.isEmpty()){
             throw new NaoEncontradoException("Nenhuma partida cadastrada");
         }
@@ -101,7 +122,7 @@ public class SimularRodadaUseCase {
             int golsMandante = calcularGols(escalacaoMandante, escalacaoVisitante);
             int golsVisitante = calcularGols(escalacaoVisitante, escalacaoMandante);
 
-            if (Boolean.TRUE.equals(campeonato.getMataMataIniciado()) && golsMandante == golsVisitante) {
+            if (Boolean.TRUE.equals(edicao.getMataMataIniciado()) && golsMandante == golsVisitante) {
                 if (new Random().nextBoolean()) {
                     golsMandante += 1 + new Random().nextInt(2);
                 } else {
@@ -126,18 +147,20 @@ public class SimularRodadaUseCase {
 
             salvarEstatisticas(partida, detalhes);
 
+            bilheteriaService.registrarBilheteria(partida.getMandante(), partida.getVisitante());
+
             Long grupoDefinido = null;
 
             if (MATA_MATA.equals(campeonato.getTipo())){
-                    GrupoEntity grupoClube = grupoRepository.findByClubes_IdAndCampeonato_Id(
+                    GrupoEntity grupoClube = grupoRepository.findByClubes_IdAndEdicao_Id(
                             partida.getMandante().getId(),
-                            campeonato.getId()
+                            edicao.getId()
                     ).orElse(null);
 
                     if (grupoClube == null) {
-                        grupoClube = grupoRepository.findByClubes_IdAndCampeonato_Id(
+                        grupoClube = grupoRepository.findByClubes_IdAndEdicao_Id(
                                 partida.getVisitante().getId(),
-                                campeonato.getId()
+                                edicao.getId()
                         ).orElse(null);
                     }
 
@@ -145,18 +168,18 @@ public class SimularRodadaUseCase {
                         grupoDefinido = grupoClube.getId();
                     } else {
                         throw new DadosInvalidosException(
-                                "Não foi possível encontrar o grupo para o clube nesta partida (campeonato: "
-                                        + campeonato.getId() + ")"
+                                "Não foi possível encontrar o grupo para o clube nesta partida (edição: "
+                                        + edicao.getId() + ")"
                         );
                     }
                 }
 
-            atualizarTabela(campeonato, partida.getMandante(), golsMandante, golsVisitante,
+            atualizarTabela(edicao, partida.getMandante(), golsMandante, golsVisitante,
                     PartidaEntity.Resultado.valueOf(resultado), true, grupoDefinido);
-            atualizarTabela(campeonato, partida.getVisitante(), golsVisitante, golsMandante,
+            atualizarTabela(edicao, partida.getVisitante(), golsVisitante, golsMandante,
                     PartidaEntity.Resultado.valueOf(resultado), false, grupoDefinido);
 
-            if(campeonato.getMataMataIniciado() == false){
+            if(edicao.getMataMataIniciado() == false){
                 salvarPartida(partida.getId(), golsMandante, golsVisitante, resultado);
             }
 
@@ -174,14 +197,92 @@ public class SimularRodadaUseCase {
         rodada.setFinalizada(true);
         rodadaRepository.save(rodada);
 
-        if (isUltimaRodada(rodada, campeonato) && PONTOS_CORRIDOS.equals(campeonato.getTipo())) {
-            definirCampeao(campeonato);
-            campeonato.setEmAndamento(false);
-        } else if (MATA_MATA.equals(campeonato.getTipo()) && isUltimaRodada(rodada, campeonato) &&
-                campeonato.getFaseAtualMataMata() != PartidaMataMataEntity.FaseMataMata.FINAL) {
-            gerarRodadasMataMataUseCase.gerarMataMata(campeonato);
-        } else if (campeonato.getFaseAtualMataMata() == PartidaMataMataEntity.FaseMataMata.FINAL){
-            definirCampeao(campeonato);
+        cobrarSalariosSeMes(edicao, rodada);
+
+        if (isUltimaRodada(rodada, edicao) && PONTOS_CORRIDOS.equals(campeonato.getTipo())) {
+            definirCampeao(edicao);
+            edicao.setEmAndamento(false);
+        } else if (MATA_MATA.equals(campeonato.getTipo()) && isUltimaRodada(rodada, edicao) &&
+                edicao.getFaseAtualMataMata() != PartidaMataMataEntity.FaseMataMata.FINAL) {
+            gerarRodadasMataMataUseCase.gerarMataMata(edicao);
+        } else if (edicao.getFaseAtualMataMata() == PartidaMataMataEntity.FaseMataMata.FINAL){
+            definirCampeao(edicao);
+        }
+
+        return resultados;
+    }
+
+    private List<SimulacaoResponseDTO> executarFaseConfiguravel(EdicaoCampeonatoEntity edicao, Long rodadaId) {
+        RodadaEntity rodada = rodadaRepository.findByIdAndEdicaoIdWithFetch(rodadaId, edicao.getId())
+                .orElseThrow(() -> new NaoEncontradoException("Rodada não encontrada com id: " + rodadaId));
+
+        List<PartidaMataMataEntity> partidas = partidaMataMataRepository.findByRodada(rodada);
+        if (partidas.isEmpty()) {
+            throw new NaoEncontradoException("Nenhuma partida cadastrada para esta rodada");
+        }
+
+        List<SimulacaoResponseDTO> resultados = new ArrayList<>();
+
+        for (PartidaMataMataEntity partida : partidas) {
+            if (partida.isFinalizada()) {
+                continue;
+            }
+
+            EscalacaoEntity escalacaoMandante = buscarOuGerarEscalacao(partida.getMandante());
+            EscalacaoEntity escalacaoVisitante = buscarOuGerarEscalacao(partida.getVisitante());
+
+            int golsMandante = calcularGols(escalacaoMandante, escalacaoVisitante);
+            int golsVisitante = calcularGols(escalacaoVisitante, escalacaoMandante);
+
+            DetalhesPartida detalhes = gerarDetalhes(escalacaoMandante, escalacaoVisitante, golsMandante, golsVisitante);
+            String resultado = determinarResultado(golsMandante, golsVisitante).name();
+
+            partida.setGolsMandante(golsMandante);
+            partida.setGolsVisitante(golsVisitante);
+
+            if (golsMandante == golsVisitante) {
+                int penaltisA = 3 + new Random().nextInt(3);
+                int penaltisB;
+                do {
+                    penaltisB = 3 + new Random().nextInt(3);
+                } while (penaltisB == penaltisA);
+                partida.setFoiParaPenaltis(true);
+                partida.setGolsPenaltisA(penaltisA);
+                partida.setGolsPenaltisB(penaltisB);
+            }
+
+            partida.setFinalizada(true);
+            partidaMataMataRepository.save(partida);
+            salvarEstatisticas(partida, detalhes);
+
+            bilheteriaService.registrarBilheteria(partida.getMandante(), partida.getVisitante());
+
+            resultados.add(new SimulacaoResponseDTO(
+                    partida.getMandante().getNome(),
+                    golsMandante,
+                    partida.getVisitante().getNome(),
+                    golsVisitante,
+                    resultado,
+                    detalhes.golsMandante(), detalhes.golsVisitante(), detalhes.jogadores(), detalhes.melhorJogador(),
+                    detalhes.cartoesAmarelos(), detalhes.cartoesVermelhos()
+            ));
+        }
+
+        rodada.setFinalizada(true);
+        rodadaRepository.save(rodada);
+
+        cobrarSalariosSeMes(edicao, rodada);
+
+        if (gerarMataMataConfiguravelUseCase.existeProximaFase(edicao)) {
+            gerarMataMataConfiguravelUseCase.gerarProximaFase(edicao);
+        } else {
+            ClubeEntity campeao = gerarMataMataConfiguravelUseCase.campeao(edicao);
+            if (campeao != null) {
+                edicao.setCampeao(campeao);
+                edicao.setEmAndamento(false);
+                edicaoRepository.save(edicao);
+                premiacaoService.premiar(edicao.getCampeonato(), campeao, null);
+            }
         }
 
         return resultados;
@@ -287,7 +388,7 @@ public class SimularRodadaUseCase {
     }
 
     private void atualizarTabela(
-            CampeonatoEntity campeonato,
+            EdicaoCampeonatoEntity edicao,
             ClubeEntity clube,
             int golsPro,
             int golsContra,
@@ -295,13 +396,15 @@ public class SimularRodadaUseCase {
             boolean isMandante,
             Long grupo
     ) {
+        CampeonatoEntity campeonato = edicao.getCampeonato();
+
         TabelaCampeonatoEntity tabela = tabelaCampeonato
-                .findByCampeonatoIdAndClubeId(campeonato.getId(), clube.getId())
+                .findByEdicaoIdAndClubeId(edicao.getId(), clube.getId())
                 .orElse(null);
 
         if (tabela == null) {
             tabela = new TabelaCampeonatoEntity();
-            tabela.setCampeonato(campeonato);
+            tabela.setEdicao(edicao);
             tabela.setClube(clube);
             tabela.setJogos(0);
             tabela.setPontos(0);
@@ -318,27 +421,20 @@ public class SimularRodadaUseCase {
         tabela.setGolsContra(tabela.getGolsContra() + golsContra);
         tabela.setSaldoGols(tabela.getSaldoGols() + (golsPro - golsContra));
 
-        Long grupoDefinido = null;
+        Long grupoDefinido;
 
         if (MATA_MATA.equals(campeonato.getTipo())){
-            GrupoEntity grupoClube = grupoRepository.findByClubes_IdAndCampeonato_Id(
+            GrupoEntity grupoClube = grupoRepository.findByClubes_IdAndEdicao_Id(
                     tabela.getClube().getId(),
-                    campeonato.getId()
+                    edicao.getId()
             ).orElse(null);
-
-            if (grupoClube == null) {
-                grupoClube = grupoRepository.findByClubes_IdAndCampeonato_Id(
-                        tabela.getClube().getId(),
-                        campeonato.getId()
-                ).orElse(null);
-            }
 
             if (grupoClube != null) {
                 grupoDefinido = grupoClube.getId();
             } else {
                 throw new DadosInvalidosException(
-                        "Não foi possível encontrar o grupo para o clube nesta partida (campeonato: "
-                                + campeonato.getId() + ")"
+                        "Não foi possível encontrar o grupo para o clube nesta partida (edição: "
+                                + edicao.getId() + ")"
                 );
             }
             tabela.setGrupo(grupoDefinido);
@@ -371,21 +467,32 @@ public class SimularRodadaUseCase {
         tabelaCampeonato.save(tabela);
     }
 
-    private void definirCampeao(CampeonatoEntity campeonato) {
+    private void definirCampeao(EdicaoCampeonatoEntity edicao) {
         List<TabelaCampeonatoEntity> classificacao = tabelaCampeonato
-                .findByCampeonatoOrderByPontosDescSaldoGolsDescGolsProDesc(campeonato);
+                .findByEdicaoOrderByPontosDescSaldoGolsDescGolsProDesc(edicao);
 
         if (!classificacao.isEmpty()) {
             ClubeEntity campeao = classificacao.get(0).getClube();
-            campeonato.setCampeao(campeao);
-            campeonato.setEmAndamento(false);
-            campeonatoRepository.save(campeonato);
+            ClubeEntity vice = classificacao.size() > 1 ? classificacao.get(1).getClube() : null;
+            edicao.setCampeao(campeao);
+            edicao.setEmAndamento(false);
+            edicaoRepository.save(edicao);
+            premiacaoService.premiar(edicao.getCampeonato(), campeao, vice);
         }
     }
 
-    private boolean isUltimaRodada(RodadaEntity rodada, CampeonatoEntity campeonato) {
-        int totalRodadas = campeonato.getRodadas().size();
+    private boolean isUltimaRodada(RodadaEntity rodada, EdicaoCampeonatoEntity edicao) {
+        int totalRodadas = edicao.getRodadas().size();
         return rodada.getNumero() == totalRodadas;
+    }
+
+    private void cobrarSalariosSeMes(EdicaoCampeonatoEntity edicao, RodadaEntity rodada) {
+        if (rodada.getNumero() <= 0 || rodada.getNumero() % 6 != 0) {
+            return;
+        }
+        for (ClubeParticipanteEntity participante : clubeParticipanteRepository.findByEdicao(edicao)) {
+            salarioService.cobrarSalarios(participante.getClube());
+        }
     }
 
     private void salvarPartida(Long partidaId,

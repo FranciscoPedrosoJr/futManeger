@@ -1,4 +1,4 @@
 package com.futmaneger.application.dto;
 
-public record GerarRodadasRequestDTO(Long campeonatoId) {
+public record GerarRodadasRequestDTO(Long edicaoId) {
 }

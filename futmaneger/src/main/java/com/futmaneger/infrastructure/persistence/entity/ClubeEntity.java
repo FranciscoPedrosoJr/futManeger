@@ -1,5 +1,6 @@
 package com.futmaneger.infrastructure.persistence.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -22,7 +23,13 @@ public class ClubeEntity {
     private String estado;
 
     private String pais;
+
+    @Column(name = "eh_selecao", nullable = false, columnDefinition = "boolean default false")
+    private boolean ehSelecao;
+
     private BigDecimal saldo = BigDecimal.ZERO;
+
+    private BigDecimal precoIngresso = BigDecimal.ZERO;
 
     @ManyToOne
     @JoinColumn(name = "tecnico_id")
@@ -33,9 +40,14 @@ public class ClubeEntity {
     }
 
     public ClubeEntity(String nome, String estado, String pais) {
+        this(nome, estado, pais, false);
+    }
+
+    public ClubeEntity(String nome, String estado, String pais, boolean ehSelecao) {
         this.nome = nome;
         this.estado = estado;
         this.pais = pais;
+        this.ehSelecao = ehSelecao;
         this.saldo = new BigDecimal("50000000");
     }
 
@@ -68,6 +80,10 @@ public class ClubeEntity {
 
     public void setPais(String pais) { this.pais = pais; }
 
+    public boolean isEhSelecao() { return ehSelecao; }
+
+    public void setEhSelecao(boolean ehSelecao) { this.ehSelecao = ehSelecao; }
+
     public TecnicoEntity getTecnico() { return tecnico; }
 
     public void setTecnico(TecnicoEntity tecnico) { this.tecnico = tecnico; }
@@ -76,6 +92,14 @@ public class ClubeEntity {
 
     public BigDecimal getSaldo() {
         return saldo;
+    }
+
+    public BigDecimal getPrecoIngresso() {
+        return precoIngresso;
+    }
+
+    public void setPrecoIngresso(BigDecimal precoIngresso) {
+        this.precoIngresso = precoIngresso;
     }
 
     public Long getTecnicoId() {

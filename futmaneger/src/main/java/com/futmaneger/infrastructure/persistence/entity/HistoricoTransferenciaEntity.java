@@ -23,11 +23,15 @@ public class HistoricoTransferenciaEntity {
     private BigDecimal valor;
     private LocalDateTime data;
 
+    public UUID getId() {
+        return id;
+    }
+
     public void setJogadorId(Long jogadorId) {
         this.jogadorId = jogadorId;
     }
 
-    public Long getJogadorId(Long jogadorId){
+    public Long getJogadorId() {
         return jogadorId;
     }
 
@@ -35,7 +39,7 @@ public class HistoricoTransferenciaEntity {
         this.clubeVendedorId = clubeVendedorId;
     }
 
-    public Long getClubeVendedorId(Long clubeVendedorId){
+    public Long getClubeVendedorId() {
         return clubeVendedorId;
     }
 
@@ -43,7 +47,7 @@ public class HistoricoTransferenciaEntity {
         this.clubeCompradorId = clubeCompradorId;
     }
 
-    public Long getClubeCompradorIdId(Long clubeCompradorId){
+    public Long getClubeCompradorId() {
         return clubeCompradorId;
     }
 
@@ -51,7 +55,7 @@ public class HistoricoTransferenciaEntity {
         this.valor = valor;
     }
 
-    public BigDecimal getValor(BigDecimal valor){
+    public BigDecimal getValor() {
         return valor;
     }
 
@@ -59,7 +63,7 @@ public class HistoricoTransferenciaEntity {
         this.data = data;
     }
 
-    public LocalDateTime getData(LocalDateTime data){
+    public LocalDateTime getData() {
         return data;
     }
 }

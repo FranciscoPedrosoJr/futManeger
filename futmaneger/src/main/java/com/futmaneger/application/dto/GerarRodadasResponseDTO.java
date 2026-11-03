@@ -3,7 +3,7 @@ package com.futmaneger.application.dto;
 import java.util.List;
 
 public record GerarRodadasResponseDTO(
-        Long campeonatoId,
+        Long edicaoId,
         int totalRodadas,
         int totalPartidas,
 

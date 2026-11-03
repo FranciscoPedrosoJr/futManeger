@@ -13,15 +13,15 @@ public class BuscarRodadasPorCampeonatoUseCase {
         this.rodadaRepository = rodadaRepository;
     }
 
-    public List<RodadaResponseDTO> executar(Long campeonatoId) {
+    public List<RodadaResponseDTO> executar(Long edicaoId) {
         return rodadaRepository
-                .findByCampeonatoIdAndFinalizadaFalseOrderByNumero(campeonatoId)
+                .findByEdicaoIdAndFinalizadaFalseOrderByNumero(edicaoId)
                 .stream()
                 .map(rodada -> new RodadaResponseDTO(
                         rodada.getId(),
                         rodada.getNumero(),
                         rodada.isFinalizada(),
-                        rodada.getCampeonato().getId()
+                        rodada.getEdicao().getId()
                 ))
                 .toList();
     }

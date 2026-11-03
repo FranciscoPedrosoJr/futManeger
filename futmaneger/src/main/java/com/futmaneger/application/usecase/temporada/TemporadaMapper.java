@@ -2,7 +2,7 @@ package com.futmaneger.application.usecase.temporada;
 
 import com.futmaneger.application.dto.TemporadaCampeonatoResponseDTO;
 import com.futmaneger.application.dto.TemporadaResponseDTO;
-import com.futmaneger.infrastructure.persistence.entity.CampeonatoEntity;
+import com.futmaneger.infrastructure.persistence.entity.EdicaoCampeonatoEntity;
 import com.futmaneger.infrastructure.persistence.entity.TemporadaEntity;
 import java.util.List;
 
@@ -12,8 +12,8 @@ final class TemporadaMapper {
     }
 
     static TemporadaResponseDTO toResponse(TemporadaEntity temporada) {
-        List<TemporadaCampeonatoResponseDTO> campeonatos = temporada.getCampeonatos().stream()
-                .map(TemporadaMapper::toCampeonatoResponse)
+        List<TemporadaCampeonatoResponseDTO> edicoes = temporada.getEdicoes().stream()
+                .map(TemporadaMapper::toEdicaoResponse)
                 .toList();
 
         return new TemporadaResponseDTO(
@@ -23,15 +23,16 @@ final class TemporadaMapper {
                 temporada.getEstado().name(),
                 temporada.getDataInicio(),
                 temporada.getDataEncerramento(),
-                campeonatos
+                edicoes
         );
     }
 
-    private static TemporadaCampeonatoResponseDTO toCampeonatoResponse(CampeonatoEntity campeonato) {
+    private static TemporadaCampeonatoResponseDTO toEdicaoResponse(EdicaoCampeonatoEntity edicao) {
         return new TemporadaCampeonatoResponseDTO(
-                campeonato.getId(),
-                campeonato.getNome(),
-                campeonato.getEmAndamento()
+                edicao.getId(),
+                edicao.getCampeonato().getId(),
+                edicao.getCampeonato().getNome(),
+                edicao.getEmAndamento()
         );
     }
 }

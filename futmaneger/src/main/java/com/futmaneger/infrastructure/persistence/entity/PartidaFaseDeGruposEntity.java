@@ -13,7 +13,7 @@ public class PartidaFaseDeGruposEntity {
     private Long id;
 
     @ManyToOne
-    private CampeonatoEntity campeonato;
+    private EdicaoCampeonatoEntity edicao;
 
     private int rodada;
 
@@ -39,8 +39,12 @@ public class PartidaFaseDeGruposEntity {
         this.id = id;
     }
 
-    public void setCampeonato(CampeonatoEntity campeonato) {
-        this.campeonato = campeonato;
+    public void setEdicao(EdicaoCampeonatoEntity edicao) {
+        this.edicao = edicao;
+    }
+
+    public EdicaoCampeonatoEntity getEdicao() {
+        return edicao;
     }
 
     public void setRodada(int rodada) {

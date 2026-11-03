@@ -33,12 +33,12 @@ public class SimulacaoController {
         return ResponseEntity.ok(simulacaoUseCase.simular(request));
     }
 
-    @PostMapping("/{campeonatoId}/rodadas/{rodadaId}/simulacoes")
+    @PostMapping("/edicoes/{edicaoId}/rodadas/{rodadaId}/simulacoes")
     public ResponseEntity<List<SimulacaoResponseDTO>> simularRodada(
-            @PathVariable Long campeonatoId,
+            @PathVariable Long edicaoId,
             @PathVariable Long rodadaId
     ) {
-        List<SimulacaoResponseDTO> resultados = simularRodadaUseCase.executar(campeonatoId, rodadaId);
+        List<SimulacaoResponseDTO> resultados = simularRodadaUseCase.executar(edicaoId, rodadaId);
         return ResponseEntity.ok(resultados);
     }
 }

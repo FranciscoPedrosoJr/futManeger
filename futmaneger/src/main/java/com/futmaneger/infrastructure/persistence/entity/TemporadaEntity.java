@@ -50,11 +50,12 @@ public class TemporadaEntity {
     private LocalDate dataEncerramento;
 
     /**
-     * Campeonatos disputados na temporada. Uma temporada pode possuir vários
-     * campeonatos e cada campeonato pertence a uma única temporada.
+     * Edições de campeonato disputadas na temporada. Uma temporada pode possuir
+     * várias edições (cada uma é um campeonato/molde disputado nesta temporada),
+     * e o mesmo campeonato pode ser reutilizado em temporadas diferentes.
      */
     @OneToMany(mappedBy = "temporada", cascade = CascadeType.ALL)
-    private List<CampeonatoEntity> campeonatos = new ArrayList<>();
+    private List<EdicaoCampeonatoEntity> edicoes = new ArrayList<>();
 
     public TemporadaEntity() {
     }
@@ -94,20 +95,20 @@ public class TemporadaEntity {
      *         campeonatos em andamento.
      */
     public boolean finalizarSeConcluida() {
-        if (campeonatos.isEmpty()) {
+        if (edicoes.isEmpty()) {
             return false;
         }
-        boolean todosConcluidos = campeonatos.stream()
-                .noneMatch(CampeonatoEntity::getEmAndamento);
+        boolean todosConcluidos = edicoes.stream()
+                .noneMatch(EdicaoCampeonatoEntity::getEmAndamento);
         if (todosConcluidos) {
             this.estado = EstadoTemporada.FINALIZADA;
         }
         return todosConcluidos;
     }
 
-    public void adicionarCampeonato(CampeonatoEntity campeonato) {
-        campeonato.setTemporada(this);
-        this.campeonatos.add(campeonato);
+    public void adicionarEdicao(EdicaoCampeonatoEntity edicao) {
+        edicao.setTemporada(this);
+        this.edicoes.add(edicao);
     }
 
     public Long getId() {
@@ -158,12 +159,12 @@ public class TemporadaEntity {
         this.dataEncerramento = dataEncerramento;
     }
 
-    public List<CampeonatoEntity> getCampeonatos() {
-        return campeonatos;
+    public List<EdicaoCampeonatoEntity> getEdicoes() {
+        return edicoes;
     }
 
-    public void setCampeonatos(List<CampeonatoEntity> campeonatos) {
-        this.campeonatos = campeonatos;
+    public void setEdicoes(List<EdicaoCampeonatoEntity> edicoes) {
+        this.edicoes = edicoes;
     }
 
     public enum EstadoTemporada {

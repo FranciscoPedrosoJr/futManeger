@@ -26,8 +26,8 @@ public class RodadaEntity {
     private boolean finalizada;
 
     @ManyToOne
-    @JoinColumn(name = "campeonato_id")
-    private CampeonatoEntity campeonato;
+    @JoinColumn(name = "edicao_id")
+    private EdicaoCampeonatoEntity edicao;
 
     @OneToMany(mappedBy = "rodada", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<PartidaEntity> partidas = new ArrayList<>();
@@ -36,8 +36,8 @@ public class RodadaEntity {
         this.numero = numero;
     }
 
-    public void setCampeonato(CampeonatoEntity campeonato) {
-        this.campeonato = campeonato;
+    public void setEdicao(EdicaoCampeonatoEntity edicao) {
+        this.edicao = edicao;
     }
 
     public void setFinalizada(boolean finalizada) {
@@ -46,8 +46,8 @@ public class RodadaEntity {
 
     public List<PartidaEntity> getPartidas() { return partidas; }
 
-    public CampeonatoEntity getCampeonato() {
-        return campeonato;
+    public EdicaoCampeonatoEntity getEdicao() {
+        return edicao;
     }
 
     public int getNumero() { return numero;}

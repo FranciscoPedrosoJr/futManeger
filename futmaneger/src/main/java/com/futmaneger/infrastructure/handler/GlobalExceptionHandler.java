@@ -1,6 +1,7 @@
 package com.futmaneger.infrastructure.handler;
 
 import com.futmaneger.application.exception.AutenticacaoException;
+import com.futmaneger.application.exception.CampeonatoNaoRealizadoException;
 import com.futmaneger.application.exception.DadosInvalidosException;
 import com.futmaneger.application.exception.NaoEncontradoException;
 import com.futmaneger.application.exception.NenhumClubeCadastradoException;
@@ -50,6 +51,17 @@ public class GlobalExceptionHandler {
     public ProblemDetail handleDadosInvalidosException(DadosInvalidosException ex, jakarta.servlet.http.HttpServletRequest request) {
         ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
         problemDetail.setTitle("Erro de validação");
+        problemDetail.setDetail(ex.getMessage());
+        problemDetail.setInstance(URI.create(request.getRequestURI()));
+        problemDetail.setProperty("timestamp", OffsetDateTime.now());
+
+        return problemDetail;
+    }
+
+    @ExceptionHandler(CampeonatoNaoRealizadoException.class)
+    public ProblemDetail handleCampeonatoNaoRealizadoException(CampeonatoNaoRealizadoException ex, jakarta.servlet.http.HttpServletRequest request) {
+        ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.UNPROCESSABLE_ENTITY);
+        problemDetail.setTitle("Campeonato não realizado");
         problemDetail.setDetail(ex.getMessage());
         problemDetail.setInstance(URI.create(request.getRequestURI()));
         problemDetail.setProperty("timestamp", OffsetDateTime.now());

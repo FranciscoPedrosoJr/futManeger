@@ -18,8 +18,8 @@ public class PartidaMataMataEntity implements PartidaSimulavel {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "campeonato_id")
-    private CampeonatoEntity campeonato;
+    @JoinColumn(name = "edicao_id")
+    private EdicaoCampeonatoEntity edicao;
 
     @Enumerated(EnumType.STRING)
     private FaseMataMata fase;
@@ -31,6 +31,9 @@ public class PartidaMataMataEntity implements PartidaSimulavel {
     @ManyToOne
     @JoinColumn(name = "clube_b_id")
     private ClubeEntity clubeB;
+
+    private Integer ordemFase;
+    private Integer confronto;
 
     private int golsClubeA;
     private int golsClubeB;
@@ -86,13 +89,13 @@ public class PartidaMataMataEntity implements PartidaSimulavel {
         this.id = id;
     }
 
-    public CampeonatoEntity getCampeonato() {
-        return campeonato;
+    public EdicaoCampeonatoEntity getEdicao() {
+        return edicao;
     }
 
-    public CampeonatoEntity setCampeonato(CampeonatoEntity campeonato) {
-        this.campeonato = campeonato;
-        return campeonato;
+    public EdicaoCampeonatoEntity setEdicao(EdicaoCampeonatoEntity edicao) {
+        this.edicao = edicao;
+        return edicao;
     }
 
     public FaseMataMata getFase() {
@@ -101,6 +104,22 @@ public class PartidaMataMataEntity implements PartidaSimulavel {
 
     public void setFase(FaseMataMata fase) {
         this.fase = fase;
+    }
+
+    public Integer getOrdemFase() {
+        return ordemFase;
+    }
+
+    public void setOrdemFase(Integer ordemFase) {
+        this.ordemFase = ordemFase;
+    }
+
+    public Integer getConfronto() {
+        return confronto;
+    }
+
+    public void setConfronto(Integer confronto) {
+        this.confronto = confronto;
     }
 
     public ClubeEntity getClubeA() {

@@ -11,7 +11,7 @@ import jakarta.persistence.UniqueConstraint;
 
 @Entity
 @Table(name = "tabela_campeonato",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"campeonato_id", "clube_id"}))
+        uniqueConstraints = @UniqueConstraint(columnNames = {"edicao_id", "clube_id"}))
 
 public class TabelaCampeonatoEntity {
 
@@ -20,8 +20,8 @@ public class TabelaCampeonatoEntity {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "campeonato_id")
-    private CampeonatoEntity campeonato;
+    @JoinColumn(name = "edicao_id")
+    private EdicaoCampeonatoEntity edicao;
 
     @ManyToOne
     @JoinColumn(name = "clube_id")
@@ -37,8 +37,12 @@ public class TabelaCampeonatoEntity {
     private int saldoGols;
     private int jogos;
 
-    public void setCampeonato(CampeonatoEntity campeonato) {
-        this.campeonato = campeonato;
+    public void setEdicao(EdicaoCampeonatoEntity edicao) {
+        this.edicao = edicao;
+    }
+
+    public EdicaoCampeonatoEntity getEdicao() {
+        return edicao;
     }
 
     public void setClube(ClubeEntity clube) {

@@ -4,18 +4,19 @@ import com.futmaneger.application.dto.GerarRodadasResponseDTO;
 import com.futmaneger.application.dto.GrupoResponseDTO;
 import com.futmaneger.application.exception.DadosInvalidosException;
 import com.futmaneger.application.exception.NaoEncontradoException;
-import com.futmaneger.infrastructure.persistence.entity.CampeonatoEntity;
 import com.futmaneger.infrastructure.persistence.entity.ClubeEntity;
 import com.futmaneger.infrastructure.persistence.entity.ClubeParticipanteEntity;
+import com.futmaneger.infrastructure.persistence.entity.EdicaoCampeonatoEntity;
 import com.futmaneger.infrastructure.persistence.entity.GrupoEntity;
 import com.futmaneger.infrastructure.persistence.entity.PartidaEntity;
 import com.futmaneger.infrastructure.persistence.entity.PartidaFaseDeGruposEntity;
 import com.futmaneger.infrastructure.persistence.entity.PartidaMataMataEntity;
 import com.futmaneger.infrastructure.persistence.entity.RodadaEntity;
 import com.futmaneger.infrastructure.persistence.entity.TabelaCampeonatoEntity;
-import com.futmaneger.infrastructure.persistence.jpa.CampeonatoRepository;
 import com.futmaneger.infrastructure.persistence.jpa.ClubeParticipanteRepository;
+import com.futmaneger.infrastructure.persistence.jpa.EdicaoCampeonatoRepository;
 import com.futmaneger.infrastructure.persistence.jpa.GrupoRepository;
+import com.futmaneger.infrastructure.persistence.jpa.PartidaFaseDeGruposRepository;
 import com.futmaneger.infrastructure.persistence.jpa.PartidaMataMataRepository;
 import com.futmaneger.infrastructure.persistence.jpa.PartidaRepository;
 import com.futmaneger.infrastructure.persistence.jpa.RodadaRepository;
@@ -23,7 +24,6 @@ import com.futmaneger.infrastructure.persistence.jpa.TabelaCampeonatoRepository;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
@@ -37,45 +37,48 @@ public class GerarRodadasMataMataUseCase {
     private final ClubeParticipanteRepository clubeParticipanteRepository;
     private final GrupoRepository gruposRepository;
     private final PartidaRepository partidaRepository;
+    private final PartidaFaseDeGruposRepository partidaFaseDeGruposRepository;
     private final PartidaMataMataRepository partidaMataMataRepository;
     private final TabelaCampeonatoRepository tabelaCampeonatoRepository;
     private final RodadaRepository rodadaRepository;
-    private final CampeonatoRepository campeonatoRepository;
+    private final EdicaoCampeonatoRepository edicaoRepository;
 
     public GerarRodadasMataMataUseCase(ClubeParticipanteRepository clubeParticipanteRepository,
                                        GrupoRepository gruposRepository,
                                        PartidaRepository partidaRepository,
+                                       PartidaFaseDeGruposRepository partidaFaseDeGruposRepository,
                                        PartidaMataMataRepository partidaMataMataRepository,
                                        TabelaCampeonatoRepository tabelaCampeonatoRepository,
                                        RodadaRepository rodadaRepository,
-                                       CampeonatoRepository campeonatoRepository) {
+                                       EdicaoCampeonatoRepository edicaoRepository) {
 
         this.clubeParticipanteRepository = clubeParticipanteRepository;
         this.gruposRepository = gruposRepository;
         this.partidaRepository = partidaRepository;
+        this.partidaFaseDeGruposRepository = partidaFaseDeGruposRepository;
         this.partidaMataMataRepository = partidaMataMataRepository;
         this.tabelaCampeonatoRepository = tabelaCampeonatoRepository;
         this.rodadaRepository = rodadaRepository;
-        this.campeonatoRepository = campeonatoRepository;
+        this.edicaoRepository = edicaoRepository;
     }
 
-    public GerarRodadasResponseDTO gerarRodadas(CampeonatoEntity campeonato) {
-        if (!campeonato.getTipo().equals(CampeonatoEntity.TipoCampeonato.MATA_MATA)) {
+    public GerarRodadasResponseDTO gerarRodadas(EdicaoCampeonatoEntity edicao) {
+        if (!edicao.getCampeonato().getTipo().equals(com.futmaneger.infrastructure.persistence.entity.CampeonatoEntity.TipoCampeonato.MATA_MATA)) {
             return null;
         }
 
-        if (gruposRepository.existsByCampeonato(campeonato)) {
-            if (todasPartidasFaseDeGruposFinalizadas(campeonato) &&
-                    !partidaMataMataRepository.existsByCampeonato(campeonato)) {
-                gerarMataMata(campeonato);
+        if (gruposRepository.existsByEdicao(edicao)) {
+            if (todasPartidasFaseDeGruposFinalizadas(edicao) &&
+                    !partidaMataMataRepository.existsByEdicao(edicao)) {
+                gerarMataMata(edicao);
             }
         }
-        return gerarFaseDeGrupos(campeonato);
+        return gerarFaseDeGrupos(edicao);
 
     }
 
-    private GerarRodadasResponseDTO gerarFaseDeGrupos(CampeonatoEntity campeonato) {
-        List<ClubeParticipanteEntity> clubes = clubeParticipanteRepository.findByCampeonato(campeonato);
+    private GerarRodadasResponseDTO gerarFaseDeGrupos(EdicaoCampeonatoEntity edicao) {
+        List<ClubeParticipanteEntity> clubes = clubeParticipanteRepository.findByEdicao(edicao);
 
         if (clubes.size() < 4) {
             throw new IllegalStateException("Campeonato do tipo mata-mata deve ter pelo menos 4 clubes.");
@@ -86,14 +89,12 @@ public class GerarRodadasMataMataUseCase {
         List<PartidaEntity> todasPartidas = new ArrayList<>();
         List<GrupoResponseDTO> gruposDTO = new ArrayList<>();
 
-        int rodadaIndex = 1;
-
         int grupoIndex = 1;
 
         for (List<ClubeParticipanteEntity> grupo : grupos) {
             GrupoEntity grupoEntity = new GrupoEntity();
             grupoEntity.setNome("Grupo " + grupoIndex++);
-            grupoEntity.setCampeonato(campeonato);
+            grupoEntity.setEdicao(edicao);
 
             Set<ClubeEntity> clubesDoGrupo = grupo.stream()
                     .map(ClubeParticipanteEntity::getClube)
@@ -102,14 +103,14 @@ public class GerarRodadasMataMataUseCase {
             grupoEntity.setClubes(clubesDoGrupo);
             grupoEntity = gruposRepository.save(grupoEntity);
 
-            List<PartidaEntity> partidas = gerarPartidasFaseDeGrupos(grupo, campeonato, grupoEntity);
+            List<PartidaEntity> partidas = gerarPartidasFaseDeGrupos(grupo, edicao, grupoEntity);
 
             for (PartidaEntity partida : partidas) {
-                RodadaEntity rodada = rodadaRepository.findByNumeroAndCampeonato(partida.getRodada(), campeonato)
+                RodadaEntity rodada = rodadaRepository.findByNumeroAndEdicao(partida.getRodada(), edicao)
                         .orElseGet(() -> {
                             RodadaEntity novaRodada = new RodadaEntity();
                             novaRodada.setNumero(partida.getRodada());
-                            novaRodada.setCampeonato(campeonato);
+                            novaRodada.setEdicao(edicao);
                             return rodadaRepository.save(novaRodada);
                         });
 
@@ -121,25 +122,31 @@ public class GerarRodadasMataMataUseCase {
                 todasPartidas.add(partida);
             }
 
-            List<String> nomesClubes = grupo.stream()
-                    .map(c -> c.getClube().getNome())
-                    .toList();
+            List<String> nomesClubes;
+            try {
+                nomesClubes = grupo.stream()
+                        .filter(c -> c != null && c.getClube() != null)
+                        .map(c -> c.getClube().getNome())
+                        .toList();
+            } catch (RuntimeException e) {
+                throw e;
+            }
 
             gruposDTO.add(new GrupoResponseDTO(grupoEntity.getNome(), nomesClubes));
         }
 
-        return new GerarRodadasResponseDTO(campeonato.getId(), rodadas.size(), todasPartidas.size(), gruposDTO);
+        return new GerarRodadasResponseDTO(edicao.getId(), rodadas.size(), todasPartidas.size(), gruposDTO);
     }
 
-    private boolean todasPartidasFaseDeGruposFinalizadas(CampeonatoEntity campeonato) {
-        List<PartidaFaseDeGruposEntity> partidas = partidaRepository.findByCampeonato(campeonato);
+    private boolean todasPartidasFaseDeGruposFinalizadas(EdicaoCampeonatoEntity edicao) {
+        List<PartidaFaseDeGruposEntity> partidas = partidaFaseDeGruposRepository.findByEdicao(edicao);
         return partidas.stream().allMatch(PartidaFaseDeGruposEntity::isFinalizada);
     }
 
-    public void gerarMataMata(CampeonatoEntity campeonato) {
-        List<GrupoEntity> grupos = gruposRepository.findByCampeonato(campeonato);
+    public void gerarMataMata(EdicaoCampeonatoEntity edicao) {
+        List<GrupoEntity> grupos = gruposRepository.findByEdicao(edicao);
         if (grupos == null || grupos.isEmpty()) {
-            throw new NaoEncontradoException("Nenhum grupo encontrado para o campeonato id=" + campeonato.getId());
+            throw new NaoEncontradoException("Nenhum grupo encontrado para a edição id=" + edicao.getId());
         }
 
         List<ClubeParticipanteEntity> classificados = new ArrayList<>();
@@ -156,11 +163,11 @@ public class GerarRodadasMataMataUseCase {
             ClubeEntity clubeSegundo = tabelaGrupo.get(1).getClube();
 
             ClubeParticipanteEntity primeiro = clubeParticipanteRepository
-                    .findByClubeAndCampeonato(clubePrimeiro, campeonato)
+                    .findByClubeAndEdicao(clubePrimeiro, edicao)
                     .orElseThrow(() -> new NaoEncontradoException("Participante não encontrado para clube: " + clubePrimeiro.getNome()));
 
             ClubeParticipanteEntity segundo = clubeParticipanteRepository
-                    .findByClubeAndCampeonato(clubeSegundo, campeonato)
+                    .findByClubeAndEdicao(clubeSegundo, edicao)
                     .orElseThrow(() -> new NaoEncontradoException("Participante não encontrado para clube: " + clubeSegundo.getNome()));
 
             classificados.add(primeiro);
@@ -171,45 +178,45 @@ public class GerarRodadasMataMataUseCase {
             throw new DadosInvalidosException("Nenhum clube classificado encontrado para gerar mata-mata.");
         }
 
-        PartidaMataMataEntity.FaseMataMata faseInicial = campeonato.getFaseAtualMataMata();
+        PartidaMataMataEntity.FaseMataMata faseInicial = edicao.getFaseAtualMataMata();
         if (faseInicial == null) {
             faseInicial = definirFaseInicial(classificados.size());
         } else {
             faseInicial = determinarProximaFase(faseInicial);
         }
 
-        gerarPartidasMataMataRecursivamente(classificados, campeonato, faseInicial);
+        gerarPartidasMataMataRecursivamente(classificados, edicao, faseInicial);
     }
 
     private void gerarPartidasMataMataRecursivamente(
             List<ClubeParticipanteEntity> clubes,
-            CampeonatoEntity campeonato,
+            EdicaoCampeonatoEntity edicao,
             PartidaMataMataEntity.FaseMataMata fase) {
 
         if (clubes == null || clubes.size() < 2) return;
 
-        if (partidaMataMataRepository.existsByCampeonatoAndFase(campeonato, fase)) {
+        if (partidaMataMataRepository.existsByEdicaoAndFase(edicao, fase)) {
             return;
         }
 
-        if (campeonato.getFaseAtualMataMata() != null
-                && !campeonato.getFaseAtualMataMata().equals(fase)) {
-            clubes = buscarVencedoresDaRodadaAnterior(campeonato);
+        if (edicao.getFaseAtualMataMata() != null
+                && !edicao.getFaseAtualMataMata().equals(fase)) {
+            clubes = buscarVencedoresDaRodadaAnterior(edicao);
         }
 
         if (clubes.size() < 2) return;
 
-        campeonato.setMataMataIniciado(true);
-        campeonato.setFaseAtualMataMata(fase);
-        campeonatoRepository.save(campeonato);
+        edicao.setMataMataIniciado(true);
+        edicao.setFaseAtualMataMata(fase);
+        edicaoRepository.save(edicao);
 
-        int ultimaRodada = rodadaRepository.findMaxNumeroByCampeonato(campeonato)
+        int ultimaRodada = rodadaRepository.findMaxNumeroByEdicao(edicao)
                 .orElse(0);
         int novaRodadaNumero = ultimaRodada + 1;
 
         RodadaEntity rodada = new RodadaEntity();
         rodada.setNumero(novaRodadaNumero);
-        rodada.setCampeonato(campeonato);
+        rodada.setEdicao(edicao);
         rodada.setFinalizada(false);
         rodada = rodadaRepository.save(rodada);
 
@@ -224,7 +231,7 @@ public class GerarRodadasMataMataUseCase {
             PartidaMataMataEntity partida = new PartidaMataMataEntity();
             partida.setClubeMandante(clubeA.getClube());
             partida.setClubeVisitante(clubeB.getClube());
-            partida.setCampeonato(campeonato);
+            partida.setEdicao(edicao);
             partida.setFase(fase);
             partida.setFinalizada(false);
             partida.setGolsMandante(0);
@@ -255,12 +262,15 @@ public class GerarRodadasMataMataUseCase {
 
     private List<PartidaEntity> gerarPartidasFaseDeGrupos(
             List<ClubeParticipanteEntity> grupo,
-            CampeonatoEntity campeonato,
+            EdicaoCampeonatoEntity edicao,
             GrupoEntity grupoEntity
     ) {
         List<PartidaEntity> partidas = new ArrayList<>();
 
         int rodadaNumero = 1;
+        // Trabalha sobre uma cópia para não poluir a lista recebida do chamador
+        // (o 'null' adicionado como "bye" para grupos ímpares vazava para 'gerarFaseDeGrupos').
+        grupo = new ArrayList<>(grupo);
         int n = grupo.size();
 
         if (n % 2 != 0) {
@@ -286,7 +296,7 @@ public class GerarRodadasMataMataUseCase {
                 PartidaEntity partida = new PartidaEntity();
                 partida.setClubeMandante(mandante);
                 partida.setClubeVisitante(visitante);
-                partida.setCampeonato(campeonato);
+                partida.setEdicao(edicao);
                 partida.setRodada(rodadaNumero);
                 partida.setGolsMandante(0);
                 partida.setGolsVisitante(0);
@@ -330,24 +340,24 @@ public class GerarRodadasMataMataUseCase {
         };
     }
 
-    public void gerarProximaFase(CampeonatoEntity campeonato) {
-        List<ClubeParticipanteEntity> vencedores = buscarVencedoresDaRodadaAnterior(campeonato);
+    public void gerarProximaFase(EdicaoCampeonatoEntity edicao) {
+        List<ClubeParticipanteEntity> vencedores = buscarVencedoresDaRodadaAnterior(edicao);
 
-        PartidaMataMataEntity.FaseMataMata proximaFase = determinarProximaFase(campeonato.getFaseAtualMataMata());
+        PartidaMataMataEntity.FaseMataMata proximaFase = determinarProximaFase(edicao.getFaseAtualMataMata());
 
-        gerarPartidasMataMataRecursivamente(vencedores, campeonato, proximaFase);
+        gerarPartidasMataMataRecursivamente(vencedores, edicao, proximaFase);
     }
 
     @Transactional(readOnly = true)
-    private List<ClubeParticipanteEntity> buscarVencedoresDaRodadaAnterior(CampeonatoEntity campeonato) {
-        Optional<Integer> numeroRodadaAtualOpt = rodadaRepository.findMaxNumeroByCampeonato(campeonato);
+    private List<ClubeParticipanteEntity> buscarVencedoresDaRodadaAnterior(EdicaoCampeonatoEntity edicao) {
+        Optional<Integer> numeroRodadaAtualOpt = rodadaRepository.findMaxNumeroByEdicao(edicao);
 
         if (numeroRodadaAtualOpt.isEmpty() || numeroRodadaAtualOpt.get() <= 1) {
             throw new DadosInvalidosException("Não há rodada anterior para buscar vencedores.");
         }
 
         RodadaEntity rodadaAtual = rodadaRepository
-                .findByNumeroAndCampeonato(numeroRodadaAtualOpt.get(), campeonato)
+                .findByNumeroAndEdicao(numeroRodadaAtualOpt.get(), edicao)
                 .orElseThrow(() -> new NaoEncontradoException("Rodada anterior não encontrada."));
 
         List<PartidaMataMataEntity> partidasDaRodada =
@@ -373,7 +383,7 @@ public class GerarRodadasMataMataUseCase {
             }
 
             ClubeParticipanteEntity participanteVencedor =
-                    clubeParticipanteRepository.findByClubeAndCampeonato(vencedor, campeonato)
+                    clubeParticipanteRepository.findByClubeAndEdicao(vencedor, edicao)
                             .orElseThrow(() -> new DadosInvalidosException("Clube vencedor não encontrado como participante."));
 
             vencedores.add(participanteVencedor);
