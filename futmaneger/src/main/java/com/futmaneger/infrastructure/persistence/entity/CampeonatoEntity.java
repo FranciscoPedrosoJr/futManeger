@@ -40,6 +40,10 @@ public class CampeonatoEntity {
 
     private int quantidadeClubes;
 
+    private java.math.BigDecimal premiacaoCampeao;
+
+    private java.math.BigDecimal premiacaoVice;
+
     public CampeonatoEntity() {
     }
 
@@ -93,6 +97,22 @@ public class CampeonatoEntity {
 
     public String getPais() {
         return pais;
+    }
+
+    public java.math.BigDecimal getPremiacaoCampeao() {
+        return premiacaoCampeao;
+    }
+
+    public void setPremiacaoCampeao(java.math.BigDecimal premiacaoCampeao) {
+        this.premiacaoCampeao = premiacaoCampeao;
+    }
+
+    public java.math.BigDecimal getPremiacaoVice() {
+        return premiacaoVice;
+    }
+
+    public void setPremiacaoVice(java.math.BigDecimal premiacaoVice) {
+        this.premiacaoVice = premiacaoVice;
     }
 
     public enum TipoCampeonato {

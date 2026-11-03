@@ -7,6 +7,9 @@ import com.futmaneger.application.dto.SimulacaoResponseDTO;
 import com.futmaneger.application.dto.JogadorPartidaResponseDTO;
 import com.futmaneger.application.exception.DadosInvalidosException;
 import com.futmaneger.application.exception.NaoEncontradoException;
+import com.futmaneger.application.usecase.financeiro.BilheteriaService;
+import com.futmaneger.application.usecase.financeiro.PremiacaoService;
+import com.futmaneger.application.usecase.financeiro.SalarioService;
 import com.futmaneger.application.usecase.rodadas.GerarMataMataConfiguravelUseCase;
 import com.futmaneger.application.usecase.rodadas.GerarRodadasMataMataUseCase;
 import com.futmaneger.domain.entity.Jogador;
@@ -43,6 +46,9 @@ public class SimularRodadaUseCase {
     private final PartidaMataMataRepository partidaMataMataRepository;
     private final EstatisticaJogadorPartidaRepository estatisticaJogadorPartidaRepository;
     private final GerarMataMataConfiguravelUseCase gerarMataMataConfiguravelUseCase;
+    private final PremiacaoService premiacaoService;
+    private final BilheteriaService bilheteriaService;
+    private final SalarioService salarioService;
 
     public SimularRodadaUseCase(
             RodadaRepository rodadaRepository,
@@ -56,7 +62,10 @@ public class SimularRodadaUseCase {
             GrupoRepository grupoRepository,
             PartidaMataMataRepository partidaMataMataRepository,
             EstatisticaJogadorPartidaRepository estatisticaJogadorPartidaRepository,
-            GerarMataMataConfiguravelUseCase gerarMataMataConfiguravelUseCase
+            GerarMataMataConfiguravelUseCase gerarMataMataConfiguravelUseCase,
+            PremiacaoService premiacaoService,
+            BilheteriaService bilheteriaService,
+            SalarioService salarioService
     ) {
         this.rodadaRepository = rodadaRepository;
         this.partidaRepository = partidaRepository;
@@ -70,6 +79,9 @@ public class SimularRodadaUseCase {
         this.partidaMataMataRepository = partidaMataMataRepository;
         this.estatisticaJogadorPartidaRepository = estatisticaJogadorPartidaRepository;
         this.gerarMataMataConfiguravelUseCase = gerarMataMataConfiguravelUseCase;
+        this.premiacaoService = premiacaoService;
+        this.bilheteriaService = bilheteriaService;
+        this.salarioService = salarioService;
     }
 
     @Transactional
@@ -135,6 +147,8 @@ public class SimularRodadaUseCase {
 
             salvarEstatisticas(partida, detalhes);
 
+            bilheteriaService.registrarBilheteria(partida.getMandante(), partida.getVisitante());
+
             Long grupoDefinido = null;
 
             if (MATA_MATA.equals(campeonato.getTipo())){
@@ -182,6 +196,8 @@ public class SimularRodadaUseCase {
 
         rodada.setFinalizada(true);
         rodadaRepository.save(rodada);
+
+        cobrarSalariosSeMes(edicao, rodada);
 
         if (isUltimaRodada(rodada, edicao) && PONTOS_CORRIDOS.equals(campeonato.getTipo())) {
             definirCampeao(edicao);
@@ -239,6 +255,8 @@ public class SimularRodadaUseCase {
             partidaMataMataRepository.save(partida);
             salvarEstatisticas(partida, detalhes);
 
+            bilheteriaService.registrarBilheteria(partida.getMandante(), partida.getVisitante());
+
             resultados.add(new SimulacaoResponseDTO(
                     partida.getMandante().getNome(),
                     golsMandante,
@@ -253,6 +271,8 @@ public class SimularRodadaUseCase {
         rodada.setFinalizada(true);
         rodadaRepository.save(rodada);
 
+        cobrarSalariosSeMes(edicao, rodada);
+
         if (gerarMataMataConfiguravelUseCase.existeProximaFase(edicao)) {
             gerarMataMataConfiguravelUseCase.gerarProximaFase(edicao);
         } else {
@@ -261,6 +281,7 @@ public class SimularRodadaUseCase {
                 edicao.setCampeao(campeao);
                 edicao.setEmAndamento(false);
                 edicaoRepository.save(edicao);
+                premiacaoService.premiar(edicao.getCampeonato(), campeao, null);
             }
         }
 
@@ -452,15 +473,26 @@ public class SimularRodadaUseCase {
 
         if (!classificacao.isEmpty()) {
             ClubeEntity campeao = classificacao.get(0).getClube();
+            ClubeEntity vice = classificacao.size() > 1 ? classificacao.get(1).getClube() : null;
             edicao.setCampeao(campeao);
             edicao.setEmAndamento(false);
             edicaoRepository.save(edicao);
+            premiacaoService.premiar(edicao.getCampeonato(), campeao, vice);
         }
     }
 
     private boolean isUltimaRodada(RodadaEntity rodada, EdicaoCampeonatoEntity edicao) {
         int totalRodadas = edicao.getRodadas().size();
         return rodada.getNumero() == totalRodadas;
+    }
+
+    private void cobrarSalariosSeMes(EdicaoCampeonatoEntity edicao, RodadaEntity rodada) {
+        if (rodada.getNumero() <= 0 || rodada.getNumero() % 6 != 0) {
+            return;
+        }
+        for (ClubeParticipanteEntity participante : clubeParticipanteRepository.findByEdicao(edicao)) {
+            salarioService.cobrarSalarios(participante.getClube());
+        }
     }
 
     private void salvarPartida(Long partidaId,

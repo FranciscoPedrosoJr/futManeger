@@ -20,8 +20,19 @@ public class TransacaoFinanceiraEntity {
     private String descricao;
     private LocalDateTime data;
 
+    @jakarta.persistence.Enumerated(jakarta.persistence.EnumType.STRING)
+    private CategoriaTransacao categoria;
+
     public void setClubeId(Long clubeId) {
         this.clubeId = clubeId;
+    }
+
+    public void setCategoria(CategoriaTransacao categoria) {
+        this.categoria = categoria;
+    }
+
+    public CategoriaTransacao getCategoria() {
+        return categoria;
     }
     public void setJogadorId(Long jogadorId) {
         this.jogadorId = jogadorId;

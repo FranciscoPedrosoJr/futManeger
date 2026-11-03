@@ -18,7 +18,15 @@ public class CadastrarClubeUseCase {
     }
 
     public ClubeEntity executar(String nome, String estado, String pais, boolean ehSelecao) {
+        return executar(nome, estado, pais, ehSelecao, null);
+    }
+
+    public ClubeEntity executar(String nome, String estado, String pais, boolean ehSelecao,
+                                java.math.BigDecimal precoIngresso) {
         ClubeEntity clube = new ClubeEntity(nome, estado, pais, ehSelecao);
+        if (precoIngresso != null) {
+            clube.setPrecoIngresso(precoIngresso);
+        }
         return clubeJpaRepository.save(clube);
     }
 }
