@@ -118,6 +118,7 @@ public class GerarRodadasMataMataUseCase {
                     rodadas.add(rodada);
                 }
 
+                partida.setRodadaEntity(rodada);
                 partidaRepository.save(partida);
                 todasPartidas.add(partida);
             }

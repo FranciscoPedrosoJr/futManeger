@@ -2,6 +2,7 @@ package com.futmaneger.application.usecase.calendario;
 
 import com.futmaneger.application.exception.DadosInvalidosException;
 import com.futmaneger.application.exception.NaoEncontradoException;
+import com.futmaneger.infrastructure.persistence.entity.CampeonatoEntity;
 import com.futmaneger.infrastructure.persistence.entity.EdicaoCampeonatoEntity;
 import com.futmaneger.infrastructure.persistence.entity.EventoCalendarioEntity;
 import com.futmaneger.infrastructure.persistence.entity.PartidaEntity;
@@ -13,29 +14,41 @@ import com.futmaneger.infrastructure.persistence.jpa.PartidaMataMataRepository;
 import com.futmaneger.infrastructure.persistence.jpa.PartidaRepository;
 import com.futmaneger.infrastructure.persistence.jpa.TemporadaJpaRepository;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Distribui as datas das partidas de todas as edições de uma temporada em um
- * planejamento global, respeitando o descanso mínimo entre jogos de um mesmo
- * clube e evitando compromissos incompatíveis. Cada partida agendada gera um
- * evento no calendário.
+ * planejamento global. Cada partida agendada gera um evento no calendário.
  *
- * <p>A sincronização é incremental: considera as datas já ocupadas e agenda
- * apenas as partidas ainda sem data. Assim, as fases seguintes de mata-mata,
- * que só existem depois de conhecidos os classificados, são agendadas
- * dinamicamente quando geradas.</p>
+ * <p>Regras principais:</p>
+ * <ul>
+ *   <li>cada edição só joga dentro da sua janela prevista (ou da temporada, se o
+ *       campeonato não define período);</li>
+ *   <li>um clube tem sempre {@value #DIAS_DESCANSO} dias completos de descanso entre
+ *       jogos, mesmo entre competições diferentes;</li>
+ *   <li>as rodadas de uma edição acontecem em ordem; em pontos corridos elas são
+ *       espalhadas pela janela, deixando datas livres para outras competições;</li>
+ *   <li>a sincronização é incremental: considera as datas já ocupadas e agenda
+ *       apenas as partidas sem data, o que permite agendar as fases seguintes de
+ *       mata-mata quando forem geradas.</li>
+ * </ul>
  */
 @Service
 public class AgendamentoCalendarioService {
 
-    private static final int DIAS_DESCANSO = 2;
+    static final int DIAS_DESCANSO = 2;
+    private static final int INTERVALO_MINIMO_RODADAS = DIAS_DESCANSO + 1;
+    private static final int INTERVALO_MAXIMO_RODADAS = 7;
 
     private final PartidaRepository partidaRepository;
     private final PartidaMataMataRepository partidaMataMataRepository;
@@ -54,7 +67,7 @@ public class AgendamentoCalendarioService {
 
     /**
      * Gera o calendário inicial. Falha se alguma edição não tiver partidas ou se
-     * alguma partida não couber no período da temporada.
+     * alguma partida não couber no período previsto.
      */
     @Transactional
     public void gerarCalendario(TemporadaEntity temporada) {
@@ -87,20 +100,23 @@ public class AgendamentoCalendarioService {
     }
 
     private int sincronizar(TemporadaEntity temporada, LocalDate dataMinima) {
-        LocalDate limite = temporada.getDataEncerramento();
-        Map<Long, LocalDate> ultimaDataPorClube = new HashMap<>();
-        List<Compromisso> semData = new ArrayList<>();
+        Map<Long, TreeSet<LocalDate>> ocupacao = new HashMap<>();
+        Map<Long, LocalDate> ultimaDataPorEdicao = new HashMap<>();
+        Map<Long, List<Compromisso>> pendentesPorEdicao = new LinkedHashMap<>();
         List<Compromisso> agendadosAbertos = new ArrayList<>();
 
-        for (EdicaoCampeonatoEntity edicao : temporada.getEdicoes()) {
+        List<EdicaoCampeonatoEntity> edicoes = new ArrayList<>(temporada.getEdicoes());
+
+        for (EdicaoCampeonatoEntity edicao : edicoes) {
             for (Compromisso compromisso : compromissosDaEdicao(edicao)) {
                 if (compromisso.dataProgramada() != null) {
-                    registrarOcupacao(compromisso, compromisso.dataProgramada(), ultimaDataPorClube);
+                    ocupar(compromisso, compromisso.dataProgramada(), ocupacao);
+                    ultimaDataPorEdicao.merge(edicao.getId(), compromisso.dataProgramada(), this::maisTarde);
                     if (!compromisso.finalizada()) {
                         agendadosAbertos.add(compromisso);
                     }
                 } else if (!compromisso.finalizada()) {
-                    semData.add(compromisso);
+                    pendentesPorEdicao.computeIfAbsent(edicao.getId(), k -> new ArrayList<>()).add(compromisso);
                 }
             }
         }
@@ -109,17 +125,125 @@ public class AgendamentoCalendarioService {
             criarEventoSeNecessario(temporada, compromisso, compromisso.dataProgramada());
         }
 
-        semData.sort(Comparator.comparingInt(Compromisso::ordem));
+        edicoes.sort(Comparator
+                .comparing((EdicaoCampeonatoEntity e) -> inicioDaJanela(temporada, e),
+                        Comparator.nullsLast(Comparator.naturalOrder()))
+                .thenComparing(EdicaoCampeonatoEntity::getId));
 
-        for (Compromisso compromisso : semData) {
-            LocalDate data = encontrarDataDisponivel(compromisso, ultimaDataPorClube, dataMinima, limite);
-            compromisso.definirData(data);
-            compromisso.salvar();
-            registrarOcupacao(compromisso, data, ultimaDataPorClube);
-            criarEventoSeNecessario(temporada, compromisso, data);
+        int agendadas = 0;
+        for (EdicaoCampeonatoEntity edicao : edicoes) {
+            List<Compromisso> pendentes = pendentesPorEdicao.get(edicao.getId());
+            if (pendentes == null || pendentes.isEmpty()) {
+                continue;
+            }
+            agendarEdicao(temporada, edicao, pendentes, dataMinima, ocupacao,
+                    ultimaDataPorEdicao.get(edicao.getId()));
+            agendadas += pendentes.size();
         }
 
-        return semData.size();
+        return agendadas;
+    }
+
+    private void agendarEdicao(TemporadaEntity temporada, EdicaoCampeonatoEntity edicao,
+                               List<Compromisso> pendentes, LocalDate dataMinima,
+                               Map<Long, TreeSet<LocalDate>> ocupacao, LocalDate ultimaDataDaEdicao) {
+        LocalDate fim = fimDaJanela(temporada, edicao);
+
+        LocalDate inicio = dataMinima;
+        LocalDate inicioDaJanela = inicioDaJanela(temporada, edicao);
+        if (inicioDaJanela != null) {
+            inicio = maisTarde(inicio, inicioDaJanela);
+        }
+        if (ultimaDataDaEdicao != null) {
+            inicio = maisTarde(inicio, ultimaDataDaEdicao.plusDays(1));
+        }
+
+        TreeMap<Integer, List<Compromisso>> porRodada = new TreeMap<>();
+        for (Compromisso compromisso : pendentes) {
+            porRodada.computeIfAbsent(compromisso.ordem(), k -> new ArrayList<>()).add(compromisso);
+        }
+
+        int intervalo = calcularIntervalo(edicao.getCampeonato(), inicio, fim, porRodada.size());
+        LocalDate pisoDaRodada = inicio;
+
+        for (List<Compromisso> rodada : porRodada.values()) {
+            LocalDate ultimaDaRodada = pisoDaRodada;
+
+            for (Compromisso compromisso : rodada) {
+                LocalDate data = primeiraDataLivre(compromisso, pisoDaRodada, fim, ocupacao, edicao, inicioDaJanela);
+                compromisso.definirData(data);
+                compromisso.salvar();
+                ocupar(compromisso, data, ocupacao);
+                criarEventoSeNecessario(temporada, compromisso, data);
+                ultimaDaRodada = maisTarde(ultimaDaRodada, data);
+            }
+
+            pisoDaRodada = maisTarde(pisoDaRodada.plusDays(intervalo), ultimaDaRodada.plusDays(1));
+        }
+    }
+
+    /**
+     * Em pontos corridos as rodadas são espalhadas pela janela (no máximo uma por
+     * semana), deixando datas livres para outras competições dos mesmos clubes.
+     * Em mata-mata as fases seguem o mais cedo possível, pois dependem do resultado
+     * das anteriores.
+     */
+    private int calcularIntervalo(CampeonatoEntity campeonato, LocalDate inicio, LocalDate fim, int rodadas) {
+        if (campeonato.getTipo() != CampeonatoEntity.TipoCampeonato.PONTOS_CORRIDOS || rodadas <= 1) {
+            return INTERVALO_MINIMO_RODADAS;
+        }
+        if (fim == null) {
+            return INTERVALO_MAXIMO_RODADAS;
+        }
+        long ideal = ChronoUnit.DAYS.between(inicio, fim) / rodadas;
+        return (int) Math.max(INTERVALO_MINIMO_RODADAS, Math.min(INTERVALO_MAXIMO_RODADAS, ideal));
+    }
+
+    private LocalDate primeiraDataLivre(Compromisso compromisso, LocalDate piso, LocalDate limite,
+                                        Map<Long, TreeSet<LocalDate>> ocupacao,
+                                        EdicaoCampeonatoEntity edicao, LocalDate inicioDaJanela) {
+        for (LocalDate data = piso; limite == null || !data.isAfter(limite); data = data.plusDays(1)) {
+            if (clubeLivre(compromisso.mandanteId(), data, ocupacao)
+                    && clubeLivre(compromisso.visitanteId(), data, ocupacao)) {
+                return data;
+            }
+        }
+
+        throw new DadosInvalidosException(
+                "Não foi possível agendar todas as partidas do campeonato '"
+                        + edicao.getCampeonato().getNome() + "' dentro do período previsto ("
+                        + (inicioDaJanela != null ? inicioDaJanela : piso) + " a " + limite
+                        + "). Partida sem data: clube " + compromisso.mandanteId()
+                        + " x clube " + compromisso.visitanteId());
+    }
+
+    private boolean clubeLivre(Long clubeId, LocalDate data, Map<Long, TreeSet<LocalDate>> ocupacao) {
+        TreeSet<LocalDate> ocupadas = ocupacao.get(clubeId);
+        if (ocupadas == null) {
+            return true;
+        }
+        return ocupadas.subSet(data.minusDays(DIAS_DESCANSO), true, data.plusDays(DIAS_DESCANSO), true).isEmpty();
+    }
+
+    private void ocupar(Compromisso compromisso, LocalDate data, Map<Long, TreeSet<LocalDate>> ocupacao) {
+        ocupacao.computeIfAbsent(compromisso.mandanteId(), k -> new TreeSet<>()).add(data);
+        ocupacao.computeIfAbsent(compromisso.visitanteId(), k -> new TreeSet<>()).add(data);
+    }
+
+    private LocalDate inicioDaJanela(TemporadaEntity temporada, EdicaoCampeonatoEntity edicao) {
+        return edicao.getDataInicioPrevista() != null ? edicao.getDataInicioPrevista() : temporada.getDataInicio();
+    }
+
+    private LocalDate fimDaJanela(TemporadaEntity temporada, EdicaoCampeonatoEntity edicao) {
+        LocalDate fimDaEdicao = edicao.getDataFimPrevista();
+        LocalDate fimDaTemporada = temporada.getDataEncerramento();
+        if (fimDaEdicao == null) {
+            return fimDaTemporada;
+        }
+        if (fimDaTemporada == null) {
+            return fimDaEdicao;
+        }
+        return fimDaEdicao.isBefore(fimDaTemporada) ? fimDaEdicao : fimDaTemporada;
     }
 
     private List<Compromisso> compromissosDaEdicao(EdicaoCampeonatoEntity edicao) {
@@ -143,43 +267,11 @@ public class AgendamentoCalendarioService {
                 data, compromisso.ordem()));
     }
 
-    private LocalDate encontrarDataDisponivel(Compromisso compromisso,
-                                              Map<Long, LocalDate> ultimaDataPorClube,
-                                              LocalDate dataMinima, LocalDate limite) {
-        Long mandante = compromisso.mandanteId();
-        Long visitante = compromisso.visitanteId();
-
-        LocalDate candidata = dataMinima;
-        candidata = maisTarde(candidata, proximaDataLivre(ultimaDataPorClube.get(mandante)));
-        candidata = maisTarde(candidata, proximaDataLivre(ultimaDataPorClube.get(visitante)));
-
-        if (limite != null && candidata.isAfter(limite)) {
-            throw new DadosInvalidosException(
-                    "Não foi possível agendar todas as partidas dentro do período da temporada. "
-                            + "Partida sem data: clube " + mandante + " x clube " + visitante);
-        }
-
-        return candidata;
-    }
-
-    private LocalDate proximaDataLivre(LocalDate ultimaData) {
-        if (ultimaData == null) {
-            return null;
-        }
-        return ultimaData.plusDays(DIAS_DESCANSO + 1L);
-    }
-
     private LocalDate maisTarde(LocalDate a, LocalDate b) {
         if (b == null) {
             return a;
         }
         return b.isAfter(a) ? b : a;
-    }
-
-    private void registrarOcupacao(Compromisso compromisso, LocalDate data,
-                                   Map<Long, LocalDate> ultimaDataPorClube) {
-        ultimaDataPorClube.merge(compromisso.mandanteId(), data, this::maisTarde);
-        ultimaDataPorClube.merge(compromisso.visitanteId(), data, this::maisTarde);
     }
 
     private interface Compromisso {

@@ -34,7 +34,9 @@ final class TemporadaMapper {
                 edicao.getId(),
                 edicao.getCampeonato().getId(),
                 edicao.getCampeonato().getNome(),
-                edicao.getEmAndamento()
+                edicao.getEmAndamento(),
+                edicao.getDataInicioPrevista(),
+                edicao.getDataFimPrevista()
         );
     }
 }

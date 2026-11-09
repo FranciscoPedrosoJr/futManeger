@@ -45,6 +45,9 @@ public class CriarCampeonatoUseCase {
         campeonato.setAbrangencia(request.abrangencia());
         campeonato.setPremiacaoCampeao(request.premiacaoCampeao());
         campeonato.setPremiacaoVice(request.premiacaoVice());
+        validarPeriodo(request.mesInicio(), request.mesFim());
+        campeonato.setMesInicio(request.mesInicio());
+        campeonato.setMesFim(request.mesFim());
 
         List<ClubeEntity> clubes = resolverClubes(request, campeonato);
 
@@ -87,6 +90,21 @@ public class CriarCampeonatoUseCase {
             return clubes;
         }
         return resolverParticipantes.resolver(campeonato);
+    }
+
+    private void validarPeriodo(Integer mesInicio, Integer mesFim) {
+        if (mesInicio == null && mesFim == null) {
+            return;
+        }
+        if (mesInicio == null || mesFim == null) {
+            throw new DadosInvalidosException("Informe o mês de início e o mês de fim do campeonato, ou nenhum dos dois");
+        }
+        if (mesInicio < 1 || mesInicio > 12 || mesFim < 1 || mesFim > 12) {
+            throw new DadosInvalidosException("Os meses do campeonato devem estar entre 1 e 12");
+        }
+        if (mesFim < mesInicio) {
+            throw new DadosInvalidosException("O mês de fim do campeonato não pode ser anterior ao mês de início");
+        }
     }
 
     private boolean isPotenciaDeDois(int numero) {

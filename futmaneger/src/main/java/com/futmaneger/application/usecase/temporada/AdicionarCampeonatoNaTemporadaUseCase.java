@@ -1,5 +1,7 @@
 package com.futmaneger.application.usecase.temporada;
 
+import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -114,6 +116,7 @@ public class AdicionarCampeonatoNaTemporadaUseCase {
         validarQuantidade(campeonato, clubes);
 
         EdicaoCampeonatoEntity edicao = new EdicaoCampeonatoEntity(campeonato, temporada);
+        definirJanelaDaEdicao(edicao, campeonato, temporada);
         temporada.adicionarEdicao(edicao);
         edicao = edicaoRepository.save(edicao);
 
@@ -125,6 +128,21 @@ public class AdicionarCampeonatoNaTemporadaUseCase {
 
         TemporadaEntity salva = temporadaRepository.save(temporada);
         return TemporadaMapper.toResponse(salva);
+    }
+
+    /**
+     * Resolve a janela prevista da edição a partir dos meses configurados no
+     * campeonato e do ano da temporada. Sem meses configurados, a edição ocupa a
+     * temporada inteira.
+     */
+    private void definirJanelaDaEdicao(EdicaoCampeonatoEntity edicao, CampeonatoEntity campeonato,
+                                       TemporadaEntity temporada) {
+        if (campeonato.getMesInicio() == null || campeonato.getMesFim() == null) {
+            return;
+        }
+        int ano = temporada.getAno();
+        edicao.setDataInicioPrevista(LocalDate.of(ano, campeonato.getMesInicio(), 1));
+        edicao.setDataFimPrevista(YearMonth.of(ano, campeonato.getMesFim()).atEndOfMonth());
     }
 
     /**

@@ -350,8 +350,12 @@ public class SimularRodadaUseCase {
             PartidaEntity partidaNormal = (PartidaEntity) partida;
             resultado = simularPartidaNormal(edicao, campeonato, partida, escalacaoEstrita, dataRealizacao);
             int numeroRodada = partidaNormal.getRodada();
-            rodada = rodadaRepository.findByNumeroAndEdicao(numeroRodada, edicao).orElse(null);
-            partidasDaRodada = partidaRepository.buscarPorEdicaoERodada(edicao, numeroRodada);
+            rodada = partidaNormal.getRodadaEntity() != null
+                    ? partidaNormal.getRodadaEntity()
+                    : rodadaRepository.findByNumeroAndEdicao(numeroRodada, edicao).orElse(null);
+            partidasDaRodada = rodada != null
+                    ? partidaRepository.findByRodadaEntity(rodada)
+                    : partidaRepository.buscarPorEdicaoERodada(edicao, numeroRodada);
         }
 
         boolean rodadaCompleta = rodada != null
