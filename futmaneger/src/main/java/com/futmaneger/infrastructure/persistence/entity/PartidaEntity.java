@@ -119,6 +119,14 @@ public class PartidaEntity implements PartidaSimulavel {
         return resultado;
     }
 
+    public int getGolsMandante() {
+        return golsMandante;
+    }
+
+    public int getGolsVisitante() {
+        return golsVisitante;
+    }
+
     public ClubeEntity getClubeMandante() {
         return clubeMandante;
     }

@@ -94,6 +94,11 @@ public class AdicionarCampeonatoNaTemporadaUseCase {
         TemporadaEntity temporada = temporadaRepository.findById(temporadaId)
                 .orElseThrow(() -> new NaoEncontradoException("Temporada não encontrada"));
 
+        if (temporada.getEstado() != TemporadaEntity.EstadoTemporada.AGUARDANDO_INICIO) {
+            throw new DadosInvalidosException(
+                    "Não é possível adicionar campeonatos a uma temporada que já foi iniciada ou finalizada");
+        }
+
         CampeonatoEntity campeonato = campeonatoRepository.findById(campeonatoId)
                 .orElseThrow(() -> new NaoEncontradoException("Campeonato não encontrado"));
 
@@ -139,7 +144,8 @@ public class AdicionarCampeonatoNaTemporadaUseCase {
         int quantidade = campeonato.getQuantidadeClubes();
 
         List<PreClassificadoEntity> preClassificados =
-                preClassificadoRepository.findByCampeonatoDestinoAndConsumidoFalse(campeonato);
+                preClassificadoRepository.findByCampeonatoDestinoAndTemporadaOrigemAnoAndConsumidoFalse(
+                        campeonato, temporada.getAno() - 1);
 
         LinkedHashSet<ClubeEntity> selecionados = new LinkedHashSet<>();
         for (PreClassificadoEntity pre : preClassificados) {
