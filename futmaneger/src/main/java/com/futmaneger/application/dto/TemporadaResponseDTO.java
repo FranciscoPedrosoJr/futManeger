@@ -9,6 +9,8 @@ public record TemporadaResponseDTO(
         Integer ano,
         String estado,
         LocalDate dataInicio,
+        LocalDate dataAtual,
         LocalDate dataEncerramento,
+        boolean calendarioGerado,
         List<TemporadaCampeonatoResponseDTO> campeonatos
 ) {}

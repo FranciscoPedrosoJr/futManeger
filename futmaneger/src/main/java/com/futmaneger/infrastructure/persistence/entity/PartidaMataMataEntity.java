@@ -35,6 +35,9 @@ public class PartidaMataMataEntity implements PartidaSimulavel {
     private Integer ordemFase;
     private Integer confronto;
 
+    private java.time.LocalDate dataProgramada;
+    private java.time.LocalDate dataRealizacao;
+
     private int golsClubeA;
     private int golsClubeB;
     private boolean jogoDeVolta;
@@ -49,6 +52,10 @@ public class PartidaMataMataEntity implements PartidaSimulavel {
 
     public void setRodada(RodadaEntity rodada) {
         this.rodada = rodada;
+    }
+
+    public RodadaEntity getRodada() {
+        return rodada;
     }
 
     public enum FaseMataMata {
@@ -120,6 +127,22 @@ public class PartidaMataMataEntity implements PartidaSimulavel {
 
     public void setConfronto(Integer confronto) {
         this.confronto = confronto;
+    }
+
+    public java.time.LocalDate getDataProgramada() {
+        return dataProgramada;
+    }
+
+    public void setDataProgramada(java.time.LocalDate dataProgramada) {
+        this.dataProgramada = dataProgramada;
+    }
+
+    public java.time.LocalDate getDataRealizacao() {
+        return dataRealizacao;
+    }
+
+    public void setDataRealizacao(java.time.LocalDate dataRealizacao) {
+        this.dataRealizacao = dataRealizacao;
     }
 
     public ClubeEntity getClubeA() {

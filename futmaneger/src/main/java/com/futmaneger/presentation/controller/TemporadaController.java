@@ -7,6 +7,7 @@ import com.futmaneger.application.usecase.temporada.AdicionarCampeonatoNaTempora
 import com.futmaneger.application.usecase.temporada.BuscarTemporadasUseCase;
 import com.futmaneger.application.usecase.temporada.CriarTemporadaUseCase;
 import com.futmaneger.application.usecase.temporada.FinalizarTemporadaUseCase;
+import com.futmaneger.application.usecase.temporada.IniciarTemporadaUseCase;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import java.util.List;
 import org.springframework.http.HttpStatus;
@@ -28,15 +29,18 @@ public class TemporadaController {
     private final BuscarTemporadasUseCase buscarTemporadasUseCase;
     private final AdicionarCampeonatoNaTemporadaUseCase adicionarCampeonatoNaTemporadaUseCase;
     private final FinalizarTemporadaUseCase finalizarTemporadaUseCase;
+    private final IniciarTemporadaUseCase iniciarTemporadaUseCase;
 
     public TemporadaController(CriarTemporadaUseCase criarTemporadaUseCase,
                                BuscarTemporadasUseCase buscarTemporadasUseCase,
                                AdicionarCampeonatoNaTemporadaUseCase adicionarCampeonatoNaTemporadaUseCase,
-                               FinalizarTemporadaUseCase finalizarTemporadaUseCase) {
+                               FinalizarTemporadaUseCase finalizarTemporadaUseCase,
+                               IniciarTemporadaUseCase iniciarTemporadaUseCase) {
         this.criarTemporadaUseCase = criarTemporadaUseCase;
         this.buscarTemporadasUseCase = buscarTemporadasUseCase;
         this.adicionarCampeonatoNaTemporadaUseCase = adicionarCampeonatoNaTemporadaUseCase;
         this.finalizarTemporadaUseCase = finalizarTemporadaUseCase;
+        this.iniciarTemporadaUseCase = iniciarTemporadaUseCase;
     }
 
     @PostMapping
@@ -72,6 +76,11 @@ public class TemporadaController {
                 adicionarCampeonatoNaTemporadaUseCase.executar(
                         temporadaId, campeonatoId, request.clubesIds());
         return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping("/{id}/iniciar")
+    public ResponseEntity<TemporadaResponseDTO> iniciar(@PathVariable Long id) {
+        return ResponseEntity.ok(iniciarTemporadaUseCase.executar(id));
     }
 
     @PatchMapping("/{id}/finalizar")
