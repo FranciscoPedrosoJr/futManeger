@@ -44,6 +44,14 @@ public class CampeonatoEntity {
 
     private java.math.BigDecimal premiacaoVice;
 
+    /**
+     * Mês (1 a 12) em que a competição começa e mês em que termina, dentro do ano
+     * da temporada. Quando ausentes, a competição ocupa a temporada inteira.
+     */
+    private Integer mesInicio;
+
+    private Integer mesFim;
+
     public CampeonatoEntity() {
     }
 
@@ -97,6 +105,22 @@ public class CampeonatoEntity {
 
     public String getPais() {
         return pais;
+    }
+
+    public Integer getMesInicio() {
+        return mesInicio;
+    }
+
+    public void setMesInicio(Integer mesInicio) {
+        this.mesInicio = mesInicio;
+    }
+
+    public Integer getMesFim() {
+        return mesFim;
+    }
+
+    public void setMesFim(Integer mesFim) {
+        this.mesFim = mesFim;
     }
 
     public java.math.BigDecimal getPremiacaoCampeao() {

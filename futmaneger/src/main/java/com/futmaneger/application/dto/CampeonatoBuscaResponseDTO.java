@@ -7,6 +7,8 @@ public record CampeonatoBuscaResponseDTO (
         String nome,
         CampeonatoEntity.TipoCampeonato tipo,
         int quantidadeDeClubes,
-        String pais
+        String pais,
+        Integer mesInicio,
+        Integer mesFim
 ) {
 }

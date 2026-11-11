@@ -29,7 +29,7 @@ public class RodadaEntity {
     @JoinColumn(name = "edicao_id")
     private EdicaoCampeonatoEntity edicao;
 
-    @OneToMany(mappedBy = "rodada", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "rodadaEntity", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<PartidaEntity> partidas = new ArrayList<>();
 
     public void setNumero(int numero) {

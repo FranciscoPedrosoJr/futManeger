@@ -45,6 +45,9 @@ public class CriarCampeonatoUseCase {
         campeonato.setAbrangencia(request.abrangencia());
         campeonato.setPremiacaoCampeao(request.premiacaoCampeao());
         campeonato.setPremiacaoVice(request.premiacaoVice());
+        PeriodoCampeonato.validar(request.mesInicio(), request.mesFim());
+        campeonato.setMesInicio(request.mesInicio());
+        campeonato.setMesFim(request.mesFim());
 
         List<ClubeEntity> clubes = resolverClubes(request, campeonato);
 

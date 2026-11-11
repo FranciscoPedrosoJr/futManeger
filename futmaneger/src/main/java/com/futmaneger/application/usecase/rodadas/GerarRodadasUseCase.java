@@ -91,6 +91,7 @@ public class GerarRodadasUseCase {
 
             for (PartidaEntity partida : partidas) {
                 partida.setRodada(rodada.getNumero());
+                partida.setRodadaEntity(rodada);
                 partida.setEdicao(edicao);
                 todasPartidas.add(partidaRepository.save(partida));
             }
@@ -107,6 +108,7 @@ public class GerarRodadasUseCase {
 
             for (PartidaEntity partida : partidas) {
                 partida.setRodada(rodada.getNumero());
+                partida.setRodadaEntity(rodada);
                 partida.setEdicao(edicao);
                 todasPartidas.add(partidaRepository.save(partida));
             }

@@ -27,6 +27,7 @@ import com.futmaneger.infrastructure.persistence.jpa.RodadaRepository;
 import com.futmaneger.infrastructure.persistence.jpa.TabelaCampeonatoRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import org.springframework.transaction.annotation.Transactional;
@@ -116,84 +117,97 @@ public class SimularRodadaUseCase {
         for (PartidaSimulavel partida : partidas) {
             if (partida.isFinalizada()) continue;
 
-            EscalacaoEntity escalacaoMandante = buscarOuGerarEscalacao(partida.getMandante());
-            EscalacaoEntity escalacaoVisitante = buscarOuGerarEscalacao(partida.getVisitante());
-
-            int golsMandante = calcularGols(escalacaoMandante, escalacaoVisitante);
-            int golsVisitante = calcularGols(escalacaoVisitante, escalacaoMandante);
-
-            if (Boolean.TRUE.equals(edicao.getMataMataIniciado()) && golsMandante == golsVisitante) {
-                if (new Random().nextBoolean()) {
-                    golsMandante += 1 + new Random().nextInt(2);
-                } else {
-                    golsVisitante += 1 + new Random().nextInt(2);
-                }
-                if (golsMandante == golsVisitante) {
-                    if (new Random().nextBoolean()) golsMandante++;
-                    else golsVisitante++;
-                }
-            }
-
-            DetalhesPartida detalhes = gerarDetalhes(escalacaoMandante, escalacaoVisitante, golsMandante, golsVisitante);
-            String resultado = determinarResultado(golsMandante, golsVisitante).name();
-
-            partida.aplicarResultado(golsMandante, golsVisitante, resultado);
-
-            if (partida instanceof PartidaEntity partidaNormal) {
-                partidaRepository.save(partidaNormal);
-            } else if (partida instanceof PartidaMataMataEntity partidaMataMata) {
-                partidaMataMataRepository.save(partidaMataMata);
-            }
-
-            salvarEstatisticas(partida, detalhes);
-
-            bilheteriaService.registrarBilheteria(partida.getMandante(), partida.getVisitante());
-
-            Long grupoDefinido = null;
-
-            if (MATA_MATA.equals(campeonato.getTipo())){
-                    GrupoEntity grupoClube = grupoRepository.findByClubes_IdAndEdicao_Id(
-                            partida.getMandante().getId(),
-                            edicao.getId()
-                    ).orElse(null);
-
-                    if (grupoClube == null) {
-                        grupoClube = grupoRepository.findByClubes_IdAndEdicao_Id(
-                                partida.getVisitante().getId(),
-                                edicao.getId()
-                        ).orElse(null);
-                    }
-
-                    if (grupoClube != null) {
-                        grupoDefinido = grupoClube.getId();
-                    } else {
-                        throw new DadosInvalidosException(
-                                "Não foi possível encontrar o grupo para o clube nesta partida (edição: "
-                                        + edicao.getId() + ")"
-                        );
-                    }
-                }
-
-            atualizarTabela(edicao, partida.getMandante(), golsMandante, golsVisitante,
-                    PartidaEntity.Resultado.valueOf(resultado), true, grupoDefinido);
-            atualizarTabela(edicao, partida.getVisitante(), golsVisitante, golsMandante,
-                    PartidaEntity.Resultado.valueOf(resultado), false, grupoDefinido);
-
-            if(edicao.getMataMataIniciado() == false){
-                salvarPartida(partida.getId(), golsMandante, golsVisitante, resultado);
-            }
-
-            resultados.add(new SimulacaoResponseDTO(
-                    partida.getMandante().getNome(),
-                    golsMandante,
-                    partida.getVisitante().getNome(),
-                    golsVisitante,
-                    resultado,
-                    detalhes.golsMandante(), detalhes.golsVisitante(), detalhes.jogadores(), detalhes.melhorJogador(),
-                    detalhes.cartoesAmarelos(), detalhes.cartoesVermelhos()
-            ));
+            resultados.add(simularPartidaNormal(edicao, campeonato, partida, true, null));
         }
 
+        concluirRodadaNormal(edicao, campeonato, rodada);
+
+        return resultados;
+    }
+
+    private SimulacaoResponseDTO simularPartidaNormal(EdicaoCampeonatoEntity edicao, CampeonatoEntity campeonato,
+                                                      PartidaSimulavel partida, boolean escalacaoEstrita,
+                                                      LocalDate dataRealizacao) {
+        EscalacaoEntity escalacaoMandante = buscarOuGerarEscalacao(partida.getMandante(), escalacaoEstrita);
+        EscalacaoEntity escalacaoVisitante = buscarOuGerarEscalacao(partida.getVisitante(), escalacaoEstrita);
+
+        int golsMandante = calcularGols(escalacaoMandante, escalacaoVisitante);
+        int golsVisitante = calcularGols(escalacaoVisitante, escalacaoMandante);
+
+        if (Boolean.TRUE.equals(edicao.getMataMataIniciado()) && golsMandante == golsVisitante) {
+            if (new Random().nextBoolean()) {
+                golsMandante += 1 + new Random().nextInt(2);
+            } else {
+                golsVisitante += 1 + new Random().nextInt(2);
+            }
+            if (golsMandante == golsVisitante) {
+                if (new Random().nextBoolean()) golsMandante++;
+                else golsVisitante++;
+            }
+        }
+
+        DetalhesPartida detalhes = gerarDetalhes(escalacaoMandante, escalacaoVisitante, golsMandante, golsVisitante);
+        String resultado = determinarResultado(golsMandante, golsVisitante).name();
+
+        partida.aplicarResultado(golsMandante, golsVisitante, resultado);
+        registrarDataRealizacao(partida, dataRealizacao);
+
+        if (partida instanceof PartidaEntity partidaNormal) {
+            partidaRepository.save(partidaNormal);
+        } else if (partida instanceof PartidaMataMataEntity partidaMataMata) {
+            partidaMataMataRepository.save(partidaMataMata);
+        }
+
+        salvarEstatisticas(partida, detalhes);
+
+        bilheteriaService.registrarBilheteria(partida.getMandante(), partida.getVisitante());
+
+        Long grupoDefinido = null;
+
+        if (MATA_MATA.equals(campeonato.getTipo())) {
+            GrupoEntity grupoClube = grupoRepository.findByClubes_IdAndEdicao_Id(
+                    partida.getMandante().getId(),
+                    edicao.getId()
+            ).orElse(null);
+
+            if (grupoClube == null) {
+                grupoClube = grupoRepository.findByClubes_IdAndEdicao_Id(
+                        partida.getVisitante().getId(),
+                        edicao.getId()
+                ).orElse(null);
+            }
+
+            if (grupoClube != null) {
+                grupoDefinido = grupoClube.getId();
+            } else {
+                throw new DadosInvalidosException(
+                        "Não foi possível encontrar o grupo para o clube nesta partida (edição: "
+                                + edicao.getId() + ")"
+                );
+            }
+        }
+
+        atualizarTabela(edicao, partida.getMandante(), golsMandante, golsVisitante,
+                PartidaEntity.Resultado.valueOf(resultado), true, grupoDefinido);
+        atualizarTabela(edicao, partida.getVisitante(), golsVisitante, golsMandante,
+                PartidaEntity.Resultado.valueOf(resultado), false, grupoDefinido);
+
+        if (edicao.getMataMataIniciado() == false) {
+            salvarPartida(partida.getId(), golsMandante, golsVisitante, resultado);
+        }
+
+        return new SimulacaoResponseDTO(
+                partida.getMandante().getNome(),
+                golsMandante,
+                partida.getVisitante().getNome(),
+                golsVisitante,
+                resultado,
+                detalhes.golsMandante(), detalhes.golsVisitante(), detalhes.jogadores(), detalhes.melhorJogador(),
+                detalhes.cartoesAmarelos(), detalhes.cartoesVermelhos()
+        );
+    }
+
+    private void concluirRodadaNormal(EdicaoCampeonatoEntity edicao, CampeonatoEntity campeonato, RodadaEntity rodada) {
         rodada.setFinalizada(true);
         rodadaRepository.save(rodada);
 
@@ -205,11 +219,9 @@ public class SimularRodadaUseCase {
         } else if (MATA_MATA.equals(campeonato.getTipo()) && isUltimaRodada(rodada, edicao) &&
                 edicao.getFaseAtualMataMata() != PartidaMataMataEntity.FaseMataMata.FINAL) {
             gerarRodadasMataMataUseCase.gerarMataMata(edicao);
-        } else if (edicao.getFaseAtualMataMata() == PartidaMataMataEntity.FaseMataMata.FINAL){
+        } else if (edicao.getFaseAtualMataMata() == PartidaMataMataEntity.FaseMataMata.FINAL) {
             definirCampeao(edicao);
         }
-
-        return resultados;
     }
 
     private List<SimulacaoResponseDTO> executarFaseConfiguravel(EdicaoCampeonatoEntity edicao, Long rodadaId) {
@@ -228,46 +240,58 @@ public class SimularRodadaUseCase {
                 continue;
             }
 
-            EscalacaoEntity escalacaoMandante = buscarOuGerarEscalacao(partida.getMandante());
-            EscalacaoEntity escalacaoVisitante = buscarOuGerarEscalacao(partida.getVisitante());
-
-            int golsMandante = calcularGols(escalacaoMandante, escalacaoVisitante);
-            int golsVisitante = calcularGols(escalacaoVisitante, escalacaoMandante);
-
-            DetalhesPartida detalhes = gerarDetalhes(escalacaoMandante, escalacaoVisitante, golsMandante, golsVisitante);
-            String resultado = determinarResultado(golsMandante, golsVisitante).name();
-
-            partida.setGolsMandante(golsMandante);
-            partida.setGolsVisitante(golsVisitante);
-
-            if (golsMandante == golsVisitante) {
-                int penaltisA = 3 + new Random().nextInt(3);
-                int penaltisB;
-                do {
-                    penaltisB = 3 + new Random().nextInt(3);
-                } while (penaltisB == penaltisA);
-                partida.setFoiParaPenaltis(true);
-                partida.setGolsPenaltisA(penaltisA);
-                partida.setGolsPenaltisB(penaltisB);
-            }
-
-            partida.setFinalizada(true);
-            partidaMataMataRepository.save(partida);
-            salvarEstatisticas(partida, detalhes);
-
-            bilheteriaService.registrarBilheteria(partida.getMandante(), partida.getVisitante());
-
-            resultados.add(new SimulacaoResponseDTO(
-                    partida.getMandante().getNome(),
-                    golsMandante,
-                    partida.getVisitante().getNome(),
-                    golsVisitante,
-                    resultado,
-                    detalhes.golsMandante(), detalhes.golsVisitante(), detalhes.jogadores(), detalhes.melhorJogador(),
-                    detalhes.cartoesAmarelos(), detalhes.cartoesVermelhos()
-            ));
+            resultados.add(simularPartidaConfiguravel(partida, true, null));
         }
 
+        concluirRodadaConfiguravel(edicao, rodada);
+
+        return resultados;
+    }
+
+    private SimulacaoResponseDTO simularPartidaConfiguravel(PartidaMataMataEntity partida, boolean escalacaoEstrita,
+                                                            LocalDate dataRealizacao) {
+        EscalacaoEntity escalacaoMandante = buscarOuGerarEscalacao(partida.getMandante(), escalacaoEstrita);
+        EscalacaoEntity escalacaoVisitante = buscarOuGerarEscalacao(partida.getVisitante(), escalacaoEstrita);
+
+        int golsMandante = calcularGols(escalacaoMandante, escalacaoVisitante);
+        int golsVisitante = calcularGols(escalacaoVisitante, escalacaoMandante);
+
+        DetalhesPartida detalhes = gerarDetalhes(escalacaoMandante, escalacaoVisitante, golsMandante, golsVisitante);
+        String resultado = determinarResultado(golsMandante, golsVisitante).name();
+
+        partida.setGolsMandante(golsMandante);
+        partida.setGolsVisitante(golsVisitante);
+
+        if (golsMandante == golsVisitante) {
+            int penaltisA = 3 + new Random().nextInt(3);
+            int penaltisB;
+            do {
+                penaltisB = 3 + new Random().nextInt(3);
+            } while (penaltisB == penaltisA);
+            partida.setFoiParaPenaltis(true);
+            partida.setGolsPenaltisA(penaltisA);
+            partida.setGolsPenaltisB(penaltisB);
+        }
+
+        partida.setFinalizada(true);
+        registrarDataRealizacao(partida, dataRealizacao);
+        partidaMataMataRepository.save(partida);
+        salvarEstatisticas(partida, detalhes);
+
+        bilheteriaService.registrarBilheteria(partida.getMandante(), partida.getVisitante());
+
+        return new SimulacaoResponseDTO(
+                partida.getMandante().getNome(),
+                golsMandante,
+                partida.getVisitante().getNome(),
+                golsVisitante,
+                resultado,
+                detalhes.golsMandante(), detalhes.golsVisitante(), detalhes.jogadores(), detalhes.melhorJogador(),
+                detalhes.cartoesAmarelos(), detalhes.cartoesVermelhos()
+        );
+    }
+
+    private void concluirRodadaConfiguravel(EdicaoCampeonatoEntity edicao, RodadaEntity rodada) {
         rodada.setFinalizada(true);
         rodadaRepository.save(rodada);
 
@@ -284,8 +308,83 @@ public class SimularRodadaUseCase {
                 premiacaoService.premiar(edicao.getCampeonato(), campeao, null);
             }
         }
+    }
 
-        return resultados;
+    /**
+     * Simula uma única partida agendada no calendário e, quando ela é a última
+     * pendente da rodada, conclui a rodada (salários, campeão, próxima fase).
+     * Reaproveita exatamente as mesmas regras da simulação por rodada.
+     *
+     * @param escalacaoEstrita quando true, clubes com técnico precisam ter escalação
+     *                         cadastrada; quando false, uma escalação automática é usada.
+     */
+    @Transactional
+    public SimulacaoResponseDTO simularPartidaAgendada(Long edicaoId, Long partidaId, boolean partidaMataMata,
+                                                       boolean escalacaoEstrita, LocalDate dataRealizacao) {
+        EdicaoCampeonatoEntity edicao = edicaoRepository.findById(edicaoId)
+                .orElseThrow(() -> new NaoEncontradoException("Edição de campeonato não encontrada"));
+        CampeonatoEntity campeonato = edicao.getCampeonato();
+        boolean configuravel = gerarMataMataConfiguravelUseCase.possuiFasesConfiguradas(campeonato);
+
+        PartidaSimulavel partida = partidaMataMata
+                ? partidaMataMataRepository.findById(partidaId)
+                .orElseThrow(() -> new NaoEncontradoException("Partida não encontrada com id: " + partidaId))
+                : partidaRepository.findById(partidaId)
+                .orElseThrow(() -> new NaoEncontradoException("Partida não encontrada com id: " + partidaId));
+
+        if (partida.isFinalizada()) {
+            throw new DadosInvalidosException("A partida já foi concluída e não pode ser simulada novamente");
+        }
+
+        SimulacaoResponseDTO resultado;
+        RodadaEntity rodada;
+        List<? extends PartidaSimulavel> partidasDaRodada;
+
+        if (partida instanceof PartidaMataMataEntity partidaEliminatoria) {
+            resultado = configuravel
+                    ? simularPartidaConfiguravel(partidaEliminatoria, escalacaoEstrita, dataRealizacao)
+                    : simularPartidaNormal(edicao, campeonato, partida, escalacaoEstrita, dataRealizacao);
+            rodada = partidaEliminatoria.getRodada();
+            partidasDaRodada = rodada == null ? List.of() : partidaMataMataRepository.findByRodada(rodada);
+        } else {
+            PartidaEntity partidaNormal = (PartidaEntity) partida;
+            resultado = simularPartidaNormal(edicao, campeonato, partida, escalacaoEstrita, dataRealizacao);
+            int numeroRodada = partidaNormal.getRodada();
+            rodada = partidaNormal.getRodadaEntity() != null
+                    ? partidaNormal.getRodadaEntity()
+                    : rodadaRepository.findByNumeroAndEdicao(numeroRodada, edicao).orElse(null);
+            partidasDaRodada = rodada != null
+                    ? partidaRepository.findByRodadaEntity(rodada)
+                    : partidaRepository.buscarPorEdicaoERodada(edicao, numeroRodada);
+        }
+
+        boolean rodadaCompleta = rodada != null
+                && !Boolean.TRUE.equals(rodada.isFinalizada())
+                && !partidasDaRodada.isEmpty()
+                && partidasDaRodada.stream().allMatch(PartidaSimulavel::isFinalizada);
+
+        if (rodadaCompleta) {
+            if (configuravel) {
+                concluirRodadaConfiguravel(edicao, rodada);
+            } else {
+                concluirRodadaNormal(edicao, campeonato, rodada);
+            }
+        }
+
+        return resultado;
+    }
+
+    private void registrarDataRealizacao(PartidaSimulavel partida, LocalDate data) {
+        if (partida instanceof PartidaEntity partidaNormal) {
+            if (data != null) {
+                partidaNormal.setDataRealizacao(data);
+            }
+        } else if (partida instanceof PartidaMataMataEntity partidaEliminatoria) {
+            LocalDate efetiva = data != null ? data : partidaEliminatoria.getDataProgramada();
+            if (efetiva != null) {
+                partidaEliminatoria.setDataRealizacao(efetiva);
+            }
+        }
     }
 
     private DetalhesPartida gerarDetalhes(EscalacaoEntity mandante, EscalacaoEntity visitante, int golsMandante, int golsVisitante) {
@@ -302,10 +401,15 @@ public class SimularRodadaUseCase {
     private List<String> nomesPorCartao(List<JogadorPartidaResponseDTO> jogadores, boolean vermelho) { return jogadores.stream().flatMap(j -> java.util.stream.Stream.generate(j::nome).limit(vermelho ? j.cartoesVermelhos() : j.cartoesAmarelos())).toList(); }
     private void salvarEstatisticas(PartidaSimulavel partida, DetalhesPartida d) { boolean mataMata = partida instanceof PartidaMataMataEntity; estatisticaJogadorPartidaRepository.saveAll(d.jogadores().stream().map(j -> { EstatisticaJogadorPartidaEntity e = new EstatisticaJogadorPartidaEntity(); e.setPartidaId(partida.getId()); e.setPartidaMataMata(mataMata); e.setJogadorId(j.jogadorId()); e.setNomeJogador(j.nome()); e.setNota(j.nota()); e.setGols(j.gols()); e.setCartoesAmarelos(j.cartoesAmarelos()); e.setCartoesVermelhos(j.cartoesVermelhos()); return e; }).toList()); }
     private record DetalhesPartida(List<String> golsMandante, List<String> golsVisitante, List<JogadorPartidaResponseDTO> jogadores, JogadorPartidaResponseDTO melhorJogador, List<String> cartoesAmarelos, List<String> cartoesVermelhos) {}
-    private EscalacaoEntity buscarOuGerarEscalacao(ClubeEntity clube) {
+    private EscalacaoEntity buscarOuGerarEscalacao(ClubeEntity clube, boolean estrita) {
         if (clube.getTecnico() != null) {
-            return escalacaoRepository.findTopByClubeOrderByDataHoraDesc(clube)
-                    .orElseThrow(() -> new NaoEncontradoException("Escalação não encontrada para clube: " + clube.getNome() + ", cadastre uma escalação para seguir"));
+            Optional<EscalacaoEntity> existente = escalacaoRepository.findTopByClubeOrderByDataHoraDesc(clube);
+            if (existente.isPresent()) {
+                return existente.get();
+            }
+            if (estrita) {
+                throw new NaoEncontradoException("Escalação não encontrada para clube: " + clube.getNome() + ", cadastre uma escalação para seguir");
+            }
         }
         return gerarEscalacaoAutomatica(clube);
     }

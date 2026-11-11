@@ -8,4 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface PreClassificadoRepository extends JpaRepository<PreClassificadoEntity, Long> {
 
     List<PreClassificadoEntity> findByCampeonatoDestinoAndConsumidoFalse(CampeonatoEntity campeonatoDestino);
+
+    List<PreClassificadoEntity> findByCampeonatoDestinoAndTemporadaOrigemAnoAndConsumidoFalse(
+            CampeonatoEntity campeonatoDestino, Integer anoTemporadaOrigem);
 }

@@ -12,6 +12,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,6 +55,15 @@ public class EdicaoCampeonatoEntity {
     private ClubeEntity campeao;
 
     private boolean mataMataIniciado;
+
+    /**
+     * Janela prevista de realização desta edição, resolvida a partir dos meses
+     * configurados no campeonato e do ano da temporada. Nula quando o campeonato
+     * não define período: nesse caso vale a temporada inteira.
+     */
+    private LocalDate dataInicioPrevista;
+
+    private LocalDate dataFimPrevista;
 
     @Enumerated(EnumType.STRING)
     private PartidaMataMataEntity.FaseMataMata faseAtualMataMata;
@@ -124,6 +134,22 @@ public class EdicaoCampeonatoEntity {
 
     public void setCampeao(ClubeEntity campeao) {
         this.campeao = campeao;
+    }
+
+    public LocalDate getDataInicioPrevista() {
+        return dataInicioPrevista;
+    }
+
+    public void setDataInicioPrevista(LocalDate dataInicioPrevista) {
+        this.dataInicioPrevista = dataInicioPrevista;
+    }
+
+    public LocalDate getDataFimPrevista() {
+        return dataFimPrevista;
+    }
+
+    public void setDataFimPrevista(LocalDate dataFimPrevista) {
+        this.dataFimPrevista = dataFimPrevista;
     }
 
     public boolean getMataMataIniciado() {
