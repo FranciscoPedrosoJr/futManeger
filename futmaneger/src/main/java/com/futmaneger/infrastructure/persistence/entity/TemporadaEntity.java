@@ -59,7 +59,12 @@ public class TemporadaEntity {
     /**
      * Indica que o calendário global foi gerado e validado; após o início da
      * temporada o calendário é considerado oficial.
+     *
+     * <p>O valor padrão é necessário para o ddl-auto=update conseguir adicionar a
+     * coluna em bancos que já possuem temporadas; sem ele o ALTER TABLE falha em
+     * silêncio e toda consulta a temporadas passa a dar erro.</p>
      */
+    @Column(name = "calendario_gerado", nullable = false, columnDefinition = "boolean default false")
     private boolean calendarioGerado;
 
     /**
