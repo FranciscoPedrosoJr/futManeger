@@ -19,6 +19,8 @@ public class TransacaoFinanceiraEntity {
     private BigDecimal valor;
     private String descricao;
     private LocalDateTime data;
+    private Long temporadaId;
+    private java.time.LocalDate dataJogo;
 
     @jakarta.persistence.Enumerated(jakarta.persistence.EnumType.STRING)
     private CategoriaTransacao categoria;
@@ -49,6 +51,22 @@ public class TransacaoFinanceiraEntity {
     public void setData(LocalDateTime data) {
         this.data = data;
     }
+    public Long getTemporadaId() {
+        return temporadaId;
+    }
+
+    public void setTemporadaId(Long temporadaId) {
+        this.temporadaId = temporadaId;
+    }
+
+    public java.time.LocalDate getDataJogo() {
+        return dataJogo;
+    }
+
+    public void setDataJogo(java.time.LocalDate dataJogo) {
+        this.dataJogo = dataJogo;
+    }
+
     public UUID getId() {
         return id;
     }

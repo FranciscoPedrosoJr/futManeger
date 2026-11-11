@@ -9,4 +9,6 @@ public interface TemporadaJpaRepository extends JpaRepository<TemporadaEntity, L
     Optional<TemporadaEntity> findByAno(Integer ano);
 
     boolean existsByAno(Integer ano);
+
+    Optional<TemporadaEntity> findFirstByEstadoOrderByAnoDesc(TemporadaEntity.EstadoTemporada estado);
 }

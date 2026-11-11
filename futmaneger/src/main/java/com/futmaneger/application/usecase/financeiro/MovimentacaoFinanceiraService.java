@@ -3,7 +3,9 @@ package com.futmaneger.application.usecase.financeiro;
 import com.futmaneger.application.exception.DadosInvalidosException;
 import com.futmaneger.infrastructure.persistence.entity.CategoriaTransacao;
 import com.futmaneger.infrastructure.persistence.entity.ClubeEntity;
+import com.futmaneger.infrastructure.persistence.entity.TemporadaEntity;
 import com.futmaneger.infrastructure.persistence.entity.TransacaoFinanceiraEntity;
+import com.futmaneger.infrastructure.persistence.jpa.TemporadaJpaRepository;
 import com.futmaneger.infrastructure.persistence.jpa.ClubeJpaRepository;
 import com.futmaneger.infrastructure.persistence.jpa.TransacaoFinanceiraRepository;
 import java.math.BigDecimal;
@@ -17,8 +19,12 @@ public class MovimentacaoFinanceiraService {
     private final ClubeJpaRepository clubeRepository;
     private final TransacaoFinanceiraRepository transacaoRepository;
 
+    private final TemporadaJpaRepository temporadaRepository;
+
     public MovimentacaoFinanceiraService(ClubeJpaRepository clubeRepository,
-                                         TransacaoFinanceiraRepository transacaoRepository) {
+                                         TransacaoFinanceiraRepository transacaoRepository,
+                                         TemporadaJpaRepository temporadaRepository) {
+        this.temporadaRepository = temporadaRepository;
         this.clubeRepository = clubeRepository;
         this.transacaoRepository = transacaoRepository;
     }
@@ -78,6 +84,11 @@ public class MovimentacaoFinanceiraService {
         transacao.setCategoria(categoria);
         transacao.setDescricao(descricao);
         transacao.setData(LocalDateTime.now());
+        temporadaRepository.findFirstByEstadoOrderByAnoDesc(TemporadaEntity.EstadoTemporada.EM_ANDAMENTO)
+                .ifPresent(temporada -> {
+                    transacao.setTemporadaId(temporada.getId());
+                    transacao.setDataJogo(temporada.getDataAtual());
+                });
         return transacaoRepository.save(transacao);
     }
 
