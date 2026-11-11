@@ -3,11 +3,14 @@ package com.futmaneger.presentation.controller;
 import com.futmaneger.application.dto.AtualizarClubeRequestDTO;
 import com.futmaneger.application.dto.AtualizarClubeResponseDTO;
 import com.futmaneger.application.dto.AtualizarJogadorRequestDTO;
+import com.futmaneger.application.dto.AtualizarPeriodoCampeonatoRequestDTO;
+import com.futmaneger.application.dto.AtualizarPeriodoCampeonatoResponseDTO;
 import com.futmaneger.application.dto.AtualizarSaldoRequestDTO;
 import com.futmaneger.application.dto.AtualizarSaldoResponseDTO;
 import com.futmaneger.application.dto.AtualizarTecnicoRequestDTO;
 import com.futmaneger.application.dto.AtualizarTecnicoResponseDTO;
 import com.futmaneger.application.dto.JogadorResponseDTO;
+import com.futmaneger.application.usecase.campeonato.AtualizarPeriodoCampeonatoUseCase;
 import com.futmaneger.application.usecase.clube.AtualizarClubeUseCase;
 import com.futmaneger.application.usecase.clube.AtualizarSaldoClubeUseCase;
 import com.futmaneger.application.usecase.jogador.AtualizarJogadorUseCase;
@@ -34,6 +37,7 @@ public class EditarController {
     private final AtualizarClubeUseCase atualizarClubeUseCase;
     private final AtualizarTecnicoUseCase atualizarTecnicoUseCase;
     private final AtualizarSaldoClubeUseCase atualizarSaldoClubeUseCase;
+    private final AtualizarPeriodoCampeonatoUseCase atualizarPeriodoCampeonatoUseCase;
 
     @PutMapping("/jogador/{id}")
     public ResponseEntity<JogadorResponseDTO> atualizarJogador(
@@ -90,5 +94,13 @@ public class EditarController {
     public ResponseEntity<AtualizarSaldoResponseDTO> atualizarSaldo(@RequestBody AtualizarSaldoRequestDTO request) {
         var clubeAtualizado = atualizarSaldoClubeUseCase.executar(request);
         return ResponseEntity.ok(clubeAtualizado);
+    }
+
+    @PatchMapping("/campeonato/{id}/periodo")
+    public ResponseEntity<AtualizarPeriodoCampeonatoResponseDTO> atualizarPeriodoCampeonato(
+            @PathVariable Long id,
+            @RequestBody AtualizarPeriodoCampeonatoRequestDTO request
+    ) {
+        return ResponseEntity.ok(atualizarPeriodoCampeonatoUseCase.executar(id, request));
     }
 }
