@@ -39,9 +39,15 @@ public class PartidaEntity implements PartidaSimulavel {
 
     private LocalDateTime dataHora;
 
-    //@ManyToOne
-    @JoinColumn(name = "rodada_id")
+    private java.time.LocalDate dataProgramada;
+
+    private java.time.LocalDate dataRealizacao;
+
     private int rodada;
+
+    @ManyToOne
+    @JoinColumn(name = "rodada_id")
+    private RodadaEntity rodadaEntity;
 
     @ManyToOne
     private EdicaoCampeonatoEntity edicao;
@@ -77,12 +83,48 @@ public class PartidaEntity implements PartidaSimulavel {
         return this.resultado = resultado;
     }
 
-    public LocalDateTime setDataHora(LocalDateTime now) {
-        return this.dataHora = LocalDateTime.now();
+    public LocalDateTime setDataHora(LocalDateTime dataHora) {
+        return this.dataHora = dataHora;
+    }
+
+    public LocalDateTime getDataHora() {
+        return dataHora;
+    }
+
+    public java.time.LocalDate getDataProgramada() {
+        return dataProgramada;
+    }
+
+    public void setDataProgramada(java.time.LocalDate dataProgramada) {
+        this.dataProgramada = dataProgramada;
+    }
+
+    public java.time.LocalDate getDataRealizacao() {
+        return dataRealizacao;
+    }
+
+    public void setDataRealizacao(java.time.LocalDate dataRealizacao) {
+        this.dataRealizacao = dataRealizacao;
+    }
+
+    public RodadaEntity getRodadaEntity() {
+        return rodadaEntity;
+    }
+
+    public void setRodadaEntity(RodadaEntity rodadaEntity) {
+        this.rodadaEntity = rodadaEntity;
     }
 
     public Resultado getResultado() {
         return resultado;
+    }
+
+    public int getGolsMandante() {
+        return golsMandante;
+    }
+
+    public int getGolsVisitante() {
+        return golsVisitante;
     }
 
     public ClubeEntity getClubeMandante() {
@@ -125,6 +167,9 @@ public class PartidaEntity implements PartidaSimulavel {
         this.golsVisitante = golsVisitante;
         this.resultado = Resultado.valueOf(resultado);
         this.dataHora = LocalDateTime.now();
+        if (this.dataProgramada != null) {
+            this.dataRealizacao = this.dataProgramada;
+        }
         this.finalizada = true;
     }
 

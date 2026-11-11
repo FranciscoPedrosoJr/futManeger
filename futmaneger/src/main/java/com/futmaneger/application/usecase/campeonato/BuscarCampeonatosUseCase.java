@@ -22,7 +22,9 @@ public class BuscarCampeonatosUseCase {
                         campeonato.getNome(),
                         campeonato.getTipo(),
                         campeonato.getQuantidadeClubes(),
-                        campeonato.getPais()
+                        campeonato.getPais(),
+                        campeonato.getMesInicio(),
+                        campeonato.getMesFim()
                 ))
                 .toList();
     }

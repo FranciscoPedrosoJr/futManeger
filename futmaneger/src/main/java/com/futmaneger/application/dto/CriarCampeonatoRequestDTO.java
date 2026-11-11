@@ -11,5 +11,7 @@ public record CriarCampeonatoRequestDTO(
         AbrangenciaCampeonato abrangencia,
         BigDecimal premiacaoCampeao,
         BigDecimal premiacaoVice,
+        Integer mesInicio,
+        Integer mesFim,
         List<Long> clubes
 ) {}

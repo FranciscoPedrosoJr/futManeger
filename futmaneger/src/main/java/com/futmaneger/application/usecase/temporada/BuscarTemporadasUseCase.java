@@ -5,6 +5,7 @@ import com.futmaneger.application.exception.NaoEncontradoException;
 import com.futmaneger.infrastructure.persistence.jpa.TemporadaJpaRepository;
 import java.util.List;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class BuscarTemporadasUseCase {
@@ -15,6 +16,7 @@ public class BuscarTemporadasUseCase {
         this.temporadaRepository = temporadaRepository;
     }
 
+    @Transactional(readOnly = true)
     public List<TemporadaResponseDTO> listar() {
         return temporadaRepository.findAll()
                 .stream()
@@ -22,6 +24,7 @@ public class BuscarTemporadasUseCase {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public TemporadaResponseDTO buscarPorId(Long id) {
         return temporadaRepository.findById(id)
                 .map(TemporadaMapper::toResponse)

@@ -22,7 +22,9 @@ final class TemporadaMapper {
                 temporada.getAno(),
                 temporada.getEstado().name(),
                 temporada.getDataInicio(),
+                temporada.getDataAtual(),
                 temporada.getDataEncerramento(),
+                temporada.isCalendarioGerado(),
                 edicoes
         );
     }
@@ -32,7 +34,9 @@ final class TemporadaMapper {
                 edicao.getId(),
                 edicao.getCampeonato().getId(),
                 edicao.getCampeonato().getNome(),
-                edicao.getEmAndamento()
+                edicao.getEmAndamento(),
+                edicao.getDataInicioPrevista(),
+                edicao.getDataFimPrevista()
         );
     }
 }

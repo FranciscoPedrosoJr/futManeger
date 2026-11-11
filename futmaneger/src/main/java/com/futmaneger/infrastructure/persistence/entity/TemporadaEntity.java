@@ -50,6 +50,19 @@ public class TemporadaEntity {
     private LocalDate dataEncerramento;
 
     /**
+     * Dia em que o universo do jogo se encontra. Independente de dataInicio e
+     * dataEncerramento; avança conforme os acontecimentos são processados e nunca
+     * retrocede.
+     */
+    private LocalDate dataAtual;
+
+    /**
+     * Indica que o calendário global foi gerado e validado; após o início da
+     * temporada o calendário é considerado oficial.
+     */
+    private boolean calendarioGerado;
+
+    /**
      * Edições de campeonato disputadas na temporada. Uma temporada pode possuir
      * várias edições (cada uma é um campeonato/molde disputado nesta temporada),
      * e o mesmo campeonato pode ser reutilizado em temporadas diferentes.
@@ -66,6 +79,7 @@ public class TemporadaEntity {
         this.estado = EstadoTemporada.AGUARDANDO_INICIO;
         this.dataInicio = LocalDate.of(ano, 1, 1);
         this.dataEncerramento = LocalDate.of(ano, 12, 31);
+        this.dataAtual = this.dataInicio;
     }
 
     /**
@@ -84,6 +98,21 @@ public class TemporadaEntity {
 
     public void iniciar() {
         this.estado = EstadoTemporada.EM_ANDAMENTO;
+        if (this.dataAtual == null) {
+            this.dataAtual = this.dataInicio;
+        }
+    }
+
+    /**
+     * Avança a data atual para a data informada. Nunca retrocede.
+     */
+    public void avancarDataAtualPara(LocalDate novaData) {
+        if (novaData == null) {
+            return;
+        }
+        if (this.dataAtual == null || novaData.isAfter(this.dataAtual)) {
+            this.dataAtual = novaData;
+        }
     }
 
     /**
@@ -149,6 +178,22 @@ public class TemporadaEntity {
 
     public void setDataInicio(LocalDate dataInicio) {
         this.dataInicio = dataInicio;
+    }
+
+    public LocalDate getDataAtual() {
+        return dataAtual;
+    }
+
+    public void setDataAtual(LocalDate dataAtual) {
+        this.dataAtual = dataAtual;
+    }
+
+    public boolean isCalendarioGerado() {
+        return calendarioGerado;
+    }
+
+    public void setCalendarioGerado(boolean calendarioGerado) {
+        this.calendarioGerado = calendarioGerado;
     }
 
     public LocalDate getDataEncerramento() {
