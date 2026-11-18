@@ -9,6 +9,7 @@ import com.futmaneger.infrastructure.persistence.jpa.CampeonatoRepository;
 import com.futmaneger.infrastructure.persistence.jpa.ClubeJpaRepository;
 import java.util.List;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Cria o molde reutilizável de um campeonato ({@link CampeonatoEntity}). O molde
@@ -22,17 +23,21 @@ public class CriarCampeonatoUseCase {
     private final ClubeJpaRepository clubeRepository;
     private final CampeonatoRepository campeonatoRepository;
     private final ResolverParticipantesPorAbrangenciaService resolverParticipantes;
+    private final ConfiguradorFasesCopaService configuradorFasesCopa;
 
     public CriarCampeonatoUseCase(
             ClubeJpaRepository clubeRepository,
             CampeonatoRepository campeonatoRepository,
-            ResolverParticipantesPorAbrangenciaService resolverParticipantes
+            ResolverParticipantesPorAbrangenciaService resolverParticipantes,
+            ConfiguradorFasesCopaService configuradorFasesCopa
     ) {
         this.clubeRepository = clubeRepository;
         this.campeonatoRepository = campeonatoRepository;
         this.resolverParticipantes = resolverParticipantes;
+        this.configuradorFasesCopa = configuradorFasesCopa;
     }
 
+    @Transactional
     public CampeonatoResponseDTO executar(CriarCampeonatoRequestDTO request) {
         if (request.abrangencia() == null) {
             throw new DadosInvalidosException("É necessário informar a abrangência do campeonato");
@@ -55,14 +60,13 @@ public class CriarCampeonatoUseCase {
             throw new DadosInvalidosException("Número insuficiente de clubes para criar um campeonato");
         }
 
-        CampeonatoEntity.TipoCampeonato formato =
-                isPotenciaDeDois(clubes.size())
-                        ? CampeonatoEntity.TipoCampeonato.MATA_MATA
-                        : CampeonatoEntity.TipoCampeonato.PONTOS_CORRIDOS;
-
+        CampeonatoEntity.TipoCampeonato formato = resolverFormato(request, clubes.size());
         campeonato.setTipo(formato);
         campeonato.setQuantidadeClubes(clubes.size());
         campeonato = campeonatoRepository.save(campeonato);
+        if (request.abrangencia().isCopa()) {
+            configuradorFasesCopa.configurarSeNecessario(campeonato);
+        }
 
         List<String> nomesClubes = clubes.stream()
                 .map(ClubeEntity::getNome)
@@ -90,6 +94,22 @@ public class CriarCampeonatoUseCase {
             return clubes;
         }
         return resolverParticipantes.resolver(campeonato);
+    }
+
+    private CampeonatoEntity.TipoCampeonato resolverFormato(CriarCampeonatoRequestDTO request, int clubes) {
+        if (request.abrangencia().isCopa()) {
+            if (request.tipo() == CampeonatoEntity.TipoCampeonato.PONTOS_CORRIDOS) {
+                throw new DadosInvalidosException(
+                        "Campeonatos com abrangência de copa devem usar o formato MATA_MATA");
+            }
+            return CampeonatoEntity.TipoCampeonato.MATA_MATA;
+        }
+        if (request.tipo() != null) {
+            return request.tipo();
+        }
+        return isPotenciaDeDois(clubes)
+                ? CampeonatoEntity.TipoCampeonato.MATA_MATA
+                : CampeonatoEntity.TipoCampeonato.PONTOS_CORRIDOS;
     }
 
     private boolean isPotenciaDeDois(int numero) {

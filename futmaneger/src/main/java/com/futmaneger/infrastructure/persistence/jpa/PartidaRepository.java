@@ -13,6 +13,8 @@ public interface PartidaRepository extends JpaRepository<PartidaEntity, Long> {
     List<PartidaEntity> findByEdicao(EdicaoCampeonatoEntity edicao);
 
     List<PartidaEntity> findByRodadaEntity(RodadaEntity rodadaEntity);
+    boolean existsByEdicaoAndFinalizadaTrue(EdicaoCampeonatoEntity edicao);
+    void deleteByEdicao(EdicaoCampeonatoEntity edicao);
 
     @Query("SELECT p FROM PartidaEntity p WHERE p.edicao = :edicao AND p.rodada = :rodada")
     List<PartidaEntity> buscarPorEdicaoERodada(@Param("edicao") EdicaoCampeonatoEntity edicao, @Param("rodada") int rodada);

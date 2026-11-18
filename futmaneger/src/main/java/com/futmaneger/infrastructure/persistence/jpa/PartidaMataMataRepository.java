@@ -10,6 +10,8 @@ import org.springframework.data.repository.query.Param;
 
 public interface PartidaMataMataRepository extends JpaRepository<PartidaMataMataEntity, Long> {
     boolean existsByEdicao(EdicaoCampeonatoEntity edicao);
+    boolean existsByEdicaoAndFinalizadaTrue(EdicaoCampeonatoEntity edicao);
+    void deleteByEdicao(EdicaoCampeonatoEntity edicao);
 
     List<PartidaMataMataEntity> findByEdicaoId(Long edicaoId);
     List<PartidaMataMataEntity> findByRodada(RodadaEntity rodada);

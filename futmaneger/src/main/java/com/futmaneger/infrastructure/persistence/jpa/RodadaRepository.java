@@ -28,6 +28,8 @@ public interface RodadaRepository extends JpaRepository<RodadaEntity, Long> {
             @Param("edicaoId") Long edicaoId
     );
 
+    List<RodadaEntity> findByEdicao(EdicaoCampeonatoEntity edicao);
+    void deleteByEdicao(EdicaoCampeonatoEntity edicao);
     List<RodadaEntity> findByFinalizadaFalse();
 
     List<RodadaEntity> findByEdicaoIdAndFinalizadaFalseOrderByNumero(Long edicaoId);
