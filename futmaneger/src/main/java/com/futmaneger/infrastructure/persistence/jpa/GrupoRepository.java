@@ -11,6 +11,7 @@ public interface GrupoRepository extends JpaRepository<GrupoEntity, Long> {
     List<GrupoEntity> findByEdicao(EdicaoCampeonatoEntity edicao);
 
     boolean existsByEdicao(EdicaoCampeonatoEntity edicao);
+    void deleteByEdicao(EdicaoCampeonatoEntity edicao);
 
     Optional<GrupoEntity> findByClubes_IdAndEdicao_Id(Long clubeId, Long edicaoId);
 }

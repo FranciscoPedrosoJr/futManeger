@@ -7,4 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface PartidaFaseDeGruposRepository extends JpaRepository<PartidaFaseDeGruposEntity, Long> {
     List<PartidaFaseDeGruposEntity> findByEdicao(EdicaoCampeonatoEntity edicao);
+    void deleteByEdicao(EdicaoCampeonatoEntity edicao);
 }

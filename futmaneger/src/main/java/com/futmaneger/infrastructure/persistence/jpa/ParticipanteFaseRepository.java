@@ -10,4 +10,5 @@ public interface ParticipanteFaseRepository extends JpaRepository<ParticipanteFa
     List<ParticipanteFaseEntity> findByEdicao(EdicaoCampeonatoEntity edicao);
 
     List<ParticipanteFaseEntity> findByEdicaoAndOrdemEntrada(EdicaoCampeonatoEntity edicao, int ordemEntrada);
+    void deleteByEdicao(EdicaoCampeonatoEntity edicao);
 }
