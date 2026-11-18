@@ -2,6 +2,7 @@ package com.futmaneger.application.usecase.financeiro;
 
 import com.futmaneger.domain.entity.Jogador;
 import com.futmaneger.domain.repository.JogadorRepository;
+import com.futmaneger.infrastructure.config.FinanceiroProperties;
 import com.futmaneger.infrastructure.persistence.entity.CategoriaTransacao;
 import com.futmaneger.infrastructure.persistence.entity.ClubeEntity;
 import com.futmaneger.infrastructure.persistence.jpa.ClubeJpaRepository;
@@ -14,16 +15,16 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class SalarioService {
 
-    private static final BigDecimal PERCENTUAL_SALARIO = new BigDecimal("0.02");
-    private static final BigDecimal LIMITE_DIVIDA_SOBRE_ELENCO = new BigDecimal("0.35");
-
+    private final FinanceiroProperties props;
     private final ClubeJpaRepository clubeRepository;
     private final JogadorRepository jogadorRepository;
     private final MovimentacaoFinanceiraService movimentacaoFinanceira;
 
     public SalarioService(ClubeJpaRepository clubeRepository,
                           JogadorRepository jogadorRepository,
-                          MovimentacaoFinanceiraService movimentacaoFinanceira) {
+                          MovimentacaoFinanceiraService movimentacaoFinanceira,
+                          FinanceiroProperties props) {
+        this.props = props;
         this.clubeRepository = clubeRepository;
         this.jogadorRepository = jogadorRepository;
         this.movimentacaoFinanceira = movimentacaoFinanceira;
@@ -37,8 +38,7 @@ public class SalarioService {
         }
 
         BigDecimal valorElenco = somaValorElenco(elenco);
-        BigDecimal folhaSalarial = valorElenco.multiply(PERCENTUAL_SALARIO)
-                .setScale(0, RoundingMode.HALF_UP);
+        BigDecimal folhaSalarial = calcularFolha(valorElenco);
 
         if (folhaSalarial.compareTo(BigDecimal.ZERO) <= 0) {
             return;
@@ -50,13 +50,17 @@ public class SalarioService {
         aplicarLimiteDivida(clube, valorElenco);
     }
 
+    public BigDecimal calcularFolha(BigDecimal valorElenco) {
+        return valorElenco.multiply(props.getPercentualSalario()).setScale(0, RoundingMode.HALF_UP);
+    }
+
     private void aplicarLimiteDivida(ClubeEntity clube, BigDecimal valorElenco) {
         BigDecimal saldo = clube.getSaldo() == null ? BigDecimal.ZERO : clube.getSaldo();
         if (saldo.compareTo(BigDecimal.ZERO) >= 0) {
             return;
         }
 
-        BigDecimal limiteDivida = valorElenco.multiply(LIMITE_DIVIDA_SOBRE_ELENCO);
+        BigDecimal limiteDivida = valorElenco.multiply(props.getLimiteDividaSobreElenco());
         BigDecimal dividaAtual = saldo.abs();
 
         if (dividaAtual.compareTo(limiteDivida) > 0 && clube.getTecnico() != null) {

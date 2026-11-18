@@ -8,4 +8,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface TransacaoFinanceiraRepository extends JpaRepository<TransacaoFinanceiraEntity, UUID> {
 
     List<TransacaoFinanceiraEntity> findByClubeIdOrderByDataDesc(Long clubeId);
+
+    List<TransacaoFinanceiraEntity> findByClubeIdOrderByDataAsc(Long clubeId);
 }

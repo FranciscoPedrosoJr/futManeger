@@ -11,9 +11,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 @RestControllerAdvice
-public class GlobalExceptionHandler {
+public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(AutenticacaoException.class)
     public ProblemDetail handleAutenticacaoException(AutenticacaoException ex, jakarta.servlet.http.HttpServletRequest request) {
         ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.UNAUTHORIZED);
@@ -68,4 +69,13 @@ public class GlobalExceptionHandler {
 
         return problemDetail;
     }
-}
+
+    @ExceptionHandler(Exception.class)
+    public ProblemDetail handleErroInesperado(Exception ex, jakarta.servlet.http.HttpServletRequest request) {
+        ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+        problemDetail.setTitle("Erro interno");
+        problemDetail.setDetail("Ocorreu um erro inesperado ao processar a requisicao");
+        problemDetail.setInstance(URI.create(request.getRequestURI()));
+        problemDetail.setProperty("timestamp", OffsetDateTime.now());
+        return problemDetail;
+    }}

@@ -9,6 +9,8 @@ import com.futmaneger.application.exception.DadosInvalidosException;
 import com.futmaneger.application.exception.NaoEncontradoException;
 import com.futmaneger.application.usecase.financeiro.BilheteriaService;
 import com.futmaneger.application.usecase.financeiro.PremiacaoService;
+import com.futmaneger.application.usecase.financeiro.ReceitaInstitucionalService;
+import com.futmaneger.infrastructure.config.FinanceiroProperties;
 import com.futmaneger.application.usecase.financeiro.SalarioService;
 import com.futmaneger.application.usecase.rodadas.GerarMataMataConfiguravelUseCase;
 import com.futmaneger.application.usecase.rodadas.GerarRodadasMataMataUseCase;
@@ -50,6 +52,8 @@ public class SimularRodadaUseCase {
     private final PremiacaoService premiacaoService;
     private final BilheteriaService bilheteriaService;
     private final SalarioService salarioService;
+    private final ReceitaInstitucionalService receitaInstitucionalService;
+    private final FinanceiroProperties financeiroProperties;
 
     public SimularRodadaUseCase(
             RodadaRepository rodadaRepository,
@@ -66,7 +70,9 @@ public class SimularRodadaUseCase {
             GerarMataMataConfiguravelUseCase gerarMataMataConfiguravelUseCase,
             PremiacaoService premiacaoService,
             BilheteriaService bilheteriaService,
-            SalarioService salarioService
+            SalarioService salarioService,
+            ReceitaInstitucionalService receitaInstitucionalService,
+            FinanceiroProperties financeiroProperties
     ) {
         this.rodadaRepository = rodadaRepository;
         this.partidaRepository = partidaRepository;
@@ -83,6 +89,8 @@ public class SimularRodadaUseCase {
         this.premiacaoService = premiacaoService;
         this.bilheteriaService = bilheteriaService;
         this.salarioService = salarioService;
+        this.receitaInstitucionalService = receitaInstitucionalService;
+        this.financeiroProperties = financeiroProperties;
     }
 
     @Transactional
@@ -591,10 +599,11 @@ public class SimularRodadaUseCase {
     }
 
     private void cobrarSalariosSeMes(EdicaoCampeonatoEntity edicao, RodadaEntity rodada) {
-        if (rodada.getNumero() <= 0 || rodada.getNumero() % 6 != 0) {
+        if (rodada.getNumero() <= 0 || rodada.getNumero() % financeiroProperties.getRodadasPorCiclo() != 0) {
             return;
         }
         for (ClubeParticipanteEntity participante : clubeParticipanteRepository.findByEdicao(edicao)) {
+            receitaInstitucionalService.creditar(participante.getClube());
             salarioService.cobrarSalarios(participante.getClube());
         }
     }
