@@ -60,28 +60,41 @@ public class AtribuirFasesDeEntradaService {
     }
 
     private List<Integer> capacidadesPorFase(int numeroFases, int totalClubes) {
-        int[] participantesNaFase = new int[numeroFases];
-        participantesNaFase[numeroFases - 1] = 2;
-        for (int i = numeroFases - 2; i >= 0; i--) {
-            participantesNaFase[i] = participantesNaFase[i + 1] * 2;
+        if (numeroFases <= 0 || numeroFases >= 31) {
+            throw new DadosInvalidosException("Quantidade de fases inválida para o mata-mata");
+        }
+        int capacidade = 1 << numeroFases;
+        int classificadosDiretos = capacidade / 2;
+        if (totalClubes <= classificadosDiretos || totalClubes > capacidade) {
+            throw new DadosInvalidosException(
+                    "A quantidade de fases não comporta " + totalClubes
+                            + " clubes. Configure exatamente " + quantidadeFases(totalClubes) + " fase(s)");
         }
 
         List<Integer> novasEntradas = new ArrayList<>();
         for (int i = 0; i < numeroFases; i++) {
-            if (i == 0) {
-                novasEntradas.add(participantesNaFase[i]);
-            } else {
-                int vencedoresDaAnterior = participantesNaFase[i - 1] / 2;
-                novasEntradas.add(participantesNaFase[i] - vencedoresDaAnterior);
-            }
+            novasEntradas.add(0);
+        }
+        if (totalClubes == capacidade) {
+            novasEntradas.set(0, totalClubes);
+            return novasEntradas;
         }
 
-        int soma = novasEntradas.stream().mapToInt(Integer::intValue).sum();
-        if (soma < totalClubes) {
-            novasEntradas.set(0, novasEntradas.get(0) + (totalClubes - soma));
-        }
-
+        int participantesPreliminar = 2 * (totalClubes - classificadosDiretos);
+        int entramNaFaseSeguinte = capacidade - totalClubes;
+        novasEntradas.set(0, participantesPreliminar);
+        novasEntradas.set(1, entramNaFaseSeguinte);
         return novasEntradas;
+    }
+
+    private int quantidadeFases(int totalClubes) {
+        int fases = 0;
+        int capacidade = 1;
+        while (capacidade < totalClubes) {
+            capacidade <<= 1;
+            fases++;
+        }
+        return fases;
     }
 
     private double forca(ClubeEntity clube) {

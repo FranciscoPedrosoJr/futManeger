@@ -16,4 +16,5 @@ public interface TabelaCampeonatoRepository extends JpaRepository<TabelaCampeona
     List<TabelaCampeonatoEntity> findByGrupoOrderByPontosDesc(Long grupo_clubes);
 
     List<TabelaCampeonatoEntity> findByEdicaoIdOrderByPontosDesc(Long edicaoId);
+    void deleteByEdicao(EdicaoCampeonatoEntity edicao);
 }

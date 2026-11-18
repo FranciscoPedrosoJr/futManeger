@@ -59,4 +59,8 @@ public enum AbrangenciaCampeonato {
     public boolean isApenasClubes() {
         return apenasClubes;
     }
+
+    public boolean isCopa() {
+        return this == COPA_NACIONAL || this == COPA_INTERNACIONAL || this == COPA_DO_MUNDO;
+    }
 }

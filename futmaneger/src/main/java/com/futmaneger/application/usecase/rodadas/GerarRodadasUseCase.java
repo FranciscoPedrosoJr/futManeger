@@ -51,6 +51,11 @@ public class GerarRodadasUseCase {
                 .orElseThrow(() -> new NaoEncontradoException("Edição de campeonato não encontrada"));
 
         CampeonatoEntity campeonato = edicao.getCampeonato();
+        if (campeonato.getAbrangencia() != null && campeonato.getAbrangencia().isCopa()
+                && campeonato.getTipo() != CampeonatoEntity.TipoCampeonato.MATA_MATA) {
+            throw new DadosInvalidosException(
+                    "Campeonatos com abrangência de copa devem usar o formato MATA_MATA");
+        }
 
         if (!edicao.getRodadas().isEmpty()) {
             throw new DadosInvalidosException("Rodadas já foram geradas para esta edição do campeonato");
