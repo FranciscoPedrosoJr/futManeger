@@ -10,5 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface ClubeParticipanteRepository extends JpaRepository<ClubeParticipanteEntity, Long> {
     List<ClubeParticipanteEntity> findByEdicao(EdicaoCampeonatoEntity edicao);
 
+    List<ClubeParticipanteEntity> findByClube(ClubeEntity clube);
+
     Optional<ClubeParticipanteEntity> findByClubeAndEdicao(ClubeEntity clube, EdicaoCampeonatoEntity edicao);
 }

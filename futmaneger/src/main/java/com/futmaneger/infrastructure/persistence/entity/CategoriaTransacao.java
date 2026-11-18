@@ -5,5 +5,7 @@ public enum CategoriaTransacao {
     PREMIACAO,
     SALARIO,
     BILHETERIA,
-    AJUSTE
+    AJUSTE,
+    COTA_TV,
+    PATROCINIO
 }
