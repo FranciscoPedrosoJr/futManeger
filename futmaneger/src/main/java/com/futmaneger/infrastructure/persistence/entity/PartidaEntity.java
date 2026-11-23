@@ -7,6 +7,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.JoinColumn;
@@ -15,7 +16,12 @@ import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "partidas")
+@Table(name = "partidas", indexes = {
+        @Index(name = "idx_partida_edicao_pendente_data",
+                columnList = "edicao_id,finalizada,data_programada"),
+        @Index(name = "idx_partida_rodada_pendente",
+                columnList = "rodada_id,finalizada")
+})
 @Inheritance(strategy = InheritanceType.JOINED)
 public class PartidaEntity implements PartidaSimulavel {
 

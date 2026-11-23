@@ -7,6 +7,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -19,8 +20,15 @@ import java.time.LocalDate;
  * edição do campeonato.
  */
 @Entity
-@Table(name = "eventos_calendario",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"tipo", "partida_id", "partida_mata_mata"}))
+@Table(
+        name = "eventos_calendario",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"tipo", "partida_id", "partida_mata_mata"}),
+        indexes = {
+                @Index(name = "idx_evento_temporada_status_data",
+                        columnList = "temporada_id,status,data,ordem,id"),
+                @Index(name = "idx_evento_temporada_obrigatorio_status",
+                        columnList = "temporada_id,obrigatorio,status")
+        })
 public class EventoCalendarioEntity {
 
     @Id

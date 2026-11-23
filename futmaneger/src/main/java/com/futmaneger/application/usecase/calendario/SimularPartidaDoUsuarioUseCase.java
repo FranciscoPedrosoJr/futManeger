@@ -69,29 +69,35 @@ public class SimularPartidaDoUsuarioUseCase {
                     "Existem acontecimentos anteriores pendentes. Avance a temporada antes de disputar esta partida");
         }
 
-        if (!processador.envolveClube(eventoId, clubeUsuario.getId())) {
+        ProcessadorEventoCalendarioService.ResultadoProcessamentoEvento processamento;
+        try {
+            processamento = processador.processarPartidaDoUsuario(
+                    eventoId, clubeUsuario.getId());
+        } catch (RuntimeException e) {
+            processador.registrarErro(
+                    eventoId,
+                    e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName());
+            throw e;
+        }
+
+        if (processamento.naoEnvolveUsuario()) {
             throw new DadosInvalidosException(
                     "Esta partida não envolve o seu clube; partidas de outros clubes são simuladas pelo avanço");
         }
 
-        SimulacaoResponseDTO resultado;
-        try {
-            resultado = processador.processarPartida(eventoId, true);
-        } catch (RuntimeException e) {
-            processador.registrarErro(eventoId, e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName());
-            throw e;
-        }
-
-        if (resultado == null) {
+        SimulacaoResponseDTO resultado = processamento.simulacao();
+        if (processamento.ignorado() || resultado == null) {
             throw new DadosInvalidosException(
                     "A partida já havia sido concluída; o calendário foi sincronizado");
         }
 
-        try {
-            agendamentoCalendario.sincronizarPorId(temporadaId);
-        } catch (RuntimeException ignorada) {
-            // A partida já foi registrada. Falhas de agendamento das próximas partidas
-            // são reportadas no próximo avanço da temporada.
+        if (processamento.rodadaConcluida()) {
+            try {
+                agendamentoCalendario.sincronizarSeNecessario(temporadaId);
+            } catch (RuntimeException ignorada) {
+                // A partida já foi registrada. Falhas de agendamento das próximas partidas
+                // são reportadas no próximo avanço da temporada.
+            }
         }
 
         return resultado;
