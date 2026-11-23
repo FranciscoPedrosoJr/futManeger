@@ -7,6 +7,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
@@ -27,10 +28,14 @@ import java.util.List;
  * reutilizado em temporadas diferentes sem compartilhar dados.</p>
  */
 @Entity
-@Table(name = "edicoes_campeonato",
+@Table(
+        name = "edicoes_campeonato",
         uniqueConstraints = @UniqueConstraint(
                 name = "uk_edicao_temporada_campeonato",
-                columnNames = {"temporada_id", "campeonato_id"}))
+                columnNames = {"temporada_id", "campeonato_id"}),
+        indexes = @Index(
+                name = "idx_edicao_temporada_em_andamento",
+                columnList = "temporada_id,em_andamento"))
 public class EdicaoCampeonatoEntity {
 
     @Id

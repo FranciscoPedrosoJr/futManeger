@@ -2,119 +2,133 @@ package com.futmaneger.application.usecase.calendario;
 
 import com.futmaneger.application.dto.SimulacaoResponseDTO;
 import com.futmaneger.application.exception.NaoEncontradoException;
+import com.futmaneger.application.usecase.simulacao.ResultadoSimulacaoAgendada;
 import com.futmaneger.application.usecase.simulacao.SimularRodadaUseCase;
+import com.futmaneger.domain.entity.PartidaSimulavel;
 import com.futmaneger.infrastructure.persistence.entity.EventoCalendarioEntity;
-import com.futmaneger.infrastructure.persistence.entity.PartidaEntity;
-import com.futmaneger.infrastructure.persistence.entity.PartidaMataMataEntity;
-import com.futmaneger.infrastructure.persistence.entity.TemporadaEntity;
 import com.futmaneger.infrastructure.persistence.jpa.EventoCalendarioRepository;
 import com.futmaneger.infrastructure.persistence.jpa.PartidaMataMataRepository;
 import com.futmaneger.infrastructure.persistence.jpa.PartidaRepository;
-import com.futmaneger.infrastructure.persistence.jpa.TemporadaJpaRepository;
-import java.time.LocalDate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Processa um acontecimento do calendário por vez. Cada evento é tratado em sua
- * própria transação: ou a partida é simulada e o evento concluído, ou nada é
- * alterado e o erro é registrado no evento para permitir a retomada.
+ * Processa um evento por transação. O bloqueio pessimista impede que duas
+ * chamadas apliquem resultado, estatísticas e efeitos financeiros em duplicidade.
  */
 @Service
 public class ProcessadorEventoCalendarioService {
 
     private final EventoCalendarioRepository eventoRepository;
-    private final TemporadaJpaRepository temporadaRepository;
     private final PartidaRepository partidaRepository;
     private final PartidaMataMataRepository partidaMataMataRepository;
     private final SimularRodadaUseCase simularRodadaUseCase;
 
     public ProcessadorEventoCalendarioService(EventoCalendarioRepository eventoRepository,
-                                              TemporadaJpaRepository temporadaRepository,
                                               PartidaRepository partidaRepository,
                                               PartidaMataMataRepository partidaMataMataRepository,
                                               SimularRodadaUseCase simularRodadaUseCase) {
         this.eventoRepository = eventoRepository;
-        this.temporadaRepository = temporadaRepository;
         this.partidaRepository = partidaRepository;
         this.partidaMataMataRepository = partidaMataMataRepository;
         this.simularRodadaUseCase = simularRodadaUseCase;
     }
 
-    /**
-     * Simula a partida do evento (se ainda não concluída) e o marca como concluído.
-     *
-     * @return o resultado detalhado da simulação, ou null se o evento já estava
-     *         concluído ou a partida já havia sido disputada por outro caminho.
-     */
     @Transactional
-    public SimulacaoResponseDTO processarPartida(Long eventoId, boolean escalacaoEstrita) {
-        EventoCalendarioEntity evento = buscar(eventoId);
+    public ResultadoProcessamentoEvento processarParaAvanco(Long eventoId, Long clubeUsuarioId) {
+        return processar(eventoId, clubeUsuarioId, ModoProcessamento.AVANCO_AUTOMATICO);
+    }
+
+    @Transactional
+    public ResultadoProcessamentoEvento processarPartidaDoUsuario(Long eventoId, Long clubeUsuarioId) {
+        return processar(eventoId, clubeUsuarioId, ModoProcessamento.PARTIDA_DO_USUARIO);
+    }
+
+    private ResultadoProcessamentoEvento processar(Long eventoId, Long clubeUsuarioId,
+                                                    ModoProcessamento modo) {
+        EventoCalendarioEntity evento = eventoRepository.findByIdForUpdate(eventoId)
+                .orElseThrow(() -> new NaoEncontradoException(
+                        "Acontecimento do calendário não encontrado"));
         if (!evento.estaAberto()) {
-            return null;
+            return ResultadoProcessamentoEvento.paraIgnorado();
         }
 
-        TemporadaEntity temporada = evento.getTemporada();
-        temporada.avancarDataAtualPara(evento.getData());
-        temporadaRepository.save(temporada);
+        PartidaSimulavel partida = carregarPartida(evento);
+        boolean envolveUsuario = clubeUsuarioId.equals(partida.getMandante().getId())
+                || clubeUsuarioId.equals(partida.getVisitante().getId());
 
-        SimulacaoResponseDTO resultado = null;
-        if (!partidaJaFinalizada(evento)) {
-            resultado = simularRodadaUseCase.simularPartidaAgendada(
+        if (modo == ModoProcessamento.AVANCO_AUTOMATICO && envolveUsuario) {
+            evento.getTemporada().avancarDataAtualPara(evento.getData());
+            return ResultadoProcessamentoEvento.paraAguardarUsuario();
+        }
+        if (modo == ModoProcessamento.PARTIDA_DO_USUARIO && !envolveUsuario) {
+            return ResultadoProcessamentoEvento.paraNaoEnvolverUsuario();
+        }
+
+        evento.getTemporada().avancarDataAtualPara(evento.getData());
+
+        SimulacaoResponseDTO simulacao = null;
+        boolean rodadaConcluida = false;
+        if (!partida.isFinalizada()) {
+            ResultadoSimulacaoAgendada resultado = simularRodadaUseCase.simularPartidaAgendada(
                     evento.getEdicao().getId(), evento.getPartidaId(), evento.isPartidaMataMata(),
-                    escalacaoEstrita, evento.getData());
+                    modo == ModoProcessamento.PARTIDA_DO_USUARIO, evento.getData());
+            simulacao = resultado.simulacao();
+            rodadaConcluida = resultado.rodadaConcluida();
         }
 
         evento.concluir();
-        eventoRepository.save(evento);
-        return resultado;
-    }
-
-    /**
-     * Leva a data atual da temporada até o dia do acontecimento, sem passar dele.
-     */
-    @Transactional
-    public void registrarChegadaNaData(Long temporadaId, LocalDate data) {
-        TemporadaEntity temporada = temporadaRepository.findById(temporadaId)
-                .orElseThrow(() -> new NaoEncontradoException("Temporada não encontrada"));
-        temporada.avancarDataAtualPara(data);
-        temporadaRepository.save(temporada);
+        return ResultadoProcessamentoEvento.processado(simulacao, rodadaConcluida);
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void registrarErro(Long eventoId, String mensagem) {
-        EventoCalendarioEntity evento = buscar(eventoId);
-        evento.registrarErro(mensagem);
-        eventoRepository.save(evento);
-    }
-
-    @Transactional(readOnly = true)
-    public boolean envolveClube(Long eventoId, Long clubeId) {
-        EventoCalendarioEntity evento = buscar(eventoId);
-        if (evento.isPartidaMataMata()) {
-            return partidaMataMataRepository.findById(evento.getPartidaId())
-                    .map(p -> clubeId.equals(p.getMandante().getId()) || clubeId.equals(p.getVisitante().getId()))
-                    .orElse(false);
+        EventoCalendarioEntity evento = eventoRepository.findByIdForUpdate(eventoId)
+                .orElseThrow(() -> new NaoEncontradoException(
+                        "Acontecimento do calendário não encontrado"));
+        if (evento.estaAberto()) {
+            evento.registrarErro(mensagem);
         }
-        return partidaRepository.findById(evento.getPartidaId())
-                .map(p -> clubeId.equals(p.getMandante().getId()) || clubeId.equals(p.getVisitante().getId()))
-                .orElse(false);
     }
 
-    private boolean partidaJaFinalizada(EventoCalendarioEntity evento) {
+    private PartidaSimulavel carregarPartida(EventoCalendarioEntity evento) {
         if (evento.isPartidaMataMata()) {
             return partidaMataMataRepository.findById(evento.getPartidaId())
-                    .map(PartidaMataMataEntity::isFinalizada)
                     .orElseThrow(() -> new NaoEncontradoException("Partida do evento não encontrada"));
         }
         return partidaRepository.findById(evento.getPartidaId())
-                .map(PartidaEntity::isFinalizada)
                 .orElseThrow(() -> new NaoEncontradoException("Partida do evento não encontrada"));
     }
 
-    private EventoCalendarioEntity buscar(Long eventoId) {
-        return eventoRepository.findById(eventoId)
-                .orElseThrow(() -> new NaoEncontradoException("Acontecimento do calendário não encontrado"));
+    private enum ModoProcessamento {
+        AVANCO_AUTOMATICO,
+        PARTIDA_DO_USUARIO
+    }
+
+    public record ResultadoProcessamentoEvento(
+            SimulacaoResponseDTO simulacao,
+            boolean aguardandoUsuario,
+            boolean ignorado,
+            boolean rodadaConcluida,
+            boolean naoEnvolveUsuario
+    ) {
+        private static ResultadoProcessamentoEvento paraAguardarUsuario() {
+            return new ResultadoProcessamentoEvento(null, true, false, false, false);
+        }
+
+        private static ResultadoProcessamentoEvento paraIgnorado() {
+            return new ResultadoProcessamentoEvento(null, false, true, false, false);
+        }
+
+        private static ResultadoProcessamentoEvento paraNaoEnvolverUsuario() {
+            return new ResultadoProcessamentoEvento(null, false, false, false, true);
+        }
+
+        private static ResultadoProcessamentoEvento processado(
+                SimulacaoResponseDTO simulacao, boolean rodadaConcluida) {
+            return new ResultadoProcessamentoEvento(
+                    simulacao, false, false, rodadaConcluida, false);
+        }
     }
 }

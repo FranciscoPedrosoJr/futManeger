@@ -3,16 +3,17 @@ package com.futmaneger.application.usecase.calendario;
 import com.futmaneger.application.dto.EventoCalendarioResponseDTO;
 import com.futmaneger.application.exception.NaoEncontradoException;
 import com.futmaneger.infrastructure.persistence.entity.ClubeEntity;
-import com.futmaneger.infrastructure.persistence.entity.EdicaoCampeonatoEntity;
 import com.futmaneger.infrastructure.persistence.entity.EventoCalendarioEntity;
 import com.futmaneger.infrastructure.persistence.entity.PartidaEntity;
 import com.futmaneger.infrastructure.persistence.entity.PartidaMataMataEntity;
 import com.futmaneger.infrastructure.persistence.entity.StatusEventoCalendario;
 import com.futmaneger.infrastructure.persistence.entity.TemporadaEntity;
+import com.futmaneger.infrastructure.persistence.jpa.EdicaoCampeonatoRepository;
 import com.futmaneger.infrastructure.persistence.jpa.EventoCalendarioRepository;
 import com.futmaneger.infrastructure.persistence.jpa.PartidaMataMataRepository;
 import com.futmaneger.infrastructure.persistence.jpa.PartidaRepository;
 import com.futmaneger.infrastructure.persistence.jpa.TemporadaJpaRepository;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -26,17 +27,20 @@ public class ConsultarCalendarioUseCase {
 
     private final TemporadaJpaRepository temporadaRepository;
     private final EventoCalendarioRepository eventoRepository;
+    private final EdicaoCampeonatoRepository edicaoRepository;
     private final PartidaRepository partidaRepository;
     private final PartidaMataMataRepository partidaMataMataRepository;
     private final ClubeDoUsuarioService clubeDoUsuarioService;
 
     public ConsultarCalendarioUseCase(TemporadaJpaRepository temporadaRepository,
                                       EventoCalendarioRepository eventoRepository,
+                                      EdicaoCampeonatoRepository edicaoRepository,
                                       PartidaRepository partidaRepository,
                                       PartidaMataMataRepository partidaMataMataRepository,
                                       ClubeDoUsuarioService clubeDoUsuarioService) {
         this.temporadaRepository = temporadaRepository;
         this.eventoRepository = eventoRepository;
+        this.edicaoRepository = edicaoRepository;
         this.partidaRepository = partidaRepository;
         this.partidaMataMataRepository = partidaMataMataRepository;
         this.clubeDoUsuarioService = clubeDoUsuarioService;
@@ -73,12 +77,33 @@ public class ConsultarCalendarioUseCase {
      */
     @Transactional(readOnly = true)
     public boolean podeFinalizar(Long temporadaId) {
+        buscarTemporada(temporadaId);
+        return podeFinalizarSemRecarregarColecoes(temporadaId);
+    }
+
+    /** Monta em uma única transação o trecho do calendário usado pela resposta do avanço. */
+    @Transactional(readOnly = true)
+    public ResumoAvanco resumoParaAvanco(Long temporadaId, Long clubeUsuarioId) {
         TemporadaEntity temporada = buscarTemporada(temporadaId);
-        long pendentes = eventoRepository.countByTemporadaAndObrigatorioTrueAndStatusIn(
-                temporada, StatusEventoCalendario.abertos());
-        boolean campeonatosConcluidos = temporada.getEdicoes().stream()
-                .noneMatch(EdicaoCampeonatoEntity::getEmAndamento);
-        return pendentes == 0 && campeonatosConcluidos;
+        EventoCalendarioResponseDTO proximo = eventoRepository
+                .findFirstByTemporadaAndStatusInOrderByDataAscOrdemAscIdAsc(
+                        temporada, StatusEventoCalendario.abertos())
+                .map(evento -> montar(List.of(evento), clubeUsuarioId).get(0))
+                .orElse(null);
+        return new ResumoAvanco(
+                temporada.getDataAtual(),
+                proximo,
+                podeFinalizarSemRecarregarColecoes(temporadaId));
+    }
+
+    private boolean podeFinalizarSemRecarregarColecoes(Long temporadaId) {
+        boolean possuiPendencias = eventoRepository
+                .existsByTemporadaIdAndObrigatorioTrueAndStatusIn(
+                        temporadaId, StatusEventoCalendario.abertos());
+        if (possuiPendencias) {
+            return false;
+        }
+        return !edicaoRepository.existsByTemporadaIdAndEmAndamentoTrue(temporadaId);
     }
 
     private TemporadaEntity buscarTemporada(Long temporadaId) {
@@ -90,7 +115,11 @@ public class ConsultarCalendarioUseCase {
         Long clubeUsuarioId = clubeDoUsuarioService.obterClubeDoUsuarioAutenticado()
                 .map(ClubeEntity::getId)
                 .orElse(null);
+        return montar(eventos, clubeUsuarioId);
+    }
 
+    private List<EventoCalendarioResponseDTO> montar(List<EventoCalendarioEntity> eventos,
+                                                      Long clubeUsuarioId) {
         List<Long> idsNormais = idsDePartidas(eventos, false);
         List<Long> idsEliminatorias = idsDePartidas(eventos, true);
 
@@ -177,5 +206,12 @@ public class ConsultarCalendarioUseCase {
                 evento.getEdicao() != null ? evento.getEdicao().getCampeonato().getNome() : null,
                 null, evento.getPartidaId(), evento.isPartidaMataMata(),
                 null, null, null, null, null, null, false, evento.getMensagemErro());
+    }
+
+    public record ResumoAvanco(
+            LocalDate dataAtual,
+            EventoCalendarioResponseDTO proximoEvento,
+            boolean podeFinalizar
+    ) {
     }
 }
