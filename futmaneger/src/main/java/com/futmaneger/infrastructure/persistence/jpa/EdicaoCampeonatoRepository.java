@@ -16,4 +16,6 @@ public interface EdicaoCampeonatoRepository extends JpaRepository<EdicaoCampeona
     List<EdicaoCampeonatoEntity> findByCampeonato(CampeonatoEntity campeonato);
 
     Optional<EdicaoCampeonatoEntity> findByTemporadaIdAndCampeonatoId(Long temporadaId, Long campeonatoId);
+
+    boolean existsByTemporadaIdAndEmAndamentoTrue(Long temporadaId);
 }

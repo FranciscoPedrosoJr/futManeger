@@ -6,6 +6,7 @@ import com.futmaneger.application.dto.SimulacaoResponseDTO;
 import com.futmaneger.application.dto.SituacaoAvanco;
 import com.futmaneger.application.exception.DadosInvalidosException;
 import com.futmaneger.application.exception.NaoEncontradoException;
+import com.futmaneger.infrastructure.config.CalendarioProperties;
 import com.futmaneger.infrastructure.persistence.entity.ClubeEntity;
 import com.futmaneger.infrastructure.persistence.entity.EventoCalendarioEntity;
 import com.futmaneger.infrastructure.persistence.entity.StatusEventoCalendario;
@@ -20,7 +21,8 @@ import org.springframework.stereotype.Service;
 /**
  * Conduz a temporada até o próximo acontecimento relevante: simula
  * automaticamente as partidas dos demais clubes e para quando chega uma partida
- * do clube do usuário ou quando não há mais pendências.
+ * do clube do usuário, quando atinge o limite da chamada ou quando não há mais
+ * pendências.
  *
  * <p>Não é transacional de propósito: cada acontecimento é processado em sua
  * própria transação, de modo que uma falha não desfaz o que já foi concluído e o
@@ -35,19 +37,22 @@ public class AvancarTemporadaUseCase {
     private final ProcessadorEventoCalendarioService processador;
     private final ConsultarCalendarioUseCase consultarCalendario;
     private final ClubeDoUsuarioService clubeDoUsuarioService;
+    private final CalendarioProperties calendarioProperties;
 
     public AvancarTemporadaUseCase(TemporadaJpaRepository temporadaRepository,
                                    EventoCalendarioRepository eventoRepository,
                                    AgendamentoCalendarioService agendamentoCalendario,
                                    ProcessadorEventoCalendarioService processador,
                                    ConsultarCalendarioUseCase consultarCalendario,
-                                   ClubeDoUsuarioService clubeDoUsuarioService) {
+                                   ClubeDoUsuarioService clubeDoUsuarioService,
+                                   CalendarioProperties calendarioProperties) {
         this.temporadaRepository = temporadaRepository;
         this.eventoRepository = eventoRepository;
         this.agendamentoCalendario = agendamentoCalendario;
         this.processador = processador;
         this.consultarCalendario = consultarCalendario;
         this.clubeDoUsuarioService = clubeDoUsuarioService;
+        this.calendarioProperties = calendarioProperties;
     }
 
     public AvancoTemporadaResponseDTO executar(Long temporadaId) {
@@ -55,7 +60,8 @@ public class AvancarTemporadaUseCase {
                 .orElseThrow(() -> new NaoEncontradoException("Temporada não encontrada"));
 
         if (temporada.getEstado() != TemporadaEntity.EstadoTemporada.EM_ANDAMENTO) {
-            throw new DadosInvalidosException("Somente temporadas em andamento podem avançar no calendário");
+            throw new DadosInvalidosException(
+                    "Somente temporadas em andamento podem avançar no calendário");
         }
         if (!temporada.isCalendarioGerado()) {
             throw new DadosInvalidosException("O calendário desta temporada ainda não foi gerado");
@@ -69,11 +75,13 @@ public class AvancarTemporadaUseCase {
         List<ResultadoPartidaResumoDTO> resultados = new ArrayList<>();
 
         try {
-            agendamentoCalendario.sincronizarPorId(temporadaId);
+            agendamentoCalendario.sincronizarSeNecessario(temporadaId);
         } catch (RuntimeException e) {
-            return resposta(temporadaId, SituacaoAvanco.ERRO, resultados, mensagemDe(e));
+            return resposta(temporadaId, SituacaoAvanco.ERRO, resultados,
+                    mensagemDe(e), clubeUsuario.getId());
         }
 
+        int eventosProcessados = 0;
         while (true) {
             Optional<EventoCalendarioEntity> proximo = eventoRepository
                     .findFirstByTemporadaAndStatusInOrderByDataAscOrdemAscIdAsc(
@@ -81,26 +89,31 @@ public class AvancarTemporadaUseCase {
 
             if (proximo.isEmpty()) {
                 return resposta(temporadaId, SituacaoAvanco.SEM_PENDENCIAS, resultados,
-                        "Todos os acontecimentos da temporada foram concluídos");
+                        "Todos os acontecimentos da temporada foram concluídos", clubeUsuario.getId());
             }
 
             EventoCalendarioEntity evento = proximo.get();
-
-            if (processador.envolveClube(evento.getId(), clubeUsuario.getId())) {
-                processador.registrarChegadaNaData(temporadaId, evento.getData());
-                return resposta(temporadaId, SituacaoAvanco.AGUARDANDO_USUARIO, resultados,
-                        "Partida do seu clube aguardando para ser disputada em " + evento.getData());
-            }
-
-            SimulacaoResponseDTO simulacao;
+            ProcessadorEventoCalendarioService.ResultadoProcessamentoEvento processamento;
             try {
-                simulacao = processador.processarPartida(evento.getId(), false);
+                processamento = processador.processarParaAvanco(
+                        evento.getId(), clubeUsuario.getId());
             } catch (RuntimeException e) {
                 processador.registrarErro(evento.getId(), mensagemDe(e));
                 return resposta(temporadaId, SituacaoAvanco.ERRO, resultados,
-                        "Falha ao processar o acontecimento " + evento.getId() + ": " + mensagemDe(e));
+                        "Falha ao processar o acontecimento " + evento.getId() + ": " + mensagemDe(e),
+                        clubeUsuario.getId());
             }
 
+            if (processamento.ignorado()) {
+                continue;
+            }
+            if (processamento.aguardandoUsuario()) {
+                return resposta(temporadaId, SituacaoAvanco.AGUARDANDO_USUARIO, resultados,
+                        "Partida do seu clube aguardando para ser disputada em " + evento.getData(),
+                        clubeUsuario.getId());
+            }
+
+            SimulacaoResponseDTO simulacao = processamento.simulacao();
             if (simulacao != null) {
                 resultados.add(new ResultadoPartidaResumoDTO(
                         evento.getId(),
@@ -111,29 +124,41 @@ public class AvancarTemporadaUseCase {
                         simulacao.nomeVisitante(),
                         simulacao.golsVisitante()));
             }
+            eventosProcessados++;
 
-            try {
-                agendamentoCalendario.sincronizarPorId(temporadaId);
-            } catch (RuntimeException e) {
-                return resposta(temporadaId, SituacaoAvanco.ERRO, resultados,
-                        "Falha ao agendar as próximas partidas: " + mensagemDe(e));
+            if (processamento.rodadaConcluida()) {
+                try {
+                    agendamentoCalendario.sincronizarSeNecessario(temporadaId);
+                } catch (RuntimeException e) {
+                    return resposta(temporadaId, SituacaoAvanco.ERRO, resultados,
+                            "Falha ao agendar as próximas partidas: " + mensagemDe(e),
+                            clubeUsuario.getId());
+                }
+            }
+
+            if (eventosProcessados >= calendarioProperties.getMaxEventosPorAvanco()) {
+                return resposta(temporadaId, SituacaoAvanco.LIMITE_ATINGIDO, resultados,
+                        "O limite de " + calendarioProperties.getMaxEventosPorAvanco()
+                                + " acontecimentos por chamada foi atingido; continue o avanço",
+                        clubeUsuario.getId());
             }
         }
     }
 
     private AvancoTemporadaResponseDTO resposta(Long temporadaId, SituacaoAvanco situacao,
-                                                List<ResultadoPartidaResumoDTO> resultados, String mensagem) {
-        TemporadaEntity atual = temporadaRepository.findById(temporadaId)
-                .orElseThrow(() -> new NaoEncontradoException("Temporada não encontrada"));
+                                                List<ResultadoPartidaResumoDTO> resultados,
+                                                String mensagem, Long clubeUsuarioId) {
+        ConsultarCalendarioUseCase.ResumoAvanco resumo =
+                consultarCalendario.resumoParaAvanco(temporadaId, clubeUsuarioId);
 
         return new AvancoTemporadaResponseDTO(
                 temporadaId,
-                atual.getDataAtual(),
+                resumo.dataAtual(),
                 situacao,
                 resultados.size(),
                 resultados,
-                consultarCalendario.proximo(temporadaId),
-                consultarCalendario.podeFinalizar(temporadaId),
+                resumo.proximoEvento(),
+                resumo.podeFinalizar(),
                 mensagem
         );
     }

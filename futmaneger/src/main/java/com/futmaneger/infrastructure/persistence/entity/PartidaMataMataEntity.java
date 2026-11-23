@@ -7,10 +7,20 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 
 @Entity
+@Table(name = "partida_mata_mata_entity", indexes = {
+        @Index(name = "idx_mata_mata_edicao_pendente_data",
+                columnList = "edicao_id,finalizada,data_programada"),
+        @Index(name = "idx_mata_mata_rodada_pendente",
+                columnList = "rodada_id,finalizada"),
+        @Index(name = "idx_mata_mata_edicao_ordem_fase",
+                columnList = "edicao_id,ordem_fase")
+})
 public class PartidaMataMataEntity implements PartidaSimulavel {
 
     @Id

@@ -22,7 +22,7 @@ import com.futmaneger.infrastructure.persistence.jpa.EdicaoCampeonatoRepository;
 import com.futmaneger.infrastructure.persistence.jpa.ClubeParticipanteRepository;
 import com.futmaneger.infrastructure.persistence.jpa.EscalacaoRepository;
 import com.futmaneger.infrastructure.persistence.jpa.GrupoRepository;
-import com.futmaneger.infrastructure.persistence.jpa.EstatisticaJogadorPartidaRepository;
+import com.futmaneger.infrastructure.persistence.jpa.EstatisticaJogadorPartidaBatchRepository;
 import com.futmaneger.infrastructure.persistence.jpa.PartidaMataMataRepository;
 import com.futmaneger.infrastructure.persistence.jpa.PartidaRepository;
 import com.futmaneger.infrastructure.persistence.jpa.RodadaRepository;
@@ -47,7 +47,7 @@ public class SimularRodadaUseCase {
     private final ClubeParticipanteRepository clubeParticipanteRepository;
     private final GrupoRepository grupoRepository;
     private final PartidaMataMataRepository partidaMataMataRepository;
-    private final EstatisticaJogadorPartidaRepository estatisticaJogadorPartidaRepository;
+    private final EstatisticaJogadorPartidaBatchRepository estatisticaBatchRepository;
     private final GerarMataMataConfiguravelUseCase gerarMataMataConfiguravelUseCase;
     private final PremiacaoService premiacaoService;
     private final BilheteriaService bilheteriaService;
@@ -66,7 +66,7 @@ public class SimularRodadaUseCase {
             ClubeParticipanteRepository clubeParticipanteRepository,
             GrupoRepository grupoRepository,
             PartidaMataMataRepository partidaMataMataRepository,
-            EstatisticaJogadorPartidaRepository estatisticaJogadorPartidaRepository,
+            EstatisticaJogadorPartidaBatchRepository estatisticaBatchRepository,
             GerarMataMataConfiguravelUseCase gerarMataMataConfiguravelUseCase,
             PremiacaoService premiacaoService,
             BilheteriaService bilheteriaService,
@@ -84,7 +84,7 @@ public class SimularRodadaUseCase {
         this.clubeParticipanteRepository = clubeParticipanteRepository;
         this.grupoRepository = grupoRepository;
         this.partidaMataMataRepository = partidaMataMataRepository;
-        this.estatisticaJogadorPartidaRepository = estatisticaJogadorPartidaRepository;
+        this.estatisticaBatchRepository = estatisticaBatchRepository;
         this.gerarMataMataConfiguravelUseCase = gerarMataMataConfiguravelUseCase;
         this.premiacaoService = premiacaoService;
         this.bilheteriaService = bilheteriaService;
@@ -199,10 +199,6 @@ public class SimularRodadaUseCase {
                 PartidaEntity.Resultado.valueOf(resultado), true, grupoDefinido);
         atualizarTabela(edicao, partida.getVisitante(), golsVisitante, golsMandante,
                 PartidaEntity.Resultado.valueOf(resultado), false, grupoDefinido);
-
-        if (edicao.getMataMataIniciado() == false) {
-            salvarPartida(partida.getId(), golsMandante, golsVisitante, resultado);
-        }
 
         return new SimulacaoResponseDTO(
                 partida.getMandante().getNome(),
@@ -327,8 +323,9 @@ public class SimularRodadaUseCase {
      *                         cadastrada; quando false, uma escalação automática é usada.
      */
     @Transactional
-    public SimulacaoResponseDTO simularPartidaAgendada(Long edicaoId, Long partidaId, boolean partidaMataMata,
-                                                       boolean escalacaoEstrita, LocalDate dataRealizacao) {
+    public ResultadoSimulacaoAgendada simularPartidaAgendada(
+            Long edicaoId, Long partidaId, boolean partidaMataMata,
+            boolean escalacaoEstrita, LocalDate dataRealizacao) {
         EdicaoCampeonatoEntity edicao = edicaoRepository.findById(edicaoId)
                 .orElseThrow(() -> new NaoEncontradoException("Edição de campeonato não encontrada"));
         CampeonatoEntity campeonato = edicao.getCampeonato();
@@ -346,14 +343,12 @@ public class SimularRodadaUseCase {
 
         SimulacaoResponseDTO resultado;
         RodadaEntity rodada;
-        List<? extends PartidaSimulavel> partidasDaRodada;
 
         if (partida instanceof PartidaMataMataEntity partidaEliminatoria) {
             resultado = configuravel
                     ? simularPartidaConfiguravel(partidaEliminatoria, escalacaoEstrita, dataRealizacao)
                     : simularPartidaNormal(edicao, campeonato, partida, escalacaoEstrita, dataRealizacao);
             rodada = partidaEliminatoria.getRodada();
-            partidasDaRodada = rodada == null ? List.of() : partidaMataMataRepository.findByRodada(rodada);
         } else {
             PartidaEntity partidaNormal = (PartidaEntity) partida;
             resultado = simularPartidaNormal(edicao, campeonato, partida, escalacaoEstrita, dataRealizacao);
@@ -361,15 +356,15 @@ public class SimularRodadaUseCase {
             rodada = partidaNormal.getRodadaEntity() != null
                     ? partidaNormal.getRodadaEntity()
                     : rodadaRepository.findByNumeroAndEdicao(numeroRodada, edicao).orElse(null);
-            partidasDaRodada = rodada != null
-                    ? partidaRepository.findByRodadaEntity(rodada)
-                    : partidaRepository.buscarPorEdicaoERodada(edicao, numeroRodada);
         }
 
-        boolean rodadaCompleta = rodada != null
-                && !Boolean.TRUE.equals(rodada.isFinalizada())
-                && !partidasDaRodada.isEmpty()
-                && partidasDaRodada.stream().allMatch(PartidaSimulavel::isFinalizada);
+        boolean rodadaCompleta = false;
+        if (rodada != null && !Boolean.TRUE.equals(rodada.isFinalizada())) {
+            boolean possuiPartidaPendente = partidaMataMata
+                    ? partidaMataMataRepository.existsByRodadaAndFinalizadaFalse(rodada)
+                    : partidaRepository.existsByRodadaEntityAndFinalizadaFalse(rodada);
+            rodadaCompleta = !possuiPartidaPendente;
+        }
 
         if (rodadaCompleta) {
             if (configuravel) {
@@ -379,7 +374,7 @@ public class SimularRodadaUseCase {
             }
         }
 
-        return resultado;
+        return new ResultadoSimulacaoAgendada(resultado, rodadaCompleta);
     }
 
     private void registrarDataRealizacao(PartidaSimulavel partida, LocalDate data) {
@@ -407,7 +402,25 @@ public class SimularRodadaUseCase {
     private void distribuirGols(List<Jogador> jogadores, int gols, Map<Jogador, int[]> eventos) { Random r = new Random(); for (int i = 0; i < gols; i++) eventos.get(jogadores.get(r.nextInt(jogadores.size())))[0]++; }
     private List<String> nomesPorGols(List<JogadorPartidaResponseDTO> jogadores, List<Jogador> elenco) { return jogadores.stream().filter(j -> elenco.stream().anyMatch(e -> e.getId().equals(j.jogadorId()))).flatMap(j -> java.util.stream.Stream.generate(j::nome).limit(j.gols())).toList(); }
     private List<String> nomesPorCartao(List<JogadorPartidaResponseDTO> jogadores, boolean vermelho) { return jogadores.stream().flatMap(j -> java.util.stream.Stream.generate(j::nome).limit(vermelho ? j.cartoesVermelhos() : j.cartoesAmarelos())).toList(); }
-    private void salvarEstatisticas(PartidaSimulavel partida, DetalhesPartida d) { boolean mataMata = partida instanceof PartidaMataMataEntity; estatisticaJogadorPartidaRepository.saveAll(d.jogadores().stream().map(j -> { EstatisticaJogadorPartidaEntity e = new EstatisticaJogadorPartidaEntity(); e.setPartidaId(partida.getId()); e.setPartidaMataMata(mataMata); e.setJogadorId(j.jogadorId()); e.setNomeJogador(j.nome()); e.setNota(j.nota()); e.setGols(j.gols()); e.setCartoesAmarelos(j.cartoesAmarelos()); e.setCartoesVermelhos(j.cartoesVermelhos()); return e; }).toList()); }
+    private void salvarEstatisticas(PartidaSimulavel partida, DetalhesPartida detalhes) {
+        boolean mataMata = partida instanceof PartidaMataMataEntity;
+        List<EstatisticaJogadorPartidaEntity> estatisticas = detalhes.jogadores().stream()
+                .map(jogador -> {
+                    EstatisticaJogadorPartidaEntity estatistica =
+                            new EstatisticaJogadorPartidaEntity();
+                    estatistica.setPartidaId(partida.getId());
+                    estatistica.setPartidaMataMata(mataMata);
+                    estatistica.setJogadorId(jogador.jogadorId());
+                    estatistica.setNomeJogador(jogador.nome());
+                    estatistica.setNota(jogador.nota());
+                    estatistica.setGols(jogador.gols());
+                    estatistica.setCartoesAmarelos(jogador.cartoesAmarelos());
+                    estatistica.setCartoesVermelhos(jogador.cartoesVermelhos());
+                    return estatistica;
+                })
+                .toList();
+        estatisticaBatchRepository.saveAll(estatisticas);
+    }
     private record DetalhesPartida(List<String> golsMandante, List<String> golsVisitante, List<JogadorPartidaResponseDTO> jogadores, JogadorPartidaResponseDTO melhorJogador, List<String> cartoesAmarelos, List<String> cartoesVermelhos) {}
     private EscalacaoEntity buscarOuGerarEscalacao(ClubeEntity clube, boolean estrita) {
         if (clube.getTecnico() != null) {
@@ -463,7 +476,7 @@ public class SimularRodadaUseCase {
             escalacao.getJogadores().add(ej);
         }
 
-        return escalacaoRepository.save(escalacao);
+        return escalacao;
     }
 
     private List<Jogador> filtrarPorPosicao(List<Jogador> jogadores, List<String> posicoes, int limite) {
@@ -606,23 +619,6 @@ public class SimularRodadaUseCase {
             receitaInstitucionalService.creditar(participante.getClube());
             salarioService.cobrarSalarios(participante.getClube());
         }
-    }
-
-    private void salvarPartida(Long partidaId,
-                               int golsMandante,
-                               int golsVisitante,
-                               String resultado) {
-
-        PartidaEntity partida = partidaRepository.findById(partidaId)
-                .orElseThrow(() -> new NaoEncontradoException("Partida não encontrada com id: " + partidaId));
-
-        partida.setGolsMandante(golsMandante);
-        partida.setGolsVisitante(golsVisitante);
-        partida.setResultado(PartidaEntity.Resultado.valueOf(resultado));
-        partida.setDataHora(LocalDateTime.now());
-        partida.setFinalizada(true);
-
-        partidaRepository.save(partida);
     }
 
 }

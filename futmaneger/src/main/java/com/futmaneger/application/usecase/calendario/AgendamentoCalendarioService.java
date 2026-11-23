@@ -87,9 +87,39 @@ public class AgendamentoCalendarioService {
         }
     }
 
+    /**
+     * Evita reconstruir o calendário quando todas as partidas abertas já possuem
+     * data e evento. As consultas de guarda também recuperam inconsistências
+     * legadas em que uma partida foi datada sem o evento correspondente.
+     */
+    @Transactional
+    public int sincronizarSeNecessario(Long temporadaId) {
+        boolean possuiPartidaSemData = partidaRepository
+                .existsByEdicao_Temporada_IdAndFinalizadaFalseAndDataProgramadaIsNull(temporadaId)
+                || partidaMataMataRepository
+                .existsByEdicao_Temporada_IdAndFinalizadaFalseAndDataProgramadaIsNull(temporadaId);
+
+        boolean possuiPartidaSemEvento = false;
+        if (!possuiPartidaSemData) {
+            possuiPartidaSemEvento = partidaRepository.countAgendadasSemEvento(
+                    temporadaId, TipoEventoCalendario.PARTIDA) > 0
+                    || partidaMataMataRepository.countAgendadasSemEvento(
+                    temporadaId, TipoEventoCalendario.PARTIDA) > 0;
+        }
+
+        if (!possuiPartidaSemData && !possuiPartidaSemEvento) {
+            return 0;
+        }
+        return sincronizarPorIdInterno(temporadaId);
+    }
+
     /** Agenda partidas criadas durante a temporada usando primeiro as datas reservadas. */
     @Transactional
     public int sincronizarPorId(Long temporadaId) {
+        return sincronizarPorIdInterno(temporadaId);
+    }
+
+    private int sincronizarPorIdInterno(Long temporadaId) {
         TemporadaEntity temporada = temporadaRepository.findById(temporadaId)
                 .orElseThrow(() -> new NaoEncontradoException("Temporada não encontrada"));
         LocalDate dataMinima = temporada.getDataAtual() != null ? temporada.getDataAtual() : temporada.getDataInicio();
@@ -100,16 +130,27 @@ public class AgendamentoCalendarioService {
         Map<Long, TreeSet<LocalDate>> ocupacao = new HashMap<>();
         Map<Long, LocalDate> ultimaDataPorEdicao = new HashMap<>();
         Map<Long, List<Compromisso>> pendentesPorEdicao = new LinkedHashMap<>();
-        List<Compromisso> agendadosAbertos = new ArrayList<>();
+        Map<Long, List<Compromisso>> compromissosPorEdicao = new HashMap<>();
+        List<Compromisso> agendadosSemEvento = new ArrayList<>();
         List<EdicaoCampeonatoEntity> edicoes = new ArrayList<>(temporada.getEdicoes());
+        Set<ChaveEvento> eventosExistentes = eventoRepository
+                .findReferenciasPartidas(temporada.getId(), TipoEventoCalendario.PARTIDA)
+                .stream()
+                .map(referencia -> new ChaveEvento(
+                        referencia.getPartidaId(),
+                        Boolean.TRUE.equals(referencia.getPartidaMataMata())))
+                .collect(java.util.stream.Collectors.toSet());
 
         for (EdicaoCampeonatoEntity edicao : edicoes) {
-            for (Compromisso compromisso : compromissosDaEdicao(edicao)) {
+            List<Compromisso> compromissos = compromissosDaEdicao(edicao);
+            compromissosPorEdicao.put(edicao.getId(), compromissos);
+            for (Compromisso compromisso : compromissos) {
                 if (compromisso.dataProgramada() != null) {
                     ocupar(compromisso, compromisso.dataProgramada(), ocupacao);
                     ultimaDataPorEdicao.merge(edicao.getId(), compromisso.dataProgramada(), this::maisTarde);
-                    if (!compromisso.finalizada()) {
-                        agendadosAbertos.add(compromisso);
+                    if (!compromisso.finalizada()
+                            && !eventosExistentes.contains(ChaveEvento.de(compromisso))) {
+                        agendadosSemEvento.add(compromisso);
                     }
                 } else if (!compromisso.finalizada()) {
                     pendentesPorEdicao.computeIfAbsent(edicao.getId(), k -> new ArrayList<>()).add(compromisso);
@@ -124,12 +165,17 @@ public class AgendamentoCalendarioService {
             ocupar(clubes, reserva.getData(), ocupacao);
         }
 
-        for (Compromisso compromisso : agendadosAbertos) {
-            criarEventoSeNecessario(temporada, compromisso, compromisso.dataProgramada());
+        for (Compromisso compromisso : agendadosSemEvento) {
+            criarEventoSeNecessario(
+                    temporada, compromisso, compromisso.dataProgramada(), eventosExistentes);
         }
 
+        Map<Long, Boolean> mataMataPorEdicao = new HashMap<>();
+        for (EdicaoCampeonatoEntity edicao : edicoes) {
+            mataMataPorEdicao.put(edicao.getId(), ehMataMata(edicao));
+        }
         edicoes.sort(Comparator
-                .comparing((EdicaoCampeonatoEntity e) -> !ehMataMata(e))
+                .comparing((EdicaoCampeonatoEntity e) -> !mataMataPorEdicao.get(e.getId()))
                 .thenComparing(e -> inicioDaJanela(temporada, e),
                         Comparator.nullsLast(Comparator.naturalOrder()))
                 .thenComparing(EdicaoCampeonatoEntity::getId));
@@ -142,22 +188,23 @@ public class AgendamentoCalendarioService {
                     pendentesPorEdicao.getOrDefault(edicao.getId(), List.of()));
             agendadas += pendentes.size();
 
-            if (ehMataMata(edicao) && !pendentes.isEmpty()) {
-                agendarNasReservas(temporada, edicao, pendentes, dataMinima);
+            if (mataMataPorEdicao.get(edicao.getId()) && !pendentes.isEmpty()) {
+                agendarNasReservas(
+                        temporada, edicao, pendentes, dataMinima, eventosExistentes);
             }
             if (!pendentes.isEmpty()) {
                 planejarEdicao(temporada, edicao, pendentes, dataMinima, ocupacao,
-                        ultimaDataPorEdicao.get(edicao.getId()));
+                        ultimaDataPorEdicao.get(edicao.getId()), eventosExistentes);
             }
 
-            LocalDate ultimaData = compromissosDaEdicao(edicao).stream()
+            LocalDate ultimaData = compromissosPorEdicao.getOrDefault(edicao.getId(), List.of()).stream()
                     .map(Compromisso::dataProgramada)
                     .filter(data -> data != null)
                     .max(LocalDate::compareTo)
                     .orElse(ultimaDataPorEdicao.get(edicao.getId()));
             ultimaDataPorEdicao.put(edicao.getId(), ultimaData);
 
-            if (calendarioInicial && ehMataMata(edicao)) {
+            if (calendarioInicial && mataMataPorEdicao.get(edicao.getId())) {
                 reservarFasesFuturas(temporada, edicao, ultimaData, ocupacao);
             }
         }
@@ -165,7 +212,8 @@ public class AgendamentoCalendarioService {
     }
 
     private void agendarNasReservas(TemporadaEntity temporada, EdicaoCampeonatoEntity edicao,
-                                    List<Compromisso> pendentes, LocalDate dataMinima) {
+                                    List<Compromisso> pendentes, LocalDate dataMinima,
+                                    Set<ChaveEvento> eventosExistentes) {
         List<ReservaCalendarioMataMataEntity> reservas =
                 reservaRepository.findByEdicaoOrderByOrdemAsc(edicao);
         for (ReservaCalendarioMataMataEntity reserva : reservas) {
@@ -185,7 +233,8 @@ public class AgendamentoCalendarioService {
                 }
                 compromisso.definirData(reserva.getData());
                 compromisso.salvar();
-                criarEventoSeNecessario(temporada, compromisso, reserva.getData());
+                criarEventoSeNecessario(
+                        temporada, compromisso, reserva.getData(), eventosExistentes);
                 usadosNaData.add(compromisso.mandanteId());
                 usadosNaData.add(compromisso.visitanteId());
                 atribuidos.add(compromisso);
@@ -199,7 +248,8 @@ public class AgendamentoCalendarioService {
 
     private void planejarEdicao(TemporadaEntity temporada, EdicaoCampeonatoEntity edicao,
                                 List<Compromisso> pendentes, LocalDate dataMinima,
-                                Map<Long, TreeSet<LocalDate>> ocupacao, LocalDate ultimaDataDaEdicao) {
+                                Map<Long, TreeSet<LocalDate>> ocupacao, LocalDate ultimaDataDaEdicao,
+                                Set<ChaveEvento> eventosExistentes) {
         LocalDate inicio = dataMinima;
         LocalDate inicioDaJanela = inicioDaJanela(temporada, edicao);
         if (inicioDaJanela != null) {
@@ -236,7 +286,7 @@ public class AgendamentoCalendarioService {
             compromisso.definirData(data);
             compromisso.salvar();
             ocupar(compromisso, data, ocupacao);
-            criarEventoSeNecessario(temporada, compromisso, data);
+            criarEventoSeNecessario(temporada, compromisso, data, eventosExistentes);
         }
         pendentes.clear();
     }
@@ -440,14 +490,21 @@ public class AgendamentoCalendarioService {
         return compromissos;
     }
 
-    private void criarEventoSeNecessario(TemporadaEntity temporada, Compromisso compromisso, LocalDate data) {
-        if (eventoRepository.existsByTipoAndPartidaIdAndPartidaMataMata(
-                TipoEventoCalendario.PARTIDA, compromisso.partidaId(), compromisso.mataMata())) {
+    private void criarEventoSeNecessario(TemporadaEntity temporada, Compromisso compromisso,
+                                         LocalDate data, Set<ChaveEvento> eventosExistentes) {
+        ChaveEvento chave = ChaveEvento.de(compromisso);
+        if (!eventosExistentes.add(chave)) {
             return;
         }
         eventoRepository.save(EventoCalendarioEntity.paraPartida(
                 temporada, compromisso.edicao(), compromisso.partidaId(), compromisso.mataMata(),
                 data, compromisso.ordem()));
+    }
+
+    private record ChaveEvento(Long partidaId, boolean mataMata) {
+        private static ChaveEvento de(Compromisso compromisso) {
+            return new ChaveEvento(compromisso.partidaId(), compromisso.mataMata());
+        }
     }
 
     private LocalDate maisTarde(LocalDate a, LocalDate b) {
